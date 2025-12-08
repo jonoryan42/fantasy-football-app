@@ -1,13 +1,12 @@
-package com.example.fantasyfootballapp
+package com.example.fantasyfootballapp.ui.main
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import ui.pickTeam.PickTeamActivity
+import com.example.fantasyfootballapp.R
+import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
+import com.example.fantasyfootballapp.ui.teamSetup.CreateTeamActivity
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,7 +16,7 @@ class MainActivity : AppCompatActivity() {
 
         val btnStartDemo = findViewById<Button>(R.id.btnStartDemo)
         btnStartDemo.setOnClickListener {
-            val intent = Intent(this, PickTeamActivity::class.java)
+            val intent = Intent(this, CreateTeamActivity::class.java)
             startActivity(intent)
         }
     }

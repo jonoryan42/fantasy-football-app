@@ -1,9 +1,9 @@
-package data
+package com.example.fantasyfootballapp.data
 
-import model.LeaderboardEntry
-import model.Player
-import model.Team
-import model.User
+import com.example.fantasyfootballapp.model.LeaderboardEntry
+import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.Team
+import com.example.fantasyfootballapp.model.User
 
 object FantasyRepository {
 
@@ -16,11 +16,24 @@ object FantasyRepository {
         Player("p5", "David Walsh", "DEF", "Tramore AFC", 5, 19),
         Player("p6", "Eoin Kelly", "MID", "Villa FC", 6, 23),
         Player("p7", "Kevin O'Brien", "STR", "Tramore AFC", 9, 37),
-        Player("p8", "Liam Fitzgerald", "GK", "Villa FC", 4, 29)
+        Player("p8", "Liam Fitzgerald", "GK", "Villa FC", 4, 29),
+        Player("p9", "Shane Power", "DEF", "Waterford FC", 5, 22),
+        Player("p10", "Cian Browne", "MID", "Tramore AFC", 6, 31),
+        Player("p11", "Jamie Ahern", "STR", "Villa FC", 7, 44),
+        Player("p12", "Paul Furlong", "GK", "Bohemians", 4, 18),
+        Player("p13", "Harry Dunne", "DEF", "Athlone Town", 5, 25),
+        Player("p14", "Ronan McGrath", "MID", "Shamrock Rovers", 7, 39),
+        Player("p15", "Darragh Foley", "STR", "Dundalk FC", 8, 48),
+        Player("p16", "Brian Stack", "DEF", "Cork City", 6, 28),
+        Player("p17", "Adam Keane", "MID", "Shelbourne", 6, 33),
+        Player("p18", "Luke Byrne", "STR", "Galway United", 7, 41),
+        Player("p19", "Daniel Kennedy", "DEF", "Wexford FC", 5, 20),
+        Player("p20", "Owen Hayes", "MID", "Finn Harps", 6, 29)
+
         // add more later if you want
     )
 
-    private val users = listOf(
+    private val users = mutableListOf(
         User("u1", "demoUser", "Ryan Rovers"),
         User("u2", "emma", "Emma XI"),
         User("u3", "liam", "Liam FC")
@@ -55,4 +68,13 @@ object FantasyRepository {
             LeaderboardEntry(user, totalPoints)
         }.sortedByDescending { it.totalPoints }
     }
+
+    fun updateCurrentUserTeamName(newTeamName: String) {
+        val index = users.indexOfFirst { it.id == CURRENT_USER_ID }
+        if (index != -1) {
+            val currentUser = users[index]
+            users[index] = currentUser.copy(teamName = newTeamName)
+        }
+    }
+
 }

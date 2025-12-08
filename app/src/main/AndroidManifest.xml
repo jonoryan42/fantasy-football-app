@@ -12,13 +12,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FantasyFootballApp">
         <activity
-            android:name="ui.leaderboard.LeaderboardActivity"
+            android:name=".ui.teamSetup.CreateTeamActivity"
             android:exported="false" />
         <activity
-            android:name="ui.pickTeam.PickTeamActivity"
+            android:name=".ui.leaderboard.LeaderboardActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.pickTeam.PickTeamActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.main.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

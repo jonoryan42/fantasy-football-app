@@ -3,21 +3,30 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp">
+    android:padding="16dp">
 
+    <!-- Header / count -->
     <TextView
-        android:id="@+id/txtPickTeamTitle"
+        android:id="@+id/txtSelectedCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/pick_team"
-        android:textSize="24sp"
-        android:layout_marginBottom="16dp" />
+        android:text="@string/selected_0_11"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Player list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerPlayers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Save button -->
     <Button
-        android:id="@+id/btnGoToLeaderboard"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnSaveTeam"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/go_to_leaderboard" />
+        android:text="@string/confirm" />
 
 </LinearLayout>
+

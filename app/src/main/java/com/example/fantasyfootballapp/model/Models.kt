@@ -1,4 +1,4 @@
-package model
+package com.example.fantasyfootballapp.model
 
 data class Player(
     val id: String,
