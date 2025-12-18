@@ -2,28 +2,30 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:gravity="center_horizontal">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/fantasy_football_app"
+        android:text="@string/name_your_team"
         android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/edtTeamName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/enter_team_name"
+        android:maxLines="1"
         android:layout_marginBottom="16dp" />
 
     <Button
-        android:id="@+id/btnStartDemo"
-        android:layout_width="wrap_content"
+        android:id="@+id/btnContinueToPickTeam"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/create_team" />
-
-    <Button
-        android:id="@+id/btnViewLeaderboard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/view_leaderboard"
-        android:layout_marginTop="12dp"/>
+        android:text="@string/continue_to_pick_team" />
 
 </LinearLayout>
