@@ -10,7 +10,8 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 
 class LeaderboardAdapter(
-    private val entries: List<LeaderboardEntry>
+
+    private var entries: MutableList<LeaderboardEntry>
 ) : RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>() {
 
     inner class LeaderboardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -33,9 +34,19 @@ class LeaderboardAdapter(
         val entry = entries[position]
 
         holder.txtRank.text = (position + 1).toString()
-        holder.txtTeam.text = entry.user.teamName
-        holder.txtPoints.text = "${entry.totalPoints} pts"
+        holder.txtTeam.text = entry.teamName
+        holder.txtPoints.text = "${entry.points} pts"
     }
 
     override fun getItemCount(): Int = entries.size
+
+    private var items: List<LeaderboardEntry> = emptyList()
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setData(newEntries: List<LeaderboardEntry>) {
+        entries.clear()
+        entries.addAll(newEntries)
+        notifyDataSetChanged()
+    }
+
 }

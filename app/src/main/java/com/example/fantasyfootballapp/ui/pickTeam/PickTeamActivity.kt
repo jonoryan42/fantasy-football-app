@@ -5,12 +5,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
+import kotlinx.coroutines.launch
 
 class PickTeamActivity : AppCompatActivity() {
 
@@ -63,10 +67,55 @@ class PickTeamActivity : AppCompatActivity() {
         // Save button logic
         btnSaveTeam.setOnClickListener {
             val finalSelection = playerAdapter.getSelectedPlayerIds().toList()
-            FantasyRepository.updateTeam(playerIds = finalSelection)
 
-            val intent = Intent(this, LeaderboardActivity::class.java)
-            startActivity(intent)
+            // Enforce 11 (optional, but usually what you want)
+            if (finalSelection.size != maxPlayers) {
+                Toast.makeText(this, "Please pick exactly $maxPlayers players.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Build a simple summary for the confirmation dialog
+            val pickedNames = allPlayers
+                .filter { finalSelection.contains(it.id) }
+                .joinToString(separator = "\n") { "• ${it.name} (${it.position})" }
+
+            AlertDialog.Builder(this)
+                .setTitle("Confirm Team")
+                .setMessage(
+                    "Team: ${currentUser.teamName}\n\n" +
+                            "Players (${finalSelection.size}):\n$pickedNames\n\n" +
+                            "Save this team and continue?"
+                )
+                .setNegativeButton("Back", null)
+                .setPositiveButton("Confirm") { _, _ ->
+                    // Disable button to avoid double taps
+                    btnSaveTeam.isEnabled = false
+
+                    lifecycleScope.launch {
+                        try {
+                            // 1) Update locally (so UI/data model stays consistent)
+                            FantasyRepository.updateTeam(playerIds = finalSelection)
+
+                            // 2) POST to MongoDB via your backend API
+                            FantasyRepository.submitTeamToBackend(
+                                teamName = currentUser.teamName,
+                                playerIds = finalSelection
+                            )
+
+                            // 3) Go to leaderboard
+                            startActivity(Intent(this@PickTeamActivity, LeaderboardActivity::class.java))
+                            finish()
+                        } catch (e: Exception) {
+                            btnSaveTeam.isEnabled = true
+                            Toast.makeText(
+                                this@PickTeamActivity,
+                                "Failed to save team: ${e.message ?: "Unknown error"}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
+                .show()
         }
     }
 }

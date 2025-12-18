@@ -1,7 +1,7 @@
 package com.example.fantasyfootballapp.model
 
 data class Player(
-    val id: String,
+    val id: Int,
     val name: String,
     val position: String,      // "GK", "DEF", "MID", "STR"
     val teamName: String,
@@ -10,17 +10,11 @@ data class Player(
 )
 
 data class User(
-    val id: String,
+    val id: Int,
     val username: String,
     val teamName: String
 )
 
 data class Team(
-    val userId: String,
-    val playerIds: MutableList<String>
-)
-
-data class LeaderboardEntry(
-    val user: User,
-    val totalPoints: Int
+    val playerIds: MutableList<Int>
 )

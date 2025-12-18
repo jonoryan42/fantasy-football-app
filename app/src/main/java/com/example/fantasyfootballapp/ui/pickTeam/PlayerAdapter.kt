@@ -14,7 +14,7 @@ import com.example.fantasyfootballapp.model.Player
 
 class PlayerAdapter(
     private val players: List<Player>,
-    private val selectedPlayerIds: MutableSet<String>,
+    private val selectedPlayerIds: MutableSet<Int>,
     private val maxPlayers: Int,
     private val onSelectionChanged: (Int) -> Unit
 ) : RecyclerView.Adapter<PlayerAdapter.PlayerViewHolder>() {
@@ -83,5 +83,5 @@ class PlayerAdapter(
 
     override fun getItemCount(): Int = players.size
 
-    fun getSelectedPlayerIds(): Set<String> = selectedPlayerIds
+    fun getSelectedPlayerIds(): Set<Int> = selectedPlayerIds
 }
