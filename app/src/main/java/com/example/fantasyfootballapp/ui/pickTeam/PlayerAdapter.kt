@@ -37,7 +37,7 @@ class PlayerAdapter(
 
         holder.txtName.text = player.name
         holder.txtDetails.text =
-            "${player.position} \u2022 ${player.teamName} \u2022 ${player.points} pts"
+            "${player.position} \u2022 ${player.club} \u2022 ${player.points} pts"
 
         // avoid old listeners firing when we change checked state
         holder.cbSelected.setOnCheckedChangeListener(null)

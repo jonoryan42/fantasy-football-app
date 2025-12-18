@@ -19,64 +19,73 @@ import kotlinx.coroutines.launch
 class PickTeamActivity : AppCompatActivity() {
 
     private lateinit var playerAdapter: PlayerAdapter
-    private val maxPlayers = 11
+    private val maxPlayers = 15
+
+    // Keep the fetched list so we can build the confirm dialog later
+    private var allPlayers = emptyList<com.example.fantasyfootballapp.model.Player>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
 
-        // Team Name
         val txtTeamNameHeader = findViewById<TextView>(R.id.txtTeamNameHeader)
-
-        // Get views from layout
         val txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)
         val recyclerPlayers = findViewById<RecyclerView>(R.id.recyclerPlayers)
         val btnSaveTeam = findViewById<Button>(R.id.btnSaveTeam)
 
-        // Load data from repository
-        val allPlayers = FantasyRepository.getAllPlayers()
         val currentTeam = FantasyRepository.getTeamForUser()
         val selectedIds = currentTeam.playerIds.toMutableSet()
 
         val currentUser = FantasyRepository.getCurrentUser()
         txtTeamNameHeader.text = currentUser.teamName
 
-        // Helper to update the "Selected: X / 11" text
         @SuppressLint("SetTextI18n")
-        fun Int.updateSelectedCount() {
-            txtSelectedCount.text = "Selected: $this / $maxPlayers"
+        fun updateSelectedCount(count: Int) {
+            txtSelectedCount.text = "Selected: $count / $maxPlayers"
         }
 
-        // Initial count
-        selectedIds.size.updateSelectedCount()
+        updateSelectedCount(selectedIds.size)
 
-        // Create adapter
-        playerAdapter = PlayerAdapter(
-            players = allPlayers,
-            selectedPlayerIds = selectedIds,
-            maxPlayers = maxPlayers
-        ) { count ->
-            // This lambda is called whenever selection changes
-            count.updateSelectedCount()
-        }
-
-        // RecyclerView setup
         recyclerPlayers.layoutManager = LinearLayoutManager(this)
-        recyclerPlayers.adapter = playerAdapter
 
-        // Save button logic
+        lifecycleScope.launch {
+            try {
+                allPlayers = FantasyRepository.fetchPlayersFromBackend()
+
+                playerAdapter = PlayerAdapter(
+                    players = allPlayers,
+                    selectedPlayerIds = selectedIds,
+                    maxPlayers = maxPlayers
+                ) { count ->
+                    updateSelectedCount(count)
+                }
+
+                recyclerPlayers.adapter = playerAdapter
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@PickTeamActivity,
+                    "Failed to load players",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
         btnSaveTeam.setOnClickListener {
-            val finalSelection = playerAdapter.getSelectedPlayerIds().toList()
-
-            // Enforce 11 (optional, but usually what you want)
-            if (finalSelection.size != maxPlayers) {
-                Toast.makeText(this, "Please pick exactly $maxPlayers players.", Toast.LENGTH_SHORT).show()
+            if (!::playerAdapter.isInitialized) {
+                Toast.makeText(this, "Players are still loading…", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Build a simple summary for the confirmation dialog
+            val finalSelection = playerAdapter.getSelectedPlayerIds().toList()
+
+            if (finalSelection.size != maxPlayers) {
+                Toast.makeText(this, "Please pick exactly $maxPlayers players.", Toast.LENGTH_SHORT)
+                    .show()
+                return@setOnClickListener
+            }
+
             val pickedNames = allPlayers
-                .filter { finalSelection.contains(it.id) }
+                .filter { it.id in finalSelection }
                 .joinToString(separator = "\n") { "• ${it.name} (${it.position})" }
 
             AlertDialog.Builder(this)
@@ -88,22 +97,23 @@ class PickTeamActivity : AppCompatActivity() {
                 )
                 .setNegativeButton("Back", null)
                 .setPositiveButton("Confirm") { _, _ ->
-                    // Disable button to avoid double taps
                     btnSaveTeam.isEnabled = false
 
                     lifecycleScope.launch {
                         try {
-                            // 1) Update locally (so UI/data model stays consistent)
                             FantasyRepository.updateTeam(playerIds = finalSelection)
 
-                            // 2) POST to MongoDB via your backend API
                             FantasyRepository.submitTeamToBackend(
                                 teamName = currentUser.teamName,
                                 playerIds = finalSelection
                             )
 
-                            // 3) Go to leaderboard
-                            startActivity(Intent(this@PickTeamActivity, LeaderboardActivity::class.java))
+                            startActivity(
+                                Intent(
+                                    this@PickTeamActivity,
+                                    LeaderboardActivity::class.java
+                                )
+                            )
                             finish()
                         } catch (e: Exception) {
                             btnSaveTeam.isEnabled = true
