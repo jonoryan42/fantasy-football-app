@@ -16,4 +16,5 @@
     <string name="name_your_team">Name Your Team</string>
     <string name="enter_team_name">Enter Team Name</string>
     <string name="continue_to_pick_team">Continue to Pick Team</string>
+    <string name="team_name">Team Name</string>
 </resources>

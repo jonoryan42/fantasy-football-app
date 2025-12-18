@@ -5,6 +5,16 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Team Name Display -->
+    <TextView
+        android:id="@+id/txtTeamNameHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/team_name"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
     <!-- Header / count -->
     <TextView
         android:id="@+id/txtSelectedCount"

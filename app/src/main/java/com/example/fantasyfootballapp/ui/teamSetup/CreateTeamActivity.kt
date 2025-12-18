@@ -19,10 +19,6 @@ class CreateTeamActivity : AppCompatActivity() {
         val edtTeamName = findViewById<EditText>(R.id.edtTeamName)
         val btnContinue = findViewById<Button>(R.id.btnContinueToPickTeam)
 
-        // Prefill with current team name if it exists
-        val currentUser = FantasyRepository.getCurrentUser()
-        edtTeamName.setText(currentUser.teamName)
-
         btnContinue.setOnClickListener {
             val newName = edtTeamName.text.toString().trim()
 

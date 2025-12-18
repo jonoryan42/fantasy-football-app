@@ -21,6 +21,9 @@ class PickTeamActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
 
+        // Team Name
+        val txtTeamNameHeader = findViewById<TextView>(R.id.txtTeamNameHeader)
+
         // Get views from layout
         val txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)
         val recyclerPlayers = findViewById<RecyclerView>(R.id.recyclerPlayers)
@@ -30,6 +33,9 @@ class PickTeamActivity : AppCompatActivity() {
         val allPlayers = FantasyRepository.getAllPlayers()
         val currentTeam = FantasyRepository.getTeamForUser()
         val selectedIds = currentTeam.playerIds.toMutableSet()
+
+        val currentUser = FantasyRepository.getCurrentUser()
+        txtTeamNameHeader.text = currentUser.teamName
 
         // Helper to update the "Selected: X / 11" text
         @SuppressLint("SetTextI18n")
