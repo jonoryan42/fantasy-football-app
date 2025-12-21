@@ -23,7 +23,6 @@
             android:id="@+id/txtPlayerDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/pos_team_0_pts"
             android:textSize="14sp" />
     </LinearLayout>
 

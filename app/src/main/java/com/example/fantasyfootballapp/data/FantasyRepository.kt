@@ -1,5 +1,6 @@
 package com.example.fantasyfootballapp.data
 
+import android.util.Log
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
@@ -26,17 +27,21 @@ object FantasyRepository {
     }
 
     //Add new team to the backend
-    suspend fun submitTeamToBackend(
-        teamName: String,
-        playerIds: List<Int>
-    ) {
+    suspend fun submitTeamToBackend(teamName: String, playerIds: List<Int>) {
         val request = CreateTeamRequest(
             teamName = teamName,
             playerIds = playerIds
         )
+        val json = com.google.gson.Gson().toJson(request)
+        Log.d("FantasyRepository", "CreateTeamRequest JSON: $json")
 
-        // This POSTs to /api/leaderboard and returns a LeaderboardEntry
-        api.createTeam(request)
+        val res = api.createTeam(request)
+
+        if (!res.isSuccessful) {
+            val err = res.errorBody()?.string()
+            Log.e("FantasyRepository", "Save failed ${res.code()} body=$err")
+            throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
+        }
     }
 
     //Return all players in the collection

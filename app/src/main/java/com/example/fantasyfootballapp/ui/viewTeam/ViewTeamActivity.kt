@@ -1,0 +1,70 @@
+package com.example.fantasyfootballapp.ui.viewTeam
+
+import android.annotation.SuppressLint
+import android.os.Bundle
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.fantasyfootballapp.R
+import com.example.fantasyfootballapp.data.FantasyRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+class ViewTeamActivity : AppCompatActivity() {
+
+    @SuppressLint("MissingInflatedId", "SetTextI18n")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_view_team)
+
+        val txtTeamName = findViewById<TextView>(R.id.txtTeamNameHeader)
+        val txtTeamPoints = findViewById<TextView>(R.id.txtTeamPoints)
+        val recyclerStarters = findViewById<RecyclerView>(R.id.recyclerStarters)
+        val recyclerBench = findViewById<RecyclerView>(R.id.recyclerBench)
+
+        recyclerStarters.layoutManager = LinearLayoutManager(this)
+        recyclerBench.layoutManager = LinearLayoutManager(this)
+
+        val teamName = intent.getStringExtra(EXTRA_TEAM_NAME) ?: "Team"
+        val playerIds = intent.getIntegerArrayListExtra(EXTRA_PLAYER_IDS)?.toList() ?: emptyList()
+
+        txtTeamName.text = teamName
+
+        val starterIds = playerIds.take(11)
+        val benchIds = playerIds.drop(11).take(4)
+
+        //Team total points
+        val points = intent.getIntExtra(ViewTeamActivity.EXTRA_TEAM_POINTS, 0)
+        txtTeamPoints.text = "$points pts"
+
+        lifecycleScope.launch {
+            try {
+                val allPlayers = withContext(Dispatchers.IO) {
+                    FantasyRepository.fetchPlayersFromBackend()
+                }
+
+                val byId = allPlayers.associateBy { it.id }
+
+                val starters = starterIds.mapNotNull { byId[it] }
+                val bench = benchIds.mapNotNull { byId[it] }
+
+                recyclerStarters.adapter = ViewTeamPlayerAdapter(starters)
+                recyclerBench.adapter = ViewTeamPlayerAdapter(bench)
+
+            } catch (e: Exception) {
+                Toast.makeText(this@ViewTeamActivity,
+                    "Failed to load team", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    companion object {
+        const val EXTRA_TEAM_NAME = "extra_team_name"
+        const val EXTRA_PLAYER_IDS = "extra_player_ids"
+        const val EXTRA_TEAM_POINTS = "extra_team_points"
+    }
+}

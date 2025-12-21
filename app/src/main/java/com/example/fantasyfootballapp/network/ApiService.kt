@@ -3,8 +3,10 @@ package com.example.fantasyfootballapp.network
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Body
+import retrofit2.http.Headers
 import retrofit2.http.POST
 
 //App Endpoints
@@ -15,6 +17,7 @@ interface ApiService {
     @GET("api/players")
     suspend fun getPlayers(): List<Player>
 
+    @Headers("Content-Type: application/json")
     @POST("api/leaderboard")
-    suspend fun createTeam(@Body body: CreateTeamRequest): LeaderboardEntry
+    suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardEntry>
 }

@@ -4,10 +4,7 @@
     <!-- Allows the app to access the internet for API communication -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-
-    <!-- usesClearTextTraffic enables HTTP (cleartext) traffic for local development. -->
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,7 +12,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FantasyFootballApp">
+        android:theme="@style/Theme.FantasyFootballApp"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".ui.viewTeam.ViewTeamActivity"
+            android:exported="false" />
         <activity
             android:name=".ui.teamSetup.CreateTeamActivity"
             android:exported="false" />
