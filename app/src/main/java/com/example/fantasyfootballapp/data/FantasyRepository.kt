@@ -2,6 +2,7 @@ package com.example.fantasyfootballapp.data
 
 import android.util.Log
 import com.example.fantasyfootballapp.model.CreateTeamRequest
+import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.Team
@@ -26,6 +27,7 @@ object FantasyRepository {
             .create(ApiService::class.java)
     }
 
+    //Suspend functions may pause in the background
     //Add new team to the backend
     suspend fun submitTeamToBackend(teamName: String, playerIds: List<Int>) {
         val request = CreateTeamRequest(
@@ -44,11 +46,24 @@ object FantasyRepository {
         }
     }
 
+    //Get list of teams for the Leaderboard sorted by points accrued
+    suspend fun getLeaderboard(): List<LeaderboardEntry> {
+        return api.getLeaderboard().sortedByDescending { it.points }
+    }
+
     //Return all players in the collection
     suspend fun fetchPlayersFromBackend(): List<Player> {
         return api.getPlayers()
     }
 
+    suspend fun fetchGameweekStatsFromBackend(gw: Int, playerIds: List<Int>): List<GameweekStat> {
+        val idsParam = playerIds.joinToString(",")  // "1,2,3,4"
+        return api.getGameweekStats(
+            gw = gw,
+            season = "2025",
+            playerIds = idsParam
+        )
+    }
 
     // Fake player list for now
 //    private val players = listOf(
@@ -107,12 +122,7 @@ object FantasyRepository {
         currentTeam = Team(playerIds.toMutableList())
     }
 
-    //Suspend functions may pause in the background
-    suspend fun getLeaderboard(): List<LeaderboardEntry> {
-        return ApiClient.service
-            .getLeaderboard()
-            .sortedByDescending { it.points }
-    }
+
 
     fun updateCurrentUserTeamName(newTeamName: String) {
         val index = users.indexOfFirst { it.id == CURRENT_USER_ID }

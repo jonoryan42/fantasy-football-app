@@ -1,13 +1,15 @@
 package com.example.fantasyfootballapp.network
 
 import com.example.fantasyfootballapp.model.CreateTeamRequest
+import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Body
-import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 //App Endpoints
 interface ApiService {
@@ -17,7 +19,13 @@ interface ApiService {
     @GET("api/players")
     suspend fun getPlayers(): List<Player>
 
-    @Headers("Content-Type: application/json")
+    @GET("api/gameweeks/{gw}")
+    suspend fun getGameweekStats(
+        @Path("gw") gw: Int,
+        @Query("season") season: String = "2025",
+        @Query("playerIds") playerIds: String
+    ): List<GameweekStat>
     @POST("api/leaderboard")
     suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardEntry>
+
 }

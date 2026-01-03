@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.Player
 
+
+//Currently not using
 class PlayerAdapter(
     private val players: List<Player>,
     private val selectedPlayerIds: MutableSet<Int>,
@@ -35,9 +37,13 @@ class PlayerAdapter(
     override fun onBindViewHolder(holder: PlayerViewHolder, position: Int) {
         val player = players[position]
 
+        android.util.Log.d("PRICE_DEBUG", "${player.name} -> price=${player.price}")
+
+
         holder.txtName.text = player.name
         holder.txtDetails.text =
-            "${player.position} \u2022 ${player.club} \u2022 ${player.points} pts"
+            "${player.position} \u2022 ${player.club} \u2022 €%.1fm \u2022 ${player.points} pts"
+                .format(player.price)
 
         // avoid old listeners firing when we change checked state
         holder.cbSelected.setOnCheckedChangeListener(null)
@@ -68,6 +74,7 @@ class PlayerAdapter(
                 selectedPlayerIds.remove(player.id)
                 onSelectionChanged(selectedPlayerIds.size)
             }
+
         }
 
         // Let tapping the row also toggle the checkbox

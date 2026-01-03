@@ -19,15 +19,40 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
-        <TextView
-            android:id="@+id/txtSelectedCount"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/filled_0_15"
-            android:textSize="16sp"
-            android:padding="12dp"
-            android:layout_marginBottom="12dp"
-            android:background="@android:drawable/dialog_holo_light_frame" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/txtSelectedCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/filled_0_15"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="12dp"
+                android:layout_marginStart="8dp"
+                android:gravity="center"
+                android:background="@android:drawable/dialog_holo_light_frame" />
+
+            <TextView
+                android:id="@+id/txtBudgetRemaining"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/budget_100_0m"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:padding="12dp"
+                android:layout_marginStart="8dp"
+                android:gravity="center"
+                android:background="@android:drawable/dialog_holo_light_frame" />
+
+        </LinearLayout>
+
 
         <TextView
             android:id="@+id/txtStartersHeader"

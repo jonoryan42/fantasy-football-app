@@ -26,7 +26,7 @@ class ViewTeamPlayerAdapter(
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: VH, position: Int) {
         val p = players[position]
-        holder.txtLine.text = "${p.position}  •  ${p.name}  •  ${p.club}"
+        holder.txtLine.text = "${p.position}  •  ${p.name}  •  ${p.club}  •  ${p.points} pts"
     }
 
     override fun getItemCount() = players.size

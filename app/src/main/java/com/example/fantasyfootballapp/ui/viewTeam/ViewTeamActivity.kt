@@ -52,6 +52,16 @@ class ViewTeamActivity : AppCompatActivity() {
                 val starters = starterIds.mapNotNull { byId[it] }
                 val bench = benchIds.mapNotNull { byId[it] }
 
+                val teamIds = (starterIds + benchIds)
+                val stats = withContext(Dispatchers.IO) {
+                    FantasyRepository.fetchGameweekStatsFromBackend(gw = 1, playerIds = teamIds)
+                }
+
+                val pointsMap = stats.associate { it.playerId to it.points }
+
+                starters.forEach { p -> p.gwPoints = pointsMap[p.id] ?: 0 }
+                bench.forEach { p -> p.gwPoints = pointsMap[p.id] ?: 0 }
+
                 recyclerStarters.adapter = ViewTeamPlayerAdapter(starters)
                 recyclerBench.adapter = ViewTeamPlayerAdapter(bench)
 

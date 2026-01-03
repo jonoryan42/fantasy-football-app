@@ -19,6 +19,7 @@
             android:exported="false" />
         <activity
             android:name=".ui.teamSetup.CreateTeamActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity
             android:name=".ui.leaderboard.LeaderboardActivity"

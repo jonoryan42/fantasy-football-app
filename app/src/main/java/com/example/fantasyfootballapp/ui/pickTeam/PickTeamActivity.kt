@@ -33,18 +33,28 @@ class PickTeamActivity : AppCompatActivity() {
     private lateinit var starterSlots: MutableList<PlayerSlot>
     private lateinit var benchSlots: MutableList<PlayerSlot>
 
+    private val totalBudget = 100.0
+
+    private lateinit var txtSelectedCount: TextView
+    private lateinit var txtBudgetRemaining: TextView
+    private lateinit var btnSaveTeam: Button
+
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
 
         val txtTeamNameHeader = findViewById<TextView>(R.id.txtTeamNameHeader)
-        val txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)
+        txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)
 //        val recyclerSlots = findViewById<RecyclerView>(R.id.recyclerPlayers)
         val recyclerStarters = findViewById<RecyclerView>(R.id.recyclerStarters)
         val recyclerBench = findViewById<RecyclerView>(R.id.recyclerBench)
 
-        val btnSaveTeam = findViewById<Button>(R.id.btnSaveTeam)
+        btnSaveTeam = findViewById<Button>(R.id.btnSaveTeam)
+
+        txtBudgetRemaining = findViewById<TextView>(R.id.txtBudgetRemaining)
+
 
 //        recyclerSlots.layoutManager = LinearLayoutManager(this)
         recyclerStarters.layoutManager = LinearLayoutManager(this)
@@ -64,15 +74,6 @@ class PickTeamActivity : AppCompatActivity() {
         recyclerStarters.isEnabled = false
         recyclerBench.isEnabled = false
         btnSaveTeam.isEnabled = false
-
-        fun updateHeader() {
-            val allSlots = starterSlots + benchSlots
-            val filled = allSlots.count { it.playerId != null }
-
-            txtSelectedCount.text = getString(R.string.filled_0_15, filled)
-            btnSaveTeam.isEnabled = (filled == maxPlayers)
-        }
-
 
         updateHeader()
 
@@ -154,18 +155,34 @@ class PickTeamActivity : AppCompatActivity() {
             }
         } // ✅ closes launch
 
-
         btnSaveTeam.setOnClickListener {
             val finalIds = (starterSlots + benchSlots).mapNotNull { it.playerId }
 
             if (finalIds.size != maxPlayers) {
-                Toast.makeText(this, "Please fill all 15 slots.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please fill all 15 slots.",
+                    Toast.LENGTH_SHORT).show()
+                //Don't allow confirm
+                return@setOnClickListener
+            }
+
+            // ✅ Budget check (totalBudget should be 100.0)
+            val spent = finalIds
+                .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
+                .sumOf { it.price }
+
+            if (spent > totalBudget) {
+                Toast.makeText(
+                    this,
+                    "Over budget by €%.1fm. Remove/replace a player.".format(spent - totalBudget),
+                    Toast.LENGTH_LONG
+                ).show()
                 return@setOnClickListener
             }
 
             val pickedNames = finalIds
+                //Check for players
                 .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
-                .joinToString("\n") { "• ${it.name} (${it.position})" }
+                .joinToString("\n") { "• ${it.name} (${it.position}) — €%.1fm".format(it.price) }
 
             AlertDialog.Builder(this)
                 .setTitle(getString(R.string.confirm_team_title))
@@ -183,7 +200,6 @@ class PickTeamActivity : AppCompatActivity() {
 
                     lifecycleScope.launch {
                         try {
-                            // ✅ save on IO to avoid freezing
                             withContext(Dispatchers.IO) {
                                 FantasyRepository.updateTeam(playerIds = finalIds)
                                 FantasyRepository.submitTeamToBackend(
@@ -207,17 +223,6 @@ class PickTeamActivity : AppCompatActivity() {
                 }
                 .show()
         }
-    }
-
-
-    private fun buildSlots(): List<PlayerSlot> {
-        val positions = listOf(
-            "GK","GK",
-            "DEF","DEF","DEF","DEF","DEF",
-            "MID","MID","MID","MID","MID",
-            "STR","STR","STR"
-        )
-        return positions.mapIndexed { i, pos -> PlayerSlot(index = i, position = pos) }
     }
 
     private fun buildStarterSlots(): List<PlayerSlot> {
@@ -247,6 +252,28 @@ class PickTeamActivity : AppCompatActivity() {
 //        }
 //    }
 
+    @SuppressLint("SetTextI18n")
+    private fun updateHeader() {
+        val allSlots = starterSlots + benchSlots
+        val filled = allSlots.count { it.playerId != null }
+
+        val spent = allSlots
+            .mapNotNull { it.playerId }
+            .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
+            .sumOf { it.price }
+
+        val remaining = totalBudget - spent
+
+        txtSelectedCount.text = getString(R.string.filled_0_15, filled)
+        txtBudgetRemaining.text = "Budget: €%.1fm".format(remaining)
+
+        val overBudget = remaining < 0.0
+
+        //Validation for confirming the team
+        btnSaveTeam.isEnabled = (filled == maxPlayers) && !overBudget
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     private fun showPickerForSlot(slot: PlayerSlot, onDone: () -> Unit) {
         // combine both lists so "already picked" works across starters+bench
         val allSlots = starterSlots + benchSlots
@@ -261,13 +288,41 @@ class PickTeamActivity : AppCompatActivity() {
             return
         }
 
-        val items = candidates.map { "${it.name} • ${it.club} • ${it.points} pts" }.toTypedArray()
+        val items = candidates
+            .map { "${it.name} • ${it.club} • €%.1fm • ${it.points} pts".format(it.price) }
+            .toTypedArray()
+        //what index the current selected player in the slot is
         val currentIndex = slot.playerId?.let { id -> candidates.indexOfFirst { it.id == id } } ?: -1
+        val previousId = slot.playerId
 
         AlertDialog.Builder(this)
             .setTitle("Pick ${slot.position}")
             .setSingleChoiceItems(items, currentIndex) { dialog, which ->
-                slot.playerId = candidates[which].id
+                val chosen = candidates[which]
+                slot.playerId = chosen.id
+
+                //how much is spent after choosing player
+                val allSlotsNow = starterSlots + benchSlots
+                val spentNow = allSlotsNow
+                    .mapNotNull { it.playerId }
+                    .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
+                    .sumOf { it.price }
+
+                if (spentNow > totalBudget) {
+                    slot.playerId = previousId
+                    Toast.makeText(
+                        this,
+                        "Over budget. Pick a cheaper ${slot.position}.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    dialog.dismiss()
+                    // still update UI to reflect revert
+                    updateHeader()
+                    starterAdapter.notifyDataSetChanged()
+                    benchAdapter.notifyDataSetChanged()
+                    return@setSingleChoiceItems
+                }
+
                 dialog.dismiss()
                 onDone()
             }

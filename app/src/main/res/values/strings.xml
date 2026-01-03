@@ -30,6 +30,8 @@ Save this team and continue?
     <string name="bench">Bench</string>
     <string name="def_john_smith_club">DEF • John Smith • Club</string>
     <string name="_0_pts">0 pts</string>
+    <string name="_0_0m">€0.0m</string>
+    <string name="budget_100_0m">Budget: €100.0m</string>
 
 
 </resources>

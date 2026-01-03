@@ -44,7 +44,8 @@ class SlotAdapter(
                     slot.position
                 )
             else
-                "${p.name} • ${p.club} • ${p.points} pts"
+//                "${p.name} • ${p.club} • €%.1fm • ${p.gwPoints} pts".format(p.price)
+                "${p.name} • ${p.club} • €%.1fm • ${p.points} pts".format(p.price)
 
 
         holder.btnClear.visibility = if (p == null) View.GONE else View.VISIBLE
