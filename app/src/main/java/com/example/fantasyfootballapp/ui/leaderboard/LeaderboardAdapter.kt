@@ -10,8 +10,8 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 
 class LeaderboardAdapter(
-
-    private var entries: MutableList<LeaderboardEntry>
+    private val entries: MutableList<LeaderboardEntry>,
+    private val onTeamClicked: (LeaderboardEntry) -> Unit
 ) : RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>() {
 
     inner class LeaderboardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,20 +27,20 @@ class LeaderboardAdapter(
     }
 
     @SuppressLint("SetTextI18n")
-    override fun onBindViewHolder(
-        holder: LeaderboardViewHolder,
-        position: Int
-    ) {
+    override fun onBindViewHolder(holder: LeaderboardViewHolder, position: Int) {
         val entry = entries[position]
 
         holder.txtRank.text = (position + 1).toString()
         holder.txtTeam.text = entry.teamName
         holder.txtPoints.text = "${entry.points} pts"
+
+        // ✅ Make whole row clickable
+        holder.itemView.setOnClickListener {
+            onTeamClicked(entry)
+        }
     }
 
     override fun getItemCount(): Int = entries.size
-
-    private var items: List<LeaderboardEntry> = emptyList()
 
     @SuppressLint("NotifyDataSetChanged")
     fun setData(newEntries: List<LeaderboardEntry>) {
@@ -48,5 +48,5 @@ class LeaderboardAdapter(
         entries.addAll(newEntries)
         notifyDataSetChanged()
     }
-
 }
+

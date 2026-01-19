@@ -1,8 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.FantasyFootballApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/wpl_navy</item>
+        <item name="colorOnPrimary">@color/wpl_on_navy</item>
+
+        <item name="colorSecondary">@color/wpl_blue</item>
+        <item name="colorOnSecondary">@color/wpl_text_dark</item>
+
+        <item name="colorSurface">@color/wpl_blue</item>
+        <item name="colorOnSurface">@color/wpl_text_dark</item>
+
+        <item name="android:statusBarColor">@color/wpl_blue</item>
+        <item name="android:navigationBarColor">@color/wpl_blue</item>
     </style>
 
     <style name="Theme.FantasyFootballApp" parent="Base.Theme.FantasyFootballApp" />

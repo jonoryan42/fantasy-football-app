@@ -1,21 +1,37 @@
 <resources>
-    <string name="app_name">FantasyFootballApp</string>
-    <string name="pick_team">Pick Team</string>
-    <string name="go_to_leaderboard">Go to Leaderboard</string>
-    <string name="leaderboard">Leaderboard</string>
-    <string name="fantasy_football_app">Fantasy Football App</string>
-    <string name="start_demo">Start Demo</string>
-    <string name="selected_0_11">Selected: 0 / 11</string>
-    <string name="confirm">Confirm</string>
-    <string name="player_name">Player Name</string>
-    <string name="pos_team_0_pts">POS • Team • 0 pts</string>
-    <string name="_1">1</string>
-    <string name="ryan_rovers">Ryan Rovers</string>
-    <string name="_50_pts">50 pts</string>
-    <string name="create_team">Create Team</string>
+    <string name="app_name">Fantasy Football App</string>
     <string name="name_your_team">Name Your Team</string>
     <string name="enter_team_name">Enter Team Name</string>
-    <string name="continue_to_pick_team">Continue to Pick Team</string>
-    <string name="team_name">Team Name</string>
+    <string name="continue_to_pick_team">Continue To Pick Team</string>
+    <string name="leaderboard">Leaderboard</string>
+    <string name="fantasy_football_app">Fantasy Football App</string>
+    <string name="create_team">Create Team</string>
     <string name="view_leaderboard">View Leaderboard</string>
+    <string name="team_name">Team Name</string>
+    <string name="player_name">Player Name</string>
+    <string name="GK">GK</string>
+    <string name="clear_slot">Clear Slot</string>
+    <string name="filled_0_15">Filled: %1$d / 15</string>
+    <string name="pick_team">Pick Team</string>
+    <string name="pick_position">Pick a %1$s</string>
+    <string name="empty_tap_to_pick">Empty — tap to pick a %1$s</string>
+    <string name="slot_title">Slot %1$d • %2$s</string>
+    <string name="no_available_players">No available %1$s players</string>
+    <string name="confirm_team_title">Confirm Team</string>
+    <string name="confirm_team_message">
+%1$s
+
+\n%3$s
+
+</string>
+    <string name="starting_xi">Starting XI</string>
+    <string name="bench">Bench</string>
+    <string name="def_john_smith_club">DEF • John Smith • Club</string>
+    <string name="_0_pts">0 pts</string>
+    <string name="_0_0m">€0.0m</string>
+    <string name="budget_100_0m">Budget: €100.0m</string>
+    <string name="waterford_premier_league_logo">Waterford Premier League Logo</string>
+    <string name="fantasy_waterford_premier_league">Fantasy Waterford Premier League</string>
+
+
 </resources>

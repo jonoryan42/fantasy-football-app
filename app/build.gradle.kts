@@ -53,6 +53,9 @@ dependencies {
     //Coroutines run the network off the UI thread and keeps app responsive
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
+    //Material 3 themes
+    implementation("com.google.android.material:material:1.13.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

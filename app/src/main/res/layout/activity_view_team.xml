@@ -2,66 +2,58 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true">
 
+    <!-- ✅ ONE child only: a vertical container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/txtTeamNameHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/team_name"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
+        <!-- Header row: Team name (left) + Points (center-ish) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginBottom="12dp">
 
             <TextView
-                android:id="@+id/txtSelectedCount"
-                android:layout_width="wrap_content"
+                android:id="@+id/txtTeamNameHeader"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/filled_0_15"
-                android:textSize="16sp"
+                android:text="@string/team_name"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:padding="12dp"
-                android:layout_marginStart="8dp"
-                android:gravity="center"
-                android:background="@android:drawable/dialog_holo_light_frame" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/txtTeamPoints"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_weight="1" />
 
             <TextView
-                android:id="@+id/txtBudgetRemaining"
+                android:id="@+id/txtTeamPoints"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/budget_100_0m"
-                android:textSize="16sp"
+                android:text="@string/_0_pts"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:padding="12dp"
-                android:layout_marginStart="8dp"
-                android:gravity="center"
-                android:background="@android:drawable/dialog_holo_light_frame" />
+                android:textColor="?attr/colorPrimary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0.65" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </LinearLayout>
 
-
+        <!-- Starting XI -->
         <TextView
-            android:id="@+id/txtStartersHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/starting_xi"
             android:textStyle="bold"
             android:textSize="18sp"
-            android:layout_marginTop="8dp"
             android:layout_marginBottom="6dp" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -70,8 +62,8 @@
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false" />
 
+        <!-- Bench -->
         <TextView
-            android:id="@+id/txtBenchHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/bench"
@@ -86,13 +78,6 @@
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false" />
 
-        <Button
-            android:id="@+id/btnSaveTeam"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/confirm_team_title"
-            android:enabled="false"
-            android:layout_marginTop="12dp"/>
-
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
+

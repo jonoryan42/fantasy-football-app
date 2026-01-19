@@ -9,7 +9,6 @@
         android:id="@+id/txtRank"
         android:layout_width="40dp"
         android:layout_height="wrap_content"
-        android:text="@string/_1"
         android:textStyle="bold"
         android:textSize="16sp"
         android:gravity="center"/>
@@ -24,7 +23,6 @@
             android:id="@+id/txtUserTeam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/ryan_rovers"
             android:textStyle="bold"
             android:textSize="16sp"/>
 
@@ -32,7 +30,6 @@
             android:id="@+id/txtUserPoints"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/_50_pts"
             android:textSize="14sp"/>
     </LinearLayout>
 

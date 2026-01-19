@@ -2,4 +2,10 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Custom -->
+    <color name="wpl_blue">#4FA3FF</color>
+    <color name="wpl_navy">#0D3B66</color>
+    <color name="wpl_on_navy">#FFFFFF</color>
+    <color name="wpl_text_dark">#0B2D4D</color>
 </resources>

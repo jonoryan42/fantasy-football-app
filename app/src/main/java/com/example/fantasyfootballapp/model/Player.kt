@@ -11,5 +11,7 @@ data class Player(
     val yellows: Int,
     val reds: Int,
     val owngoals: Int,
-    val points: Int
+    val points: Int,
+    val price: Double,
+    var gwPoints: Int = 0
 )
