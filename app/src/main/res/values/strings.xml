@@ -19,12 +19,10 @@
     <string name="no_available_players">No available %1$s players</string>
     <string name="confirm_team_title">Confirm Team</string>
     <string name="confirm_team_message">
-Team: %1$s
+%1$s
 
-Players (%2$d):
-%3$s
+\n%3$s
 
-Save this team and continue?
 </string>
     <string name="starting_xi">Starting XI</string>
     <string name="bench">Bench</string>
@@ -32,6 +30,8 @@ Save this team and continue?
     <string name="_0_pts">0 pts</string>
     <string name="_0_0m">€0.0m</string>
     <string name="budget_100_0m">Budget: €100.0m</string>
+    <string name="waterford_premier_league_logo">Waterford Premier League Logo</string>
+    <string name="fantasy_waterford_premier_league">Fantasy Waterford Premier League</string>
 
 
 </resources>

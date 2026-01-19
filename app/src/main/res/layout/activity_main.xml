@@ -6,22 +6,43 @@
     android:orientation="vertical"
     android:padding="24dp">
 
+    <ImageView
+        android:id="@+id/imgLeagueLogo"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/league_logo"
+        android:contentDescription="@string/waterford_premier_league_logo"
+        android:scaleType="fitCenter" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/fantasy_football_app"
-        android:textSize="24sp"
-        android:layout_marginBottom="16dp" />
+        android:text="@string/fantasy_waterford_premier_league"
+        android:textSize="20sp"
+        android:layout_marginBottom="28dp" />
+
+    <TextView
+        android:id="@+id/txtWelcomeMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="24dp"
+        android:text="Welcome to Fantasy Waterford Premier League! \nStart picking your team now!"
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="16sp" />
+
+
 
     <Button
         android:id="@+id/btnStartDemo"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/create_team" />
+        android:text="@string/pick_team" />
 
     <Button
         android:id="@+id/btnViewLeaderboard"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/view_leaderboard"
         android:layout_marginTop="12dp"/>
