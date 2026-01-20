@@ -25,7 +25,20 @@ interface ApiService {
         @Query("season") season: String = "2025",
         @Query("playerIds") playerIds: String
     ): List<GameweekStat>
-    @POST("api/leaderboard")
-    suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardEntry>
+
+    //Get User
+    @GET("/api/auth/me")
+    suspend fun getMe(): MeResponse
+
+    //POSTS
+    @POST("/api/leaderboard") // or whatever your endpoint is
+    suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardTeamDto>
+
+
+    @POST("/api/auth/register")
+    suspend fun register(@Body body: RegisterRequest): AuthResponse
+
+    @POST("/api/auth/login")
+    suspend fun login(@Body body: LoginRequest): AuthResponse
 
 }

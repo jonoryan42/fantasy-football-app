@@ -1,50 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:fillViewport="true"
+    android:background="#55A7FF">
 
-    <ImageView
-        android:id="@+id/imgLeagueLogo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:src="@drawable/league_logo"
-        android:contentDescription="@string/waterford_premier_league_logo"
-        android:scaleType="fitCenter" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/fantasy_waterford_premier_league"
-        android:textSize="20sp"
-        android:layout_marginBottom="28dp" />
-
-    <TextView
-        android:id="@+id/txtWelcomeMessage"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="24dp"
-        android:text="Welcome to Fantasy Waterford Premier League! \nStart picking your team now!"
-        android:textAlignment="center"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="24dp">
 
+        <ImageView
+            android:id="@+id/imgLeagueLogo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/league_logo"
+            android:contentDescription="@string/waterford_premier_league_logo"
+            android:scaleType="fitCenter" />
 
+        <TextView
+            android:id="@+id/txtAppTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fantasy_waterford_premier_league"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#0B2B4C"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="18dp" />
 
-    <Button
-        android:id="@+id/btnStartDemo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/pick_team" />
+        <!-- ========================= -->
+        <!-- LOGIN CONTAINER -->
+        <!-- ========================= -->
+        <LinearLayout
+            android:id="@+id/loginContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnViewLeaderboard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/view_leaderboard"
-        android:layout_marginTop="12dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sign_in_to_fantasy_waterford_premier_league"
+                android:textSize="16sp"
+                android:textColor="#0B2B4C"
+                android:layout_marginBottom="14dp" />
 
-</LinearLayout>
+            <EditText
+                android:id="@+id/edtEmail"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="@string/email_domain"
+                android:importantForAutofill="no"
+                android:inputType="textEmailAddress"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/bg_input_rounded" />
+
+            <EditText
+                android:id="@+id/edtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:hint="@string/password"
+                android:importantForAutofill="no"
+                android:inputType="textPassword"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/bg_input_rounded" />
+
+            <Button
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="14dp"
+                android:text="@string/contin"
+                android:textAllCaps="false"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#0A3A67" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#BFFFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:text="@string/or"
+                    android:textColor="#0B2B4C"
+                    android:textSize="14sp" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1"
+                    android:background="#BFFFFFFF" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="14dp"
+                android:text="@string/continue_with_google"
+                android:textAllCaps="false"
+                android:backgroundTint="#F2F2F2"
+                android:textColor="#111111" />
+
+            <Button
+                android:id="@+id/btnApple"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/continue_with_apple"
+                android:textAllCaps="false"
+                android:backgroundTint="#F2F2F2"
+                android:textColor="#111111" />
+
+            <TextView
+                android:id="@+id/txtJoinNow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="14dp"
+                android:text="@string/no_account_join_now"
+                android:textStyle="bold"
+                android:textColor="#0A3A67" />
+
+            <TextView
+                android:id="@+id/txtResetPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:text="@string/reset_password"
+                android:textStyle="bold"
+                android:textColor="#0A3A67" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/homeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="12dp">
+
+<!--            <TextView-->
+<!--                android:id="@+id/txtWelcomeMessage"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="8dp"-->
+<!--                android:layout_marginBottom="24dp"-->
+<!--                android:text="Welcome to Fantasy Waterford Premier League! \nStart picking your team now!"-->
+<!--                android:textAlignment="center"-->
+<!--                android:textColor="@android:color/black"-->
+<!--                android:textSize="16sp" />-->
+
+            <Button
+                android:id="@+id/btnStartDemo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/pick_team" />
+
+            <Button
+                android:id="@+id/btnViewLeaderboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/view_leaderboard"
+                android:layout_marginTop="12dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

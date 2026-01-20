@@ -32,6 +32,15 @@
     <string name="budget_100_0m">Budget: €100.0m</string>
     <string name="waterford_premier_league_logo">Waterford Premier League Logo</string>
     <string name="fantasy_waterford_premier_league">Fantasy Waterford Premier League</string>
+    <string name="sign_in_to_fantasy_waterford_premier_league">Sign in to Fantasy Waterford Premier League</string>
+    <string name="email_domain">email@domain.com</string>
+    <string name="password">password</string>
+    <string name="contin">Continue</string>
+    <string name="or">or</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    <string name="no_account_join_now">No account? Join now</string>
+    <string name="reset_password">Reset Password</string>
 
 
 </resources>
