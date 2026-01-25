@@ -1,33 +1,31 @@
 package com.example.fantasyfootballapp.data
 
 import android.util.Log
+import com.example.fantasyfootballapp.data.mappers.toModel
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
-import com.example.fantasyfootballapp.model.Team
+import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.User
+//import com.example.fantasyfootballapp.model.Team
+//import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.ApiService
+import com.example.fantasyfootballapp.network.AuthResponse
+import com.example.fantasyfootballapp.network.LeaderboardTeamDto
+import com.example.fantasyfootballapp.network.LoginRequest
+import com.example.fantasyfootballapp.network.RegisterRequest
+import com.example.fantasyfootballapp.util.RepoResult
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-object FantasyRepository {
-
-    private const val BASE_URL = "http://10.0.2.2:8080/"
-
-    private var currentTeam: Team = Team(mutableListOf())
-
-
-    private val api: ApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
-    }
-
+class FantasyRepository(
+    private val api: ApiService,
+    private val tokenStore: TokenStore
+) {
     //Suspend functions may pause in the background
+
     //Add new team to the backend
     suspend fun submitTeamToBackend(teamName: String, playerIds: List<Int>) {
         val request = CreateTeamRequest(
@@ -48,13 +46,21 @@ object FantasyRepository {
 
     //Get list of teams for the Leaderboard sorted by points accrued
     suspend fun getLeaderboard(): List<LeaderboardEntry> {
-        return api.getLeaderboard().sortedByDescending { it.points }
+        return api.getLeaderboard()
+            .sortedByDescending { it.points }
     }
 
     //Return all players in the collection
     suspend fun fetchPlayersFromBackend(): List<Player> {
         return api.getPlayers()
     }
+
+//    suspend fun getTeamForUser(): LeaderboardTeamDto? { ... } // or Team model
+
+    //    fun updateTeam(playerIds: List<Int>) {
+//        currentTeam = Team(playerIds.toMutableList())
+//    }
+
 
     suspend fun fetchGameweekStatsFromBackend(gw: Int, playerIds: List<Int>): List<GameweekStat> {
         val idsParam = playerIds.joinToString(",")  // "1,2,3,4"
@@ -63,6 +69,59 @@ object FantasyRepository {
             season = "2025",
             playerIds = idsParam
         )
+    }
+
+    suspend fun getCurrentUser(): User {
+        val me = api.getMe()          // MeResponse
+        return me.toModel()
+    }
+
+    suspend fun updateCurrentUserTeamName(newTeamName: String) {
+        val res = api.updateMyTeamName(UpdateTeamNameRequest(newTeamName))
+        if (!res.isSuccessful) {
+            throw Exception("Failed to update team name: HTTP ${res.code()}")
+        }
+    }
+
+
+    suspend fun login(email: String, password: String): User {
+        val res = api.login(LoginRequest(email, password))
+        tokenStore.saveToken(res.token)      // ✅ save it
+        return res.user.toModel()
+    }
+
+    fun logout() {
+        tokenStore.clearToken()
+    }
+
+    suspend fun register(fname: String, lname: String, email: String, password: String): AuthResponse {
+        val body = RegisterRequest(
+            fname = fname.trim(),
+            lname = lname.trim(),
+            email = email.trim(),
+            password = password
+        )
+
+        val response = api.register(body)
+
+        // store token for future authenticated calls
+        tokenStore.saveToken(response.token)
+
+        return response
+    }
+
+    suspend fun registerSafe(
+        fname: String,
+        lname: String,
+        email: String,
+        password: String
+    ): RepoResult<AuthResponse> {
+        return try {
+            val res = register(fname, lname, email, password)
+            RepoResult.Success(res)
+        } catch (e: Exception) {
+            RepoResult.Error(e.message ?: "Registration failed")
+        }
     }
 
     // Fake player list for now
@@ -90,11 +149,11 @@ object FantasyRepository {
 //
 //    )
 
-    private val users = mutableListOf(
-        User(1, "demoUser", "Ryan Rovers"),
-        User(2, "emma", "Emma XI"),
-        User(3, "liam", "Liam FC")
-    )
+//    private val users = mutableListOf(
+//        User(1, "demoUser", "Ryan Rovers"),
+//        User(2, "emma", "Emma XI"),
+//        User(3, "liam", "Liam FC")
+//    )
 
     // Start with some dummy teams
 //    private val teams: MutableMap<String, Team> = mutableMapOf(
@@ -103,33 +162,16 @@ object FantasyRepository {
 //        "u3" to Team(3, mutableListOf("p1", "p5", "p6"))
 //    )
 
-    private val teams: MutableList<Team> = mutableListOf(
-        Team(mutableListOf(1, 2, 3, 4, 5)),
-        Team(mutableListOf(6, 7, 8, 9, 10)),
-        Team(mutableListOf(11, 12, 13, 14, 15))
-    )
+//    private val teams: MutableList<Team> = mutableListOf(
+//        Team(mutableListOf(1, 2, 3, 4, 5)),
+//        Team(mutableListOf(6, 7, 8, 9, 10)),
+//        Team(mutableListOf(11, 12, 13, 14, 15))
+//    )
 
-    private const val CURRENT_USER_ID = 1
+//    private const val CURRENT_USER_ID = 1
 
-    fun getCurrentUser(): User = users.first { it.id == CURRENT_USER_ID }
+//    fun getCurrentUser(): User = users.first { it.id == CURRENT_USER_ID }
 
 //    fun getAllPlayers(): List<Player> = players
-
-    fun getTeamForUser(userId: Int = CURRENT_USER_ID): Team =
-        teams[userId]
-
-    fun updateTeam(playerIds: List<Int>) {
-        currentTeam = Team(playerIds.toMutableList())
-    }
-
-
-
-    fun updateCurrentUserTeamName(newTeamName: String) {
-        val index = users.indexOfFirst { it.id == CURRENT_USER_ID }
-        if (index != -1) {
-            val currentUser = users[index]
-            users[index] = currentUser.copy(teamName = newTeamName)
-        }
-    }
 
 }

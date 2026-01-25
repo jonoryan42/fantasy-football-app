@@ -32,6 +32,26 @@
     <string name="budget_100_0m">Budget: €100.0m</string>
     <string name="waterford_premier_league_logo">Waterford Premier League Logo</string>
     <string name="fantasy_waterford_premier_league">Fantasy Waterford Premier League</string>
+    <string name="sign_in_to_fantasy_waterford_premier_league">Sign in to Fantasy Waterford Premier League</string>
+    <string name="email_domain">email@domain.com</string>
+    <string name="password">Password</string>
+    <string name="contin">Continue</string>
+    <string name="or">or</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_apple">Continue with Apple</string>
+    <string name="no_account_join_now">No account? Join now</string>
+    <string name="reset_password">Reset Password</string>
+    <string name="already_have_account_sign_in">Already have an account? Sign in</string>
+    <string name="terms_privacy_text">By clicking continue, you agree to our Terms of Service and Privacy Policy</string>
+    <string name="signup_subtitle">Enter an email to sign up for this app</string>
+    <string name="create_account">Create an account</string>
+    <string name="last_name">Last Name</string>
+    <string name="first_name">First Name</string>
+    <string name="log_out">Log Out</string>
+    <string name="hello_user">Hello User</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="send_instructions">Enter your email address, and we\'ll send password reset instructions.</string>
 
 
 </resources>

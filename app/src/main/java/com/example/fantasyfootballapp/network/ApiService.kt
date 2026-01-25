@@ -4,9 +4,11 @@ import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Body
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -25,7 +27,23 @@ interface ApiService {
         @Query("season") season: String = "2025",
         @Query("playerIds") playerIds: String
     ): List<GameweekStat>
-    @POST("api/leaderboard")
-    suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardEntry>
+
+    //Get User
+    @GET("/api/auth/me")
+    suspend fun getMe(): MeResponse
+
+    //POSTS
+    @POST("/api/leaderboard") // or whatever your endpoint is
+    suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardTeamDto>
+
+
+    @POST("/api/auth/register")
+    suspend fun register(@Body body: RegisterRequest): AuthResponse
+
+    @POST("/api/auth/login")
+    suspend fun login(@Body body: LoginRequest): AuthResponse
+
+    @PATCH("/api/users/me/teamname")
+    suspend fun updateMyTeamName(@Body req: UpdateTeamNameRequest): retrofit2.Response<Unit>
 
 }

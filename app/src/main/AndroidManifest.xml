@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".FantasyApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -15,12 +16,18 @@
         android:theme="@style/Theme.FantasyFootballApp"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.resetPassword.ResetPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.signup.SignupActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.viewTeam.ViewTeamActivity"
             android:exported="false" />
         <activity
             android:name=".ui.teamSetup.CreateTeamActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.leaderboard.LeaderboardActivity"
             android:exported="false" />

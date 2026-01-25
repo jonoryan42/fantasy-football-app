@@ -6,11 +6,22 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
+import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CreateTeamActivity : AppCompatActivity() {
+
+    private val repo by lazy {
+        val tokenStore = TokenStore(applicationContext)
+        FantasyRepository(ApiClient.service, tokenStore)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,12 +39,22 @@ class CreateTeamActivity : AppCompatActivity() {
             }
 
             // Update repository
-            FantasyRepository.updateCurrentUserTeamName(newName)
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        repo.updateCurrentUserTeamName(newName)
+                    }
 
-            // Go to Pick Team screen
-            val intent = Intent(this, PickTeamActivity::class.java)
-            startActivity(intent)
-            finish() // optional: don’t come back here when pressing back
+                    val intent = Intent(this@CreateTeamActivity, PickTeamActivity::class.java)
+                    intent.putExtra("teamName", newName) // optional (helps UI immediately)
+                    startActivity(intent)
+                    finish()
+
+                    // proceed to PickTeamActivity
+                } catch (e: Exception) {
+                    Toast.makeText(this@CreateTeamActivity, e.message ?: "Failed", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 }

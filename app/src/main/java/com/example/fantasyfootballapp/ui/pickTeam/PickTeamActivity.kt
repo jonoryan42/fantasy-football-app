@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
+import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +23,13 @@ import kotlinx.coroutines.withContext
 
 class PickTeamActivity : AppCompatActivity() {
 
-//    private lateinit var slotAdapter: SlotAdapter
+    private val repo by lazy {
+        val tokenStore = TokenStore(applicationContext) // adjust import/package if needed
+        FantasyRepository(ApiClient.service, tokenStore)
+    }
+
+
+    //    private lateinit var slotAdapter: SlotAdapter
     private lateinit var starterAdapter: SlotAdapter
     private lateinit var benchAdapter: SlotAdapter
 
@@ -69,38 +77,30 @@ class PickTeamActivity : AppCompatActivity() {
         benchSlots = buildBenchSlots().toMutableList()
 
 
-        // Disable interaction until data loads
-//        recyclerSlots.isEnabled = false
+        //Disable interaction until data loads
         recyclerStarters.isEnabled = false
         recyclerBench.isEnabled = false
         btnSaveTeam.isEnabled = false
 
         updateHeader()
 
-        // We'll set this after loading on IO
         var currentUserTeamName: String = ""
 
         lifecycleScope.launch {
             try {
-                // ✅ do repo/network/disk work on IO
-                val (user, team, players) = withContext(Dispatchers.IO) {
-                    val u = FantasyRepository.getCurrentUser()
-                    val t = FantasyRepository.getTeamForUser()
-                    val p = FantasyRepository.fetchPlayersFromBackend()
-                    Triple(u, t, p)
+                //Load user and players off the main thread
+                val (currentUser, players) = withContext(Dispatchers.IO) {
+                    val u = repo.getCurrentUser()
+                    val p = repo.fetchPlayersFromBackend() // make sure this exists on repo instance
+                    Pair(u, p)
                 }
 
-                val currentUser = user
-                val currentTeam = team
+                //Assign and update UI
                 allPlayers = players
-
-                currentUserTeamName = currentUser.teamName
+                currentUserTeamName = currentUser.teamName ?: "My Team"
                 txtTeamNameHeader.text = currentUserTeamName
 
-                // Prefill selection
-                // prefillSlotsFromTeam(currentTeam.playerIds)
-
-                // Create adapters
+                //Adapters
                 starterAdapter = SlotAdapter(
                     slots = starterSlots,
                     getPlayerById = { id -> allPlayers.firstOrNull { it.id == id } },
@@ -140,7 +140,6 @@ class PickTeamActivity : AppCompatActivity() {
                 recyclerStarters.adapter = starterAdapter
                 recyclerBench.adapter = benchAdapter
 
-                // ✅ re-enable now that everything is ready
                 recyclerStarters.isEnabled = true
                 recyclerBench.isEnabled = true
 
@@ -153,7 +152,8 @@ class PickTeamActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-        } // ✅ closes launch
+        }
+
 
         btnSaveTeam.setOnClickListener {
             val finalIds = (starterSlots + benchSlots).mapNotNull { it.playerId }
@@ -165,7 +165,7 @@ class PickTeamActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ Budget check (totalBudget should be 100.0)
+            //Budget checks
             val spent = finalIds
                 .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
                 .sumOf { it.price }
@@ -201,8 +201,9 @@ class PickTeamActivity : AppCompatActivity() {
                     lifecycleScope.launch {
                         try {
                             withContext(Dispatchers.IO) {
-                                FantasyRepository.updateTeam(playerIds = finalIds)
-                                FantasyRepository.submitTeamToBackend(
+
+                                // call the repo
+                                repo.submitTeamToBackend(
                                     teamName = currentUserTeamName,
                                     playerIds = finalIds
                                 )
