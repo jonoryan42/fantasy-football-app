@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -31,9 +32,6 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="18dp" />
 
-        <!-- ========================= -->
-        <!-- LOGIN CONTAINER -->
-        <!-- ========================= -->
         <LinearLayout
             android:id="@+id/loginContainer"
             android:layout_width="match_parent"
@@ -46,7 +44,9 @@
                 android:text="@string/sign_in_to_fantasy_waterford_premier_league"
                 android:textSize="16sp"
                 android:textColor="#0B2B4C"
-                android:layout_marginBottom="14dp" />
+                android:layout_marginBottom="14dp"
+                android:paddingStart="24dp"
+                tools:ignore="RtlSymmetry" />
 
             <EditText
                 android:id="@+id/edtEmail"
@@ -112,25 +112,25 @@
                     android:background="#BFFFFFFF" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/btnGoogle"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="14dp"
-                android:text="@string/continue_with_google"
-                android:textAllCaps="false"
-                android:backgroundTint="#F2F2F2"
-                android:textColor="#111111" />
+<!--            <Button-->
+<!--                android:id="@+id/btnGoogle"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="52dp"-->
+<!--                android:layout_marginTop="14dp"-->
+<!--                android:text="@string/continue_with_google"-->
+<!--                android:textAllCaps="false"-->
+<!--                android:backgroundTint="#F2F2F2"-->
+<!--                android:textColor="#111111" />-->
 
-            <Button
-                android:id="@+id/btnApple"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="10dp"
-                android:text="@string/continue_with_apple"
-                android:textAllCaps="false"
-                android:backgroundTint="#F2F2F2"
-                android:textColor="#111111" />
+<!--            <Button-->
+<!--                android:id="@+id/btnApple"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="52dp"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:text="@string/continue_with_apple"-->
+<!--                android:textAllCaps="false"-->
+<!--                android:backgroundTint="#F2F2F2"-->
+<!--                android:textColor="#111111" />-->
 
             <TextView
                 android:id="@+id/txtJoinNow"

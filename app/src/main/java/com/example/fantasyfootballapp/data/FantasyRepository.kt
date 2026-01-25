@@ -6,13 +6,17 @@ import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.User
 //import com.example.fantasyfootballapp.model.Team
 //import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.ApiService
+import com.example.fantasyfootballapp.network.AuthResponse
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.LoginRequest
+import com.example.fantasyfootballapp.network.RegisterRequest
+import com.example.fantasyfootballapp.util.RepoResult
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -72,13 +76,52 @@ class FantasyRepository(
         return me.toModel()
     }
 
-    suspend fun login(email: String, password: String): Pair<String, User> {
+    suspend fun updateCurrentUserTeamName(newTeamName: String) {
+        val res = api.updateMyTeamName(UpdateTeamNameRequest(newTeamName))
+        if (!res.isSuccessful) {
+            throw Exception("Failed to update team name: HTTP ${res.code()}")
+        }
+    }
+
+
+    suspend fun login(email: String, password: String): User {
         val res = api.login(LoginRequest(email, password))
-        return res.token to res.user.toModel()
+        tokenStore.saveToken(res.token)      // ✅ save it
+        return res.user.toModel()
     }
 
     fun logout() {
         tokenStore.clearToken()
+    }
+
+    suspend fun register(fname: String, lname: String, email: String, password: String): AuthResponse {
+        val body = RegisterRequest(
+            fname = fname.trim(),
+            lname = lname.trim(),
+            email = email.trim(),
+            password = password
+        )
+
+        val response = api.register(body)
+
+        // store token for future authenticated calls
+        tokenStore.saveToken(response.token)
+
+        return response
+    }
+
+    suspend fun registerSafe(
+        fname: String,
+        lname: String,
+        email: String,
+        password: String
+    ): RepoResult<AuthResponse> {
+        return try {
+            val res = register(fname, lname, email, password)
+            RepoResult.Success(res)
+        } catch (e: Exception) {
+            RepoResult.Error(e.message ?: "Registration failed")
+        }
     }
 
     // Fake player list for now
@@ -130,13 +173,5 @@ class FantasyRepository(
 //    fun getCurrentUser(): User = users.first { it.id == CURRENT_USER_ID }
 
 //    fun getAllPlayers(): List<Player> = players
-
-//    fun updateCurrentUserTeamName(newTeamName: String) {
-//        val index = users.indexOfFirst { it.id == CURRENT_USER_ID }
-//        if (index != -1) {
-//            val currentUser = users[index]
-//            users[index] = currentUser.copy(teamName = newTeamName)
-//        }
-//    }
 
 }

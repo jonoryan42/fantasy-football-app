@@ -10,11 +10,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
+import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.network.ApiClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ViewTeamActivity : AppCompatActivity() {
+
+    private val repo by lazy {
+        val tokenStore = TokenStore(applicationContext) // adjust import/package if needed
+        FantasyRepository(ApiClient.service, tokenStore)
+    }
 
     @SuppressLint("MissingInflatedId", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +51,7 @@ class ViewTeamActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val allPlayers = withContext(Dispatchers.IO) {
-                    FantasyRepository.fetchPlayersFromBackend()
+                    repo.fetchPlayersFromBackend()
                 }
 
                 val byId = allPlayers.associateBy { it.id }
@@ -54,7 +61,7 @@ class ViewTeamActivity : AppCompatActivity() {
 
                 val teamIds = (starterIds + benchIds)
                 val stats = withContext(Dispatchers.IO) {
-                    FantasyRepository.fetchGameweekStatsFromBackend(gw = 1, playerIds = teamIds)
+                    repo.fetchGameweekStatsFromBackend(gw = 1, playerIds = teamIds)
                 }
 
                 val pointsMap = stats.associate { it.playerId to it.points }

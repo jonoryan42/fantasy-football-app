@@ -77,39 +77,30 @@ class PickTeamActivity : AppCompatActivity() {
         benchSlots = buildBenchSlots().toMutableList()
 
 
-        // Disable interaction until data loads
-//        recyclerSlots.isEnabled = false
+        //Disable interaction until data loads
         recyclerStarters.isEnabled = false
         recyclerBench.isEnabled = false
         btnSaveTeam.isEnabled = false
 
         updateHeader()
 
-        // We'll set this after loading on IO
         var currentUserTeamName: String = ""
 
         lifecycleScope.launch {
             try {
-                // 1) Load user + players off the main thread
+                //Load user and players off the main thread
                 val (currentUser, players) = withContext(Dispatchers.IO) {
                     val u = repo.getCurrentUser()
                     val p = repo.fetchPlayersFromBackend() // make sure this exists on repo instance
                     Pair(u, p)
                 }
 
-                // 2) Guard: must be logged in
-                if (currentUser == null) {
-                    Toast.makeText(this@PickTeamActivity, "Please log in again.", Toast.LENGTH_LONG).show()
-                    finish()
-                    return@launch
-                }
-
-                // 3) Assign + update UI
+                //Assign and update UI
                 allPlayers = players
                 currentUserTeamName = currentUser.teamName ?: "My Team"
                 txtTeamNameHeader.text = currentUserTeamName
 
-                // 4) Now that players are loaded, set up adapters etc.
+                //Adapters
                 starterAdapter = SlotAdapter(
                     slots = starterSlots,
                     getPlayerById = { id -> allPlayers.firstOrNull { it.id == id } },
@@ -161,7 +152,7 @@ class PickTeamActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
-        } // ✅ closes launch
+        }
 
 
         btnSaveTeam.setOnClickListener {
@@ -174,7 +165,7 @@ class PickTeamActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ Budget check (totalBudget should be 100.0)
+            //Budget checks
             val spent = finalIds
                 .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
                 .sumOf { it.price }

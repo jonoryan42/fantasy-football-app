@@ -9,8 +9,8 @@ import com.example.fantasyfootballapp.network.MeResponse
 fun MeResponse.toModel(): User = User(
     id = id,
     email = email,
-    fname = "",
-    lname = "",
+    fname = fname,
+    lname = lname,
     teamName = teamName,
     createdAt = createdAt
 )

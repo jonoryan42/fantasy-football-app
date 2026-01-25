@@ -29,6 +29,8 @@ data class AuthResponse(
 data class MeResponse(
     @SerializedName("_id")
     val id: String,
+    val fname: String,
+    val lname: String,
     val email: String,
     val teamName: String?,
     val createdAt: String

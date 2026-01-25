@@ -16,12 +16,15 @@
         android:theme="@style/Theme.FantasyFootballApp"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.signup.SignupActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.viewTeam.ViewTeamActivity"
             android:exported="false" />
         <activity
             android:name=".ui.teamSetup.CreateTeamActivity"
-            android:windowSoftInputMode="adjustResize"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.leaderboard.LeaderboardActivity"
             android:exported="false" />
