@@ -49,6 +49,9 @@
     <string name="first_name">First Name</string>
     <string name="log_out">Log Out</string>
     <string name="hello_user">Hello User</string>
+    <string name="submit">Submit</string>
+    <string name="cancel">Cancel</string>
+    <string name="send_instructions">Enter your email address, and we\'ll send password reset instructions.</string>
 
 
 </resources>

@@ -15,6 +15,7 @@ import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
+import com.example.fantasyfootballapp.ui.resetPassword.ResetPasswordActivity
 import com.example.fantasyfootballapp.ui.signup.SignupActivity
 import com.example.fantasyfootballapp.ui.teamSetup.CreateTeamActivity
 import kotlinx.coroutines.launch
@@ -38,6 +39,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnViewLeaderboard: Button
     private lateinit var joinNow: TextView
 
+    private lateinit var txtResetPassword: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,9 +58,14 @@ class MainActivity : AppCompatActivity() {
         btnStartDemo = findViewById<Button>(R.id.btnStartDemo)
         btnViewLeaderboard = findViewById<Button>(R.id.btnViewLeaderboard)
         joinNow = findViewById<TextView>(R.id.txtJoinNow)
+        txtResetPassword = findViewById<TextView>(R.id.txtResetPassword)
 
         joinNow.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
+        }
+
+        txtResetPassword.setOnClickListener {
+            startActivity(Intent(this, ResetPasswordActivity::class.java))
         }
 
         loginContainer.visibility = View.VISIBLE
