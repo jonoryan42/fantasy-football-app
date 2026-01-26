@@ -52,6 +52,8 @@
     <string name="submit">Submit</string>
     <string name="cancel">Cancel</string>
     <string name="send_instructions">Enter your email address, and we\'ll send password reset instructions.</string>
+    <string name="deadline">Tue 2 Dec\nDeadline</string>
+    <string name="transfers">15\nTransfers</string>
 
 
 </resources>

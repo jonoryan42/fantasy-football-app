@@ -1,98 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbarPickTeam"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:title="@string/pick_team"
+        app:navigationIcon="@drawable/baseline_arrow_circle_left_24"
+        app:menu="@menu/menu_pick_team"/>
 
-        <TextView
-            android:id="@+id/txtTeamNameHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/team_name"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <!-- Stats row -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/statsRow"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="12dp">
+            android:gravity="center"
+            android:dividerPadding="8dp"
+            android:weightSum="4"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
-                android:id="@+id/txtSelectedCount"
-                android:layout_width="wrap_content"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/filled_0_15"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:padding="12dp"
-                android:layout_marginStart="8dp"
-                android:gravity="center"
-                android:background="@android:drawable/dialog_holo_light_frame" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                android:layout_marginEnd="8dp">
 
-            <TextView
-                android:id="@+id/txtBudgetRemaining"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/txtBudgetRemaining"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:text="@string/budget_100_0m"
+                    android:textAlignment="center"
+                    android:textStyle="bold"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/budget_100_0m"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:padding="12dp"
-                android:layout_marginStart="8dp"
-                android:gravity="center"
-                android:background="@android:drawable/dialog_holo_light_frame" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                android:layout_marginEnd="8dp">
 
+                <TextView
+                    android:id="@+id/txtTotalPoints"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:text="@string/_0_pts"
+                    android:textAlignment="center"
+                    android:textStyle="bold"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                android:layout_marginEnd="8dp">
+
+                <TextView
+                    android:id="@+id/txtFreeTransfers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:text="@string/transfers"
+                    android:textAlignment="center"
+                    android:textStyle="bold"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtDeadline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:text="@string/deadline"
+                    android:textAlignment="center"
+                    android:textStyle="bold"/>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
-
-        <TextView
-            android:id="@+id/txtStartersHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/starting_xi"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="6dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerStarters"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
-
-        <TextView
-            android:id="@+id/txtBenchHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bench"
-            android:textStyle="bold"
-            android:textSize="18sp"
+        <!-- Pitch board -->
+        <FrameLayout
+            android:id="@+id/pitchBoard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:layout_marginTop="12dp"
-            android:layout_marginBottom="6dp" />
+            app:layout_constraintTop_toBottomOf="@id/statsRow"
+            app:layout_constraintBottom_toTopOf="@id/benchBanner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerBench"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
+            <!-- Pitch background -->
+            <ImageView
+                android:id="@+id/imgPitch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/pitch1"
+                tools:ignore="ContentDescription" />
 
-        <Button
-            android:id="@+id/btnSaveTeam"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/confirm_team_title"
-            android:enabled="false"
-            android:layout_marginTop="12dp"/>
+            <!-- Overlay: you’ll place your 11 slot views here (ConstraintLayout is easiest) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/pitchOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="12dp">
 
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+                <!-- Example slot (GK). You’ll create 11 of these -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/slotGK"
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginBottom="12dp">
+
+                    <!-- Swap this content later to show player face + badge + name -->
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="14dp"
+                        android:src="@drawable/outline_add_circle_24"
+                        tools:ignore="ContentDescription" />
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </FrameLayout>
+
+        <!-- Bench banner (bottom) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/benchBanner"
+            android:layout_width="0dp"
+            android:layout_height="90dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="4dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerBench"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="10dp"
+                android:clipToPadding="false"/>
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
