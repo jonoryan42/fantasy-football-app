@@ -43,9 +43,9 @@ class PickTeamActivity : AppCompatActivity() {
 
     private val totalBudget = 100.0
 
-    private lateinit var txtSelectedCount: TextView
+//    private lateinit var txtSelectedCount: TextView
     private lateinit var txtBudgetRemaining: TextView
-    private lateinit var btnSaveTeam: Button
+//    private lateinit var btnSaveTeam: Button
 
 
     @SuppressLint("NotifyDataSetChanged")
@@ -53,19 +53,19 @@ class PickTeamActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
 
-        val txtTeamNameHeader = findViewById<TextView>(R.id.txtTeamNameHeader)
-        txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)
+//        val txtTeamNameHeader = findViewById<TextView>(R.id.txtTeamNameHeader)
+//        txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)
 //        val recyclerSlots = findViewById<RecyclerView>(R.id.recyclerPlayers)
-        val recyclerStarters = findViewById<RecyclerView>(R.id.recyclerStarters)
+//        val recyclerStarters = findViewById<RecyclerView>(R.id.recyclerStarters)
         val recyclerBench = findViewById<RecyclerView>(R.id.recyclerBench)
 
-        btnSaveTeam = findViewById<Button>(R.id.btnSaveTeam)
+//        btnSaveTeam = findViewById<Button>(R.id.btnSaveTeam)
 
         txtBudgetRemaining = findViewById<TextView>(R.id.txtBudgetRemaining)
 
 
 //        recyclerSlots.layoutManager = LinearLayoutManager(this)
-        recyclerStarters.layoutManager = LinearLayoutManager(this)
+//        recyclerStarters.layoutManager = LinearLayoutManager(this)
         recyclerBench.layoutManager = LinearLayoutManager(this)
 
 
@@ -78,9 +78,9 @@ class PickTeamActivity : AppCompatActivity() {
 
 
         //Disable interaction until data loads
-        recyclerStarters.isEnabled = false
+//        recyclerStarters.isEnabled = false
         recyclerBench.isEnabled = false
-        btnSaveTeam.isEnabled = false
+//        btnSaveTeam.isEnabled = false
 
         updateHeader()
 
@@ -98,7 +98,7 @@ class PickTeamActivity : AppCompatActivity() {
                 //Assign and update UI
                 allPlayers = players
                 currentUserTeamName = currentUser.teamName ?: "My Team"
-                txtTeamNameHeader.text = currentUserTeamName
+//                txtTeamNameHeader.text = currentUserTeamName
 
                 //Adapters
                 starterAdapter = SlotAdapter(
@@ -137,10 +137,10 @@ class PickTeamActivity : AppCompatActivity() {
                     }
                 )
 
-                recyclerStarters.adapter = starterAdapter
+//                recyclerStarters.adapter = starterAdapter
                 recyclerBench.adapter = benchAdapter
 
-                recyclerStarters.isEnabled = true
+//                recyclerStarters.isEnabled = true
                 recyclerBench.isEnabled = true
 
                 updateHeader()
@@ -155,29 +155,29 @@ class PickTeamActivity : AppCompatActivity() {
         }
 
 
-        btnSaveTeam.setOnClickListener {
-            val finalIds = (starterSlots + benchSlots).mapNotNull { it.playerId }
-
-            if (finalIds.size != maxPlayers) {
-                Toast.makeText(this, "Please fill all 15 slots.",
-                    Toast.LENGTH_SHORT).show()
-                //Don't allow confirm
-                return@setOnClickListener
-            }
+//        btnSaveTeam.setOnClickListener {
+//            val finalIds = (starterSlots + benchSlots).mapNotNull { it.playerId }
+//
+//            if (finalIds.size != maxPlayers) {
+//                Toast.makeText(this, "Please fill all 15 slots.",
+//                    Toast.LENGTH_SHORT).show()
+//                //Don't allow confirm
+//                return@setOnClickListener
+//            }
 
             //Budget checks
-            val spent = finalIds
-                .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
-                .sumOf { it.price }
+//            val spent = finalIds
+//                .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
+//                .sumOf { it.price }
 
-            if (spent > totalBudget) {
-                Toast.makeText(
-                    this,
-                    "Over budget by €%.1fm. Remove/replace a player.".format(spent - totalBudget),
-                    Toast.LENGTH_LONG
-                ).show()
-                return@setOnClickListener
-            }
+//            if (spent > totalBudget) {
+//                Toast.makeText(
+//                    this,
+//                    "Over budget by €%.1fm. Remove/replace a player.".format(spent - totalBudget),
+//                    Toast.LENGTH_LONG
+//                ).show()
+//                return@setOnClickListener
+//            }
 
             val pickedNames = finalIds
                 //Check for players
@@ -190,13 +190,13 @@ class PickTeamActivity : AppCompatActivity() {
                     getString(
                         R.string.confirm_team_message,
                         currentUserTeamName,
-                        finalIds.size,
-                        pickedNames
+//                        finalIds.size,
+//                        pickedNames
                     )
                 )
                 .setNegativeButton("Back", null)
                 .setPositiveButton("Confirm") { _, _ ->
-                    btnSaveTeam.isEnabled = false
+//                    btnSaveTeam.isEnabled = false
 
                     lifecycleScope.launch {
                         try {
