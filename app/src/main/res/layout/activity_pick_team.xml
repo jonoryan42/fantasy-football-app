@@ -18,7 +18,6 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!-- Stats row -->
@@ -107,290 +106,295 @@
         </LinearLayout>
 
         <!-- Pitch board -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <FrameLayout
             android:id="@+id/pitchBoard"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="12dp"
             app:layout_constraintTop_toBottomOf="@id/statsRow"
-            app:layout_constraintBottom_toTopOf="@id/benchBanner"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintDimensionRatio="16:9">
+            app:layout_constraintBottom_toTopOf="@id/benchBanner"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Pitch background -->
+            <!-- Pitch background -->
             <ImageView
                 android:id="@+id/imgPitch"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:src="@drawable/pitch1_inset"
+                android:scaleType="fitXY"
+                android:scaleX="1.8"
+                android:scaleY="1.4"
+                android:layout_marginStart="-40dp"
+                android:layout_marginEnd="20dp"
+                android:src="@drawable/pitch2_tilted"
                 tools:ignore="ContentDescription" />
 
             <!-- Overlay: you’ll place your 11 slot views here (ConstraintLayout is easiest) -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/pitchOverlay"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:padding="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:elevation="20dp"
                 android:clickable="false"
                 android:focusable="false"
-                android:background="#33FF0000"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />>
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                >
 
-                <!-- Vertical guidelines to split the pitch into 4 columns -->
+                <!-- Row lines (top -> bottom, percent from TOP) -->
                 <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/gLineGK"
+                    android:id="@+id/rowST"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.10" />
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.25" />
 
                 <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/gLineDEF"
+                    android:id="@+id/rowMID"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.33" />
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.45" />
 
                 <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/gLineMID"
+                    android:id="@+id/rowDEF"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.62" />
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.6" />
 
-                <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/gLineST"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    app:layout_constraintGuide_percent="1.0" />
-
-
-                <!-- Example slot (GK). You’ll create 11 of these -->
+                <!-- ================= GK (1) ================= -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotGK"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
                     app:strokeWidth="2dp"
-                    app:strokeColor="@android:color/holo_red_light"
-                    app:layout_constraintStart_toStartOf="@id/gLineGK"
-                    app:layout_constraintEnd_toEndOf="@id/gLineGK"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent">
+                    app:layout_constraintTop_toTopOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.20"
+                    >
 
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- DEFENCE 4 -->
+                <!-- ================= DEF (4) ================= -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotLB"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineDEF"
-                    app:layout_constraintEnd_toEndOf="@id/gLineDEF"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@id/slotLCB"
-                    app:layout_constraintVertical_chainStyle="spread">
-
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.07"
+                    android:layout_marginBottom="45dp"
+                    >
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotLCB"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineDEF"
-                    app:layout_constraintEnd_toEndOf="@id/gLineDEF"
-                    app:layout_constraintTop_toBottomOf="@id/slotLB"
-                    app:layout_constraintBottom_toTopOf="@id/slotRCB">
-
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.29"
+                    android:layout_marginBottom="30dp">
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotRCB"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineDEF"
-                    app:layout_constraintEnd_toEndOf="@id/gLineDEF"
-                    app:layout_constraintTop_toBottomOf="@id/slotLCB"
-                    app:layout_constraintBottom_toTopOf="@id/slotRB">
-
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.51"
+                    android:layout_marginBottom="15dp">
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotRB"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineDEF"
-                    app:layout_constraintEnd_toEndOf="@id/gLineDEF"
-                    app:layout_constraintTop_toBottomOf="@id/slotRCB"
-                    app:layout_constraintBottom_toBottomOf="parent">
-
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="3dp"
+                    app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.73"
+                    >
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- MIDFIELD 5 -->
+                <!-- ================= MID (5) ================= -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotLM"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
-                    app:strokeWidth="2dp"
-                    app:strokeColor="@android:color/holo_red_light"
-                    app:layout_constraintStart_toStartOf="@id/gLineMID"
-                    app:layout_constraintEnd_toEndOf="@id/gLineMID"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@id/slotLCM"
-                    app:layout_constraintVertical_chainStyle="spread">
-
+                    app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.18"
+                    android:layout_marginBottom="80dp">
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotLCM"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
                     app:strokeWidth="1dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineMID"
-                    app:layout_constraintEnd_toEndOf="@id/gLineMID"
-                    app:layout_constraintTop_toBottomOf="@id/slotLM"
-                    app:layout_constraintBottom_toTopOf="@id/slotCM">
-
+                    app:layout_constraintBottom_toBottomOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.3"
+                    android:layout_marginBottom="20dp"
+                    >
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotCM"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
                     app:strokeWidth="1dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineMID"
-                    app:layout_constraintEnd_toEndOf="@id/gLineMID"
-                    app:layout_constraintTop_toBottomOf="@id/slotLCM"
-                    app:layout_constraintBottom_toTopOf="@id/slotRCM">
-
+                    app:layout_constraintBottom_toBottomOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.52"
+                    android:layout_marginBottom="10dp"
+                    >
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotRCM"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
                     app:strokeWidth="1dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineMID"
-                    app:layout_constraintEnd_toEndOf="@id/gLineMID"
-                    app:layout_constraintTop_toBottomOf="@id/slotCM"
-                    app:layout_constraintBottom_toTopOf="@id/slotRM">
-
+                    app:layout_constraintBottom_toBottomOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.74"
+                    >
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotRM"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
                     app:strokeWidth="1dp"
-                    app:layout_constraintStart_toStartOf="@id/gLineMID"
-                    app:layout_constraintEnd_toEndOf="@id/gLineMID"
-                    app:layout_constraintTop_toBottomOf="@id/slotRCM"
-                    app:layout_constraintBottom_toBottomOf="parent">
-
+                    app:layout_constraintBottom_toBottomOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.96"
+                    android:layout_marginBottom="40dp"
+                    >
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- STRIKER -->
+                <!-- ================= ST (1) ================= -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/slotST"
-                    android:layout_width="68dp"
-                    android:layout_height="68dp"
-                    app:cardCornerRadius="18dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="3dp"
                     app:strokeWidth="1dp"
+                    app:layout_constraintBottom_toBottomOf="@id/rowST"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    android:layout_marginEnd="18dp">
+                    app:layout_constraintHorizontal_bias="0.7">
 
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:padding="14dp"
+                        android:padding="12dp"
                         android:src="@drawable/outline_add_circle_24"
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </FrameLayout>
 
         <!-- Bench banner (bottom) -->
         <com.google.android.material.card.MaterialCardView
