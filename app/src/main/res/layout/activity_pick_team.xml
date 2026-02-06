@@ -18,7 +18,8 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginTop="55dp">
 
         <!-- Stats row -->
         <LinearLayout
@@ -31,13 +32,13 @@
             android:weightSum="4"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            >
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
                 android:layout_marginEnd="8dp">
 
@@ -45,17 +46,18 @@
                     android:id="@+id/txtBudgetRemaining"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:text="@string/budget_100_0m"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/budget_100_0m"
                     android:textAlignment="center"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
                 android:layout_marginEnd="8dp">
 
@@ -63,17 +65,18 @@
                     android:id="@+id/txtTotalPoints"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:text="@string/_0_pts"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
                     android:textAlignment="center"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="10dp"
                 app:cardElevation="2dp"
                 android:layout_marginEnd="8dp">
 
@@ -81,27 +84,30 @@
                     android:id="@+id/txtFreeTransfers"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:text="@string/transfers"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/transfers"
                     android:textAlignment="center"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:cardCornerRadius="14dp"
+                app:cardCornerRadius="10dp"
                 app:cardElevation="2dp">
 
                 <TextView
                     android:id="@+id/txtDeadline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:text="@string/deadline"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="6dp"                    android:text="@string/deadline"
                     android:textAlignment="center"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
@@ -114,7 +120,9 @@
             app:layout_constraintTop_toBottomOf="@id/statsRow"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toTopOf="@id/benchBanner"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            android:translationY="-60dp"
+            >
 
             <!-- Pitch background -->
             <ImageView
@@ -137,8 +145,6 @@
                 android:elevation="20dp"
                 android:clickable="false"
                 android:focusable="false"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
                 >
 
                 <!-- Row lines (top -> bottom, percent from TOP) -->
