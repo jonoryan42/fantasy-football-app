@@ -17,6 +17,7 @@ import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
+import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,6 +53,13 @@ class PickTeamActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbarPickTeam)
+        setSupportActionBar(toolbar)
+
+        supportActionBar?.setDisplayShowTitleEnabled(true)
+        supportActionBar?.title = getString(R.string.pick_team)
+
 
 //        val txtTeamNameHeader = findViewById<TextView>(R.id.txtTeamNameHeader)
 //        txtSelectedCount = findViewById<TextView>(R.id.txtSelectedCount)

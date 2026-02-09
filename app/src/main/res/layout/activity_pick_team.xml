@@ -6,122 +6,50 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarPickTeam"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:title="@string/pick_team"
+        app:titleTextColor="@android:color/white"
+        android:title=""
         app:navigationIcon="@drawable/baseline_arrow_circle_left_24"
-        app:menu="@menu/menu_pick_team"/>
+        app:menu="@menu/menu_pick_team" >
+
+        <TextView
+            android:id="@+id/toolbarTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pick_team"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center" />
+    </com.google.android.material.appbar.MaterialToolbar>
+
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_marginTop="55dp">
-
-        <!-- Stats row -->
-        <LinearLayout
-            android:id="@+id/statsRow"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:dividerPadding="8dp"
-            android:weightSum="4"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            >
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp"
-                android:layout_marginEnd="8dp">
-
-                <TextView
-                    android:id="@+id/txtBudgetRemaining"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingVertical="6dp"
-                    android:paddingHorizontal="10dp"                    android:text="@string/budget_100_0m"
-                    android:textAlignment="center"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp"
-                android:layout_marginEnd="8dp">
-
-                <TextView
-                    android:id="@+id/txtTotalPoints"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingVertical="6dp"
-                    android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
-                    android:textAlignment="center"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp"
-                android:layout_marginEnd="8dp">
-
-                <TextView
-                    android:id="@+id/txtFreeTransfers"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingVertical="6dp"
-                    android:paddingHorizontal="10dp"                    android:text="@string/transfers"
-                    android:textAlignment="center"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    />
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp">
-
-                <TextView
-                    android:id="@+id/txtDeadline"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingVertical="6dp"
-                    android:paddingHorizontal="6dp"                    android:text="@string/deadline"
-                    android:textAlignment="center"
-                    android:textStyle="bold"
-                    android:textSize="13sp"
-                    />
-            </com.google.android.material.card.MaterialCardView>
-        </LinearLayout>
+        >
 
         <!-- Pitch board -->
-        <FrameLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/pitchBoard"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/statsRow"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/benchBanner"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottomNav"
             app:layout_constraintEnd_toEndOf="parent"
-            android:translationY="-60dp"
             >
 
             <!-- Pitch background -->
@@ -136,6 +64,96 @@
                 android:layout_marginEnd="20dp"
                 android:src="@drawable/pitch2_tilted"
                 tools:ignore="ContentDescription" />
+
+            <!-- Stats row -->
+            <LinearLayout
+                android:id="@+id/statsRow"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:dividerPadding="8dp"
+                android:weightSum="4"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                >
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="2dp"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/txtBudgetRemaining"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="6dp"
+                        android:paddingHorizontal="10dp"                    android:text="@string/budget_100_0m"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        />
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="2dp"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/txtTotalPoints"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="6dp"
+                        android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        />
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="2dp"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        android:id="@+id/txtFreeTransfers"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="6dp"
+                        android:paddingHorizontal="10dp"                    android:text="@string/transfers"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        />
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="2dp">
+
+                    <TextView
+                        android:id="@+id/txtDeadline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingVertical="6dp"
+                        android:paddingHorizontal="6dp"                    android:text="@string/deadline"
+                        android:textAlignment="center"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        />
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
             <!-- Overlay: you’ll place your 11 slot views here (ConstraintLayout is easiest) -->
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -177,11 +195,18 @@
                     app:layout_constraintGuide_percent="0.67" />
 
                 <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowEndPitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.82" />
+
+                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/col1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.12"/>
+                    app:layout_constraintGuide_end="362dp" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/col2"
@@ -509,28 +534,131 @@
                         tools:ignore="ContentDescription" />
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Bench banner (bottom) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/benchBanner"
+                    android:layout_width="0dp"
+                    android:layout_height="96dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="4dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/rowEndPitch"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    >
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/benchRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:padding="12dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/benchSlot1"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="2dp"
+                            app:strokeWidth="1dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/benchSlot2"
+                            app:layout_constraintHorizontal_chainStyle="spread">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="12dp"
+                                android:src="@drawable/outline_add_circle_24"
+                                tools:ignore="ContentDescription"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/benchSlot2"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="2dp"
+                            app:strokeWidth="1dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/benchSlot1"
+                            app:layout_constraintEnd_toStartOf="@id/benchSlot3">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="12dp"
+                                android:src="@drawable/outline_add_circle_24"
+                                tools:ignore="ContentDescription"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/benchSlot3"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="2dp"
+                            app:strokeWidth="1dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/benchSlot2"
+                            app:layout_constraintEnd_toStartOf="@id/benchSlot4">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="12dp"
+                                android:src="@drawable/outline_add_circle_24"
+                                tools:ignore="ContentDescription"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/benchSlot4"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="2dp"
+                            app:strokeWidth="1dp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/benchSlot3"
+                            app:layout_constraintEnd_toEndOf="parent">
+
+                            <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="12dp"
+                                android:src="@drawable/outline_add_circle_24"
+                                tools:ignore="ContentDescription"/>
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Bench banner (bottom) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/benchBanner"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
             android:layout_width="0dp"
-            android:layout_height="90dp"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="4dp"
+            android:layout_height="wrap_content"
+            app:menu="@menu/menu_bottom_nav"
+            app:labelVisibilityMode="labeled"
+            app:itemIconSize="24dp"
+            app:itemTextAppearanceActive="@style/TextAppearance.MaterialComponents.Caption"
+            app:itemTextAppearanceInactive="@style/TextAppearance.MaterialComponents.Caption"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerBench"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="10dp"
-                android:clipToPadding="false"/>
-        </com.google.android.material.card.MaterialCardView>
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
