@@ -56,6 +56,9 @@
     <string name="transfers">15\nTransfers</string>
     <string name="fixtures">Fixtures</string>
     <string name="league">League</string>
+    <string name="transfers1">Transfers</string>
+    <string name="haaland">Haaland</string>
+    <string name="che">CHE (A)</string>
 
 
 </resources>

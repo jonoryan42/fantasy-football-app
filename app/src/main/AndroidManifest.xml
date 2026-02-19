@@ -16,6 +16,9 @@
         android:theme="@style/Theme.FantasyFootballApp"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".ui.transfers.TransfersActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.resetPassword.ResetPasswordActivity"
             android:exported="false" />
         <activity

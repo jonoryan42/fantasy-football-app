@@ -18,6 +18,7 @@ import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.ui.resetPassword.ResetPasswordActivity
 import com.example.fantasyfootballapp.ui.signup.SignupActivity
 import com.example.fantasyfootballapp.ui.teamSetup.CreateTeamActivity
+import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +38,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnLogin: Button
     private lateinit var btnStartDemo: Button
     private lateinit var btnViewLeaderboard: Button
+
+    private lateinit var btnTransfers: Button
     private lateinit var joinNow: TextView
 
     private lateinit var txtResetPassword: TextView
@@ -57,6 +60,7 @@ class MainActivity : AppCompatActivity() {
 
         btnStartDemo = findViewById<Button>(R.id.btnStartDemo)
         btnViewLeaderboard = findViewById<Button>(R.id.btnViewLeaderboard)
+        btnTransfers = findViewById(R.id.btnTransfers)
         joinNow = findViewById<TextView>(R.id.txtJoinNow)
         txtResetPassword = findViewById<TextView>(R.id.txtResetPassword)
 
@@ -99,6 +103,21 @@ class MainActivity : AppCompatActivity() {
                         return@launch
                     }
                     startActivity(Intent(this@MainActivity, LeaderboardActivity::class.java))
+                }
+            }
+        }
+
+        btnTransfers.setOnClickListener {
+            if (DEMO_MODE) {
+                startActivity(Intent(this, TransfersActivity::class.java))
+            } else {
+                lifecycleScope.launch {
+                    val user = try { repo.getCurrentUser() } catch (_: Exception) { null }
+                    if (user == null) {
+                        Toast.makeText(this@MainActivity, "Please log in first", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    startActivity(Intent(this@MainActivity, TransfersActivity::class.java))
                 }
             }
         }
