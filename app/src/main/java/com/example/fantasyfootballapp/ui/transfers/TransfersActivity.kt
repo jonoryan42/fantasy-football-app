@@ -2,6 +2,8 @@ package com.example.fantasyfootballapp.ui.transfers
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -14,14 +16,12 @@ import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.collections.putAll
-import kotlin.text.clear
-import kotlin.text.get
 
 class TransfersActivity : AppCompatActivity() {
 
@@ -39,6 +39,16 @@ class TransfersActivity : AppCompatActivity() {
     private val initialBySlot = mutableMapOf<RosterSlotKey, Int?>()
     private var freeTransfers = 15 // later this comes from backend per gameweek
 
+    private var hasSavedTeam: Boolean = false
+
+    private val SLOT_ORDER = RosterSlotKey.entries.toList()
+
+    // snapshot of what they started with (from backend)
+//    private val originalBySlot: MutableMap<String, String?> = mutableMapOf()
+
+    // current UI selection
+//    private val currentBySlot: MutableMap<String, String?> = mutableMapOf()
+
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
@@ -48,6 +58,19 @@ class TransfersActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transfers)
+
+        //Top Toolbar
+        val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbarPickTeam)
+        setSupportActionBar(toolbar)
+
+        //remove ActionBar title text entirely
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        supportActionBar?.title = ""
+
+//Back arrow behaviour
+        toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
 
         chipBudget = findViewById(R.id.txtBudgetRemaining)
         chipPoints = findViewById(R.id.txtTotalPoints)
@@ -90,22 +113,40 @@ class TransfersActivity : AppCompatActivity() {
         updateHeader()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_pick_team, menu) // your existing file
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_confirm_team -> {
+                confirmAndSave()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun loadPlayers() {
         lifecycleScope.launch {
             try {
-                val players = withContext(Dispatchers.IO) {
-                    repo.fetchPlayersFromBackend()
+                allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
+
+                //once players exist, load saved team
+                val team = withContext(Dispatchers.IO) { repo.getMyTeam() }
+
+                if (team != null) {
+                    populateUiWithSavedTeam(team)
+                } else {
+                    //first-time user: leave empty
                 }
-                allPlayers = players
-                snapshotInitialTeam()
+
                 renderAll()
                 updateHeader()
+
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@TransfersActivity,
-                    "Failed to load: ${e.message ?: "Unknown error"}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this@TransfersActivity, "Failed to load: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -164,6 +205,82 @@ class TransfersActivity : AppCompatActivity() {
         builder.show()
     }
 
+    private fun saveTeamFromTransfersUi(playerIds: List<Int>) {
+        val teamName = "My Team"
+
+        lifecycleScope.launch {
+            try {
+                val existingTeam = withContext(Dispatchers.IO) { repo.getMyTeam() }
+                val created = existingTeam == null
+
+                withContext(Dispatchers.IO) {
+                    if (created) repo.submitTeamToBackend(teamName, playerIds)
+                    else repo.updateMyTeamPlayers(playerIds)
+                }
+
+                hasSavedTeam = true
+                SLOT_ORDER.forEach { key -> initialBySlot[key] = selectedBySlot[key] }
+
+                Toast.makeText(
+                    this@TransfersActivity,
+                    if (created) "Team saved!" else "Transfers saved!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(this@TransfersActivity, "Save failed: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun confirmAndSave() {
+        //stop immediately if not complete
+        val playerIds = build15PlayerIdsOrNull()
+        if (playerIds == null) {
+            Toast.makeText(this, "Please fill all slots before confirming.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Optional: if nothing changed, don't prompt
+        if (hasSavedTeam && !hasChanges()) {
+            Toast.makeText(this, "No changes to save.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Confirm")
+            .setMessage("Save these changes to your team?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Confirm") { _, _ ->
+                saveTeamFromTransfersUi(playerIds) // pass ids so you don't recompute
+            }
+            .show()
+    }
+
+    private fun hasChanges(): Boolean =
+        RosterSlotKey.entries.any { key -> selectedBySlot[key] != initialBySlot[key] }
+
+    private fun populateUiWithSavedTeam(team: LeaderboardTeamDto) {
+        val ids = team.playerIds
+        if (ids.size != SLOT_ORDER.size) return
+
+        hasSavedTeam = true
+
+        SLOT_ORDER.forEachIndexed { index, key ->
+            val id = ids[index]
+            selectedBySlot[key] = id
+            initialBySlot[key] = id
+            renderSlot(key)
+        }
+
+        updateHeader()
+    }
+
+    private fun build15PlayerIdsOrNull(): List<Int>? {
+        val ids = SLOT_ORDER.map { key -> selectedBySlot[key] }
+        return if (ids.any { it == null }) null else ids.filterNotNull()
+    }
+
     private fun spentNow(): Double =
         selectedBySlot.values.filterNotNull()
             .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
@@ -208,18 +325,13 @@ class TransfersActivity : AppCompatActivity() {
         chipTransfers.text = "$left Free Transfers"
 
         // keep your static deadline for now
-        chipDeadline.text = "Tue 2 Dec\nDeadline"
+        chipDeadline.text = "Gameweek Deadline: Tue 2 Dec"
     }
 
     //Just show players last name
     private fun lastName(fullName: String): String {
         val parts = fullName.trim().split(Regex("\\s+"))
         return parts.lastOrNull().orEmpty()
-    }
-
-    private fun snapshotInitialTeam() {
-        initialBySlot.clear()
-        initialBySlot.putAll(selectedBySlot)
     }
 
     private fun transfersUsed(): Int =

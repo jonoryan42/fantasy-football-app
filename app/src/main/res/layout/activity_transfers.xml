@@ -13,7 +13,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbarPickTeam"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             app:titleTextColor="@android:color/white"
             android:title=""
             app:navigationIcon="@drawable/baseline_arrow_circle_left_24"
@@ -21,7 +21,7 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="horizontal"
                 android:gravity="center"
                 android:layout_gravity="center">
@@ -57,14 +57,129 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         >
 
+        <!-- Stats row -->
+        <LinearLayout
+            android:id="@+id/statsRow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/pitchBoard">
+
+            <!-- Deadline chip (single, centered) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipDeadline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtDeadline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:text="Tue 2 Dec Deadline"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textAlignment="center"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Small gap -->
+            <Space
+                android:layout_width="1dp"
+                android:layout_height="8dp" />
+
+        <!-- Bottom row: Budget / Cost / Transfers (centered) -->
+        <LinearLayout
+            android:id="@+id/chipsRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipBudget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                >
+
+                <TextView
+                    android:id="@+id/txtBudgetRemaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:text="@string/budget_100_0m"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textAlignment="center"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtTotalPoints"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipTransfers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtFreeTransfers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/transfers"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        </LinearLayout>
         <!-- Pitch board -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/pitchBoard"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/statsRow"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/bottomNav"
             app:layout_constraintEnd_toEndOf="parent"
             >
@@ -80,111 +195,21 @@
                 android:layout_marginStart="-40dp"
                 android:layout_marginEnd="20dp"
                 android:src="@drawable/pitch2_tilted"
+                android:elevation="0dp"
                 tools:ignore="ContentDescription"
 
-                app:layout_constraintTop_toBottomOf="@id/statsRow"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="46dp"
                 />
-
-            <!-- Stats row -->
-            <LinearLayout
-                android:id="@+id/statsRow"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:dividerPadding="8dp"
-                android:weightSum="4"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                >
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:id="@+id/txtBudgetRemaining"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingVertical="6dp"
-                        android:paddingHorizontal="10dp"                    android:text="@string/budget_100_0m"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textSize="13sp"
-                        />
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:id="@+id/txtTotalPoints"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingVertical="6dp"
-                        android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textSize="13sp"
-                        />
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="2dp"
-                    android:layout_marginEnd="8dp">
-
-                    <TextView
-                        android:id="@+id/txtFreeTransfers"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingVertical="6dp"
-                        android:paddingHorizontal="10dp"                    android:text="@string/transfers"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textSize="13sp"
-                        />
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="10dp"
-                    app:cardElevation="2dp">
-
-                    <TextView
-                        android:id="@+id/txtDeadline"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingVertical="6dp"
-                        android:paddingHorizontal="6dp"                    android:text="@string/deadline"
-                        android:textAlignment="center"
-                        android:textStyle="bold"
-                        android:textSize="13sp"
-                        />
-                </com.google.android.material.card.MaterialCardView>
-            </LinearLayout>
 
             <!-- Overlay -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/pitchOverlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:elevation="20dp"
+                android:elevation="0dp"
                 android:clickable="false"
                 android:focusable="false"
                 >
@@ -195,28 +220,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    app:layout_constraintGuide_percent="0.11" />
+                    app:layout_constraintGuide_percent="0.04" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/rowMID"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    app:layout_constraintGuide_percent="0.27" />
+                    app:layout_constraintGuide_percent="0.2" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/rowDEF"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    app:layout_constraintGuide_percent="0.45" />
+                    app:layout_constraintGuide_percent="0.39" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/rowGK"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    app:layout_constraintGuide_percent="0.62" />
+                    app:layout_constraintGuide_percent="0.58" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/rowEndPitch"
