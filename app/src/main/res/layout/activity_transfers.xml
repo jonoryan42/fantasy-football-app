@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarPickTeam"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@android:color/white"
+            android:title=""
+            app:navigationIcon="@drawable/baseline_arrow_circle_left_24"
+            app:menu="@menu/menu_pick_team" >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:src="@drawable/league_logo"
+                    android:layout_marginEnd="6dp"
+                    android:scaleType="fitCenter"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/toolbarTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/transfers1"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        >
+
+        <!-- Stats row -->
+        <LinearLayout
+            android:id="@+id/statsRow"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/pitchBoard">
+
+            <!-- Deadline chip (single, centered) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipDeadline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtDeadline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:text="Tue 2 Dec Deadline"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textAlignment="center"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Small gap -->
+            <Space
+                android:layout_width="1dp"
+                android:layout_height="8dp" />
+
+        <!-- Bottom row: Budget / Cost / Transfers (centered) -->
+        <LinearLayout
+            android:id="@+id/chipsRow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipBudget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp"
+                >
+
+                <TextView
+                    android:id="@+id/txtBudgetRemaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:text="@string/budget_100_0m"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    android:textAlignment="center"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipCost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtTotalPoints"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipTransfers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
+
+                <TextView
+                    android:id="@+id/txtFreeTransfers"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="6dp"
+                    android:paddingHorizontal="10dp"                    android:text="@string/transfers"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textSize="13sp"
+                    />
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        </LinearLayout>
+        <!-- Pitch board -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/pitchBoard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/statsRow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottomNav"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+            <!-- Pitch background -->
+            <ImageView
+                android:id="@+id/imgPitch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:scaleX="2.2"
+                android:scaleY="1.8"
+                android:layout_marginStart="-40dp"
+                android:layout_marginEnd="20dp"
+                android:src="@drawable/pitch2_tilted"
+                android:elevation="0dp"
+                tools:ignore="ContentDescription"
+
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+            <!-- Overlay -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/pitchOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:elevation="0dp"
+                android:clickable="false"
+                android:focusable="false"
+                >
+
+                <!-- Row lines (top -> bottom, percent from TOP) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.04" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.2" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.39" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowGK"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.58" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowEndPitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.82" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_end="362dp" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.28"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.50"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.72"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.88"/>
+
+                <!-- ================= GK (2) ================= -->
+                <include
+                    android:id="@+id/slotGK1"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowGK"
+                    app:layout_constraintStart_toStartOf="@id/col1"
+                    android:layout_marginStart="-20dp"
+                    />
+
+
+                <include
+                    android:id="@+id/slotGK2"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowGK"
+                    app:layout_constraintStart_toStartOf="@id/col2"
+                    android:layout_marginStart="-14dp"
+                    android:layout_marginTop="10dp"
+                    />
+
+                <!-- ================= DEF (4) ================= -->
+                <include
+                    android:id="@+id/slotLB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="@id/col1"
+                    android:layout_marginStart="-36dp"
+                    android:layout_marginTop="10dp"
+                    />
+
+                <include
+                    android:id="@+id/slotLCB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="@id/col2"
+                    android:layout_marginStart="-30dp"
+                    android:layout_marginTop="20dp"
+                    />
+
+                <include
+                    android:id="@+id/slotCCB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="@id/col3"
+                    android:layout_marginStart="-48dp"
+                    android:layout_marginTop="30dp"
+                    />
+
+                <include
+                    android:id="@+id/slotRCB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="@id/col4"
+                    android:layout_marginStart="-66dp"
+                    android:layout_marginTop="40dp"
+                    />
+
+                <include
+                    android:id="@+id/slotRB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF"
+                    app:layout_constraintStart_toStartOf="@id/col5"
+                    android:layout_marginStart="-60dp"
+                    android:layout_marginTop="50dp"
+                    />
+
+                <!-- ================= MID (5) ================= -->
+                <include
+                    android:id="@+id/slotLM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="@id/col1"
+                    android:layout_marginStart="-20dp"
+                    android:layout_marginTop="10dp"
+                    />
+
+                <include
+                    android:id="@+id/slotLCM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="@id/col2"
+                    android:layout_marginStart="-14dp"
+                    android:layout_marginTop="20dp"
+                    />
+
+                <include
+                    android:id="@+id/slotCM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="@id/col3"
+                    android:layout_marginStart="-32dp"
+                    android:layout_marginTop="30dp"
+                    />
+
+                <include
+                    android:id="@+id/slotRCM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="@id/col4"
+                    android:layout_marginStart="-50dp"
+                    android:layout_marginTop="40dp"
+                    />
+
+                <include
+                    android:id="@+id/slotRM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID"
+                    app:layout_constraintStart_toStartOf="@id/col5"
+                    android:layout_marginStart="-44dp"
+                    android:layout_marginTop="50dp"
+                    />
+
+                <!-- ================= ST (3) ================= -->
+                <include
+                    android:id="@+id/slotLS"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST"
+                    app:layout_constraintStart_toStartOf="@id/col3"
+                    android:layout_marginStart="-32dp"
+                    android:layout_marginTop="10dp"
+                    />
+
+                <include
+                    android:id="@+id/slotST"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST"
+                    app:layout_constraintStart_toStartOf="@id/col4"
+                    android:layout_marginStart="-50dp"
+                    android:layout_marginTop="20dp"
+                    />
+
+                <include
+                    android:id="@+id/slotRS"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST"
+                    app:layout_constraintStart_toStartOf="@id/col5"
+                    android:layout_marginStart="-44dp"
+                    android:layout_marginTop="30dp"
+                    />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:menu="@menu/menu_bottom_nav"
+            app:labelVisibilityMode="labeled"
+            app:itemIconSize="24dp"
+            app:itemTextAppearanceActive="@style/TextAppearance.MaterialComponents.Caption"
+            app:itemTextAppearanceInactive="@style/TextAppearance.MaterialComponents.Caption"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

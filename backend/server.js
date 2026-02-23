@@ -162,6 +162,19 @@ app.get("/api/leaderboard", async (req, res) => {
   }
 });
 
+//Get user team
+app.get("/api/leaderboard/me", requireAuth, async (req, res) => {
+  try {
+    const userId = new ObjectId(req.auth.userId);
+    const team = await leaderboardCollection.findOne({ userId });
+    if (!team) return res.status(404).json({ message: "No team found for user" });
+    res.json(team);
+  } catch (err) {
+    console.error("GET /api/leaderboard/me error:", err);
+    res.status(500).json({ message: "Failed to fetch team" });
+  }
+});
+
 //GET players (read from MongoDB)
 app.get("/api/players", async (req, res) => {
   try {
@@ -382,6 +395,58 @@ app.patch("/api/users/me/teamname", requireAuth, async (req, res) => {
   }
 });
 
+
+//PATCH update existing team players (save from Transfers Confirm button)
+app.patch("/api/leaderboard/me", requireAuth, async (req, res) => {
+  console.log("PATCH /api/leaderboard/me Body:", req.body);
+
+  try {
+    let { playerIds } = req.body;
+    const userId = new ObjectId(req.auth.userId);
+
+    //Validate playerIds
+    if (!Array.isArray(playerIds) || playerIds.length !== TEAM_SIZE) {
+      return res
+        .status(400)
+        .json({ message: `playerIds must be an array of ${TEAM_SIZE} items` });
+    }
+
+    //Force numeric IDs
+    playerIds = playerIds.map((x) => Number(x));
+
+    //Validate integers
+    if (playerIds.some((x) => !Number.isInteger(x))) {
+      return res.status(400).json({ message: "playerIds must be integers" });
+    }
+
+    //Validate no duplicates
+    if (new Set(playerIds).size !== playerIds.length) {
+      return res.status(400).json({ message: "playerIds must be unique" });
+    }
+
+    //Ensure team exists for user
+    const existing = await leaderboardCollection.findOne({ userId });
+    if (!existing) {
+      return res.status(404).json({ message: "No team found for user" });
+    }
+
+    // Update the team
+    await leaderboardCollection.updateOne(
+      { userId },
+      {
+        $set: {
+          playerIds,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    res.json({ ok: true, playerIds });
+  } catch (err) {
+    console.error("PATCH /api/leaderboard/me error:", err);
+    res.status(500).json({ message: "Failed to update team" });
+  }
+});
 
 connectToMongo()
   .then(() => {

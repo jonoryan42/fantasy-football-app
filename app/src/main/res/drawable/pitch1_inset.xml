@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Increase left/right inset to "zoom out" horizontally -->
+    <item
+        android:left="16dp"
+        android:right="16dp">
+        <bitmap
+            android:src="@drawable/pitch1"
+            android:gravity="center" />
+    </item>
+</layer-list>

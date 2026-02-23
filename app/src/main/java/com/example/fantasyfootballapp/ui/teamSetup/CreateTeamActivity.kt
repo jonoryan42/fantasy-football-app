@@ -12,6 +12,7 @@ import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
+import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,7 +35,7 @@ class CreateTeamActivity : AppCompatActivity() {
             val newName = edtTeamName.text.toString().trim()
 
             if (newName.isEmpty()) {
-                Toast.makeText(this, "Please enter a team name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter a Team Name", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -45,12 +46,11 @@ class CreateTeamActivity : AppCompatActivity() {
                         repo.updateCurrentUserTeamName(newName)
                     }
 
-                    val intent = Intent(this@CreateTeamActivity, PickTeamActivity::class.java)
+                    val intent = Intent(this@CreateTeamActivity, TransfersActivity::class.java)
                     intent.putExtra("teamName", newName) // optional (helps UI immediately)
                     startActivity(intent)
                     finish()
 
-                    // proceed to PickTeamActivity
                 } catch (e: Exception) {
                     Toast.makeText(this@CreateTeamActivity, e.message ?: "Failed", Toast.LENGTH_LONG).show()
                 }

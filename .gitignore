@@ -1,20 +1,25 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Android / Gradle
+.gradle/
+build/
+**/build/
 local.properties
-.env
+*.iml
+
+# IntelliJ / Android Studio
 .idea/
-shelved.patch
-*.patch
+*.iws
+*.ipr
+
+# Kotlin / tooling
+**/.kotlin/
+**/*.log
+
+# Node
 node_modules/
+
+# Env
+.env
+
+# OS
+.DS_Store
+Thumbs.db

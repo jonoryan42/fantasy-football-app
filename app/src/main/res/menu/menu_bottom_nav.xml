@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_pick_team"
+        android:icon="@drawable/outline_frame_person_24"
+        android:title="@string/pick_team" />
+
+    <item
+        android:id="@+id/nav_fixtures"
+        android:icon="@drawable/outline_alarm_24"
+        android:title="@string/fixtures" />
+
+    <item
+        android:id="@+id/nav_league"
+        android:icon="@drawable/league_logo"
+        android:title="@string/league" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/outline_android_cell_5_bar_24"
+        android:title="@string/leaderboard" />
+
+</menu>

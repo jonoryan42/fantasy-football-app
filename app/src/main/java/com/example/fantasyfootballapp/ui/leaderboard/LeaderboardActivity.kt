@@ -17,25 +17,34 @@ import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.main.MainActivity
+import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
 import com.example.fantasyfootballapp.ui.viewTeam.ViewTeamActivity
 import kotlinx.coroutines.launch
 
 class LeaderboardActivity : AppCompatActivity() {
+
+    private val DEMO_MODE = true
+
+    private lateinit var txtHelloUser: TextView
+    private lateinit var btnTransfers: Button
+    private lateinit var btnLogout: Button
+
+    private lateinit var leaderboardAdapter: LeaderboardAdapter
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
         FantasyRepository(ApiClient.service, tokenStore)
     }
 
-    private lateinit var leaderboardAdapter: LeaderboardAdapter
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_leaderboard)
 
-        val btnLogout = findViewById<Button>(R.id.btnLogout)
-        val txtHelloUser = findViewById<TextView>(R.id.txtHelloUser)
+        txtHelloUser = findViewById<TextView>(R.id.txtHelloUser)
+        btnLogout = findViewById<Button>(R.id.btnLogout)
+        btnTransfers = findViewById<Button>(R.id.btnTransfers)
 
 
         val recyclerLeaderboard = findViewById<RecyclerView>(R.id.recyclerLeaderboard)
@@ -66,6 +75,21 @@ class LeaderboardActivity : AppCompatActivity() {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
                 startActivity(intent)
+            }
+        }
+
+        btnTransfers.setOnClickListener {
+            if (DEMO_MODE) {
+                startActivity(Intent(this, TransfersActivity::class.java))
+            } else {
+                lifecycleScope.launch {
+                    val user = try { repo.getCurrentUser() } catch (_: Exception) { null }
+                    if (user == null) {
+                        Toast.makeText(this@LeaderboardActivity, "Please log in first", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    startActivity(Intent(this@LeaderboardActivity, TransfersActivity::class.java))
+                }
             }
         }
 
