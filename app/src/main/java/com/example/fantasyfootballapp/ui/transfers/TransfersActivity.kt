@@ -1,6 +1,7 @@
 package com.example.fantasyfootballapp.ui.transfers
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -19,11 +20,14 @@ import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
+import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class TransfersActivity : AppCompatActivity() {
+
+    private var teamName: String = "My Team"
 
     private lateinit var slotViews: Map<RosterSlotKey, PlayerSlotView>
     private val selectedBySlot = mutableMapOf<RosterSlotKey, Int?>()
@@ -58,6 +62,8 @@ class TransfersActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transfers)
+
+        teamName = intent.getStringExtra("teamName") ?: "My Team"
 
         //Top Toolbar
         val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbarPickTeam)
@@ -206,16 +212,28 @@ class TransfersActivity : AppCompatActivity() {
     }
 
     private fun saveTeamFromTransfersUi(playerIds: List<Int>) {
-        val teamName = "My Team"
 
         lifecycleScope.launch {
             try {
                 val existingTeam = withContext(Dispatchers.IO) { repo.getMyTeam() }
                 val created = existingTeam == null
 
+                // Decide what name we should store/use
+                val resolvedName = existingTeam?.teamName ?: teamName
+
                 withContext(Dispatchers.IO) {
-                    if (created) repo.submitTeamToBackend(teamName, playerIds)
-                    else repo.updateMyTeamPlayers(playerIds)
+                    if (created) {
+                        repo.submitTeamToBackend(resolvedName, playerIds)
+                    } else {
+                        // If user arrived with a different name (from CreateTeamActivity), update it
+                        val incomingName = teamName.trim()
+                        val currentName = (existingTeam?.teamName ?: "").trim()
+                        if (incomingName.isNotEmpty() && incomingName != currentName) {
+                            repo.updateCurrentUserTeamName(incomingName)
+                        }
+
+                        repo.updateMyTeamPlayers(playerIds)
+                    }
                 }
 
                 hasSavedTeam = true
@@ -226,6 +244,8 @@ class TransfersActivity : AppCompatActivity() {
                     if (created) "Team saved!" else "Transfers saved!",
                     Toast.LENGTH_SHORT
                 ).show()
+                //Save and go to Leaderboard (for now)
+                goToLeaderboard()
 
             } catch (e: Exception) {
                 Toast.makeText(this@TransfersActivity, "Save failed: ${e.message}", Toast.LENGTH_LONG).show()
@@ -255,6 +275,14 @@ class TransfersActivity : AppCompatActivity() {
                 saveTeamFromTransfersUi(playerIds) // pass ids so you don't recompute
             }
             .show()
+    }
+
+    private fun goToLeaderboard() {
+        val intent = Intent(this, LeaderboardActivity::class.java)
+        // optional: prevents coming back to Transfers with back button
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun hasChanges(): Boolean =
