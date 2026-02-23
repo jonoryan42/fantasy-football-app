@@ -4,6 +4,7 @@ import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
 import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
 import retrofit2.Response
@@ -43,6 +44,9 @@ interface ApiService {
 
     @POST("/api/auth/register")
     suspend fun register(@Body body: RegisterRequest): AuthResponse
+
+    @POST("/api/auth/register-with-team")
+    suspend fun registerWithTeam(@Body body: RegisterWithTeamRequest): AuthResponse
 
     @POST("/api/auth/login")
     suspend fun login(@Body body: LoginRequest): AuthResponse

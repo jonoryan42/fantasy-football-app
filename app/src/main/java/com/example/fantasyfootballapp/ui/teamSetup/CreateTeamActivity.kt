@@ -1,15 +1,19 @@
 package com.example.fantasyfootballapp.ui.teamSetup
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.model.RegistrationDraft
+import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
 import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
@@ -19,17 +23,19 @@ import kotlinx.coroutines.withContext
 
 class CreateTeamActivity : AppCompatActivity() {
 
-    private val repo by lazy {
-        val tokenStore = TokenStore(applicationContext)
-        FantasyRepository(ApiClient.service, tokenStore)
-    }
-
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_team)
 
         val edtTeamName = findViewById<EditText>(R.id.edtTeamName)
         val btnContinue = findViewById<Button>(R.id.btnContinueToPickTeam)
+
+        val draft = intent.getParcelableExtra(NavKeys.REG_DRAFT, RegistrationDraft::class.java)
+            ?: run {
+                finish()
+                return
+            }
 
         btnContinue.setOnClickListener {
             val newName = edtTeamName.text.toString().trim()
@@ -39,22 +45,13 @@ class CreateTeamActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Update repository
-            lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        repo.updateCurrentUserTeamName(newName)
-                    }
+            val updatedDraft = draft.copy(teamName = newName)
 
-                    val intent = Intent(this@CreateTeamActivity, TransfersActivity::class.java)
-                    intent.putExtra("teamName", newName) // optional (helps UI immediately)
-                    startActivity(intent)
-                    finish()
-
-                } catch (e: Exception) {
-                    Toast.makeText(this@CreateTeamActivity, e.message ?: "Failed", Toast.LENGTH_LONG).show()
-                }
-            }
+            startActivity(
+                Intent(this, TransfersActivity::class.java)
+                    .putExtra(NavKeys.REG_DRAFT, updatedDraft)
+            )
+            finish()
+        }
         }
     }
-}

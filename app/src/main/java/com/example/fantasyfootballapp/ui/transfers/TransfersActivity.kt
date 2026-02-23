@@ -15,12 +15,15 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.RegistrationDraft
 import com.example.fantasyfootballapp.model.RosterSlotKey
+import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
+import com.example.fantasyfootballapp.util.RepoResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -59,9 +62,24 @@ class TransfersActivity : AppCompatActivity() {
         FantasyRepository(ApiClient.service, tokenStore)
     }
 
+    private val regDraft: RegistrationDraft? by lazy {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(NavKeys.REG_DRAFT, RegistrationDraft::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(NavKeys.REG_DRAFT)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transfers)
+
+        if (regDraft == null) {
+            Toast.makeText(this, "Missing registration details. Please sign up again.", Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
 
         teamName = intent.getStringExtra("teamName") ?: "My Team"
 
@@ -211,44 +229,40 @@ class TransfersActivity : AppCompatActivity() {
         builder.show()
     }
 
-    private fun saveTeamFromTransfersUi(playerIds: List<Int>) {
+    private fun finalizeRegistrationAndSaveTeam(playerIds: List<Int>) {
+        val draft = regDraft ?: run {
+            Toast.makeText(this, "Missing registration details.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val teamName = draft.teamName?.trim().orEmpty()
+        if (teamName.isBlank()) {
+            Toast.makeText(this, "Missing team name. Please go back.", Toast.LENGTH_LONG).show()
+            return
+        }
 
         lifecycleScope.launch {
-            try {
-                val existingTeam = withContext(Dispatchers.IO) { repo.getMyTeam() }
-                val created = existingTeam == null
+            // Optional: disable save button if you have one
+            // btnSave.isEnabled = false
 
-                // Decide what name we should store/use
-                val resolvedName = existingTeam?.teamName ?: teamName
+            val result = repo.registerWithTeamSafe(
+                fname = draft.firstName,
+                lname = draft.lastName,
+                email = draft.email,
+                password = draft.password,
+                teamName = teamName,
+                playerIds = playerIds
+            )
 
-                withContext(Dispatchers.IO) {
-                    if (created) {
-                        repo.submitTeamToBackend(resolvedName, playerIds)
-                    } else {
-                        // If user arrived with a different name (from CreateTeamActivity), update it
-                        val incomingName = teamName.trim()
-                        val currentName = (existingTeam?.teamName ?: "").trim()
-                        if (incomingName.isNotEmpty() && incomingName != currentName) {
-                            repo.updateCurrentUserTeamName(incomingName)
-                        }
-
-                        repo.updateMyTeamPlayers(playerIds)
-                    }
+            when (result) {
+                is RepoResult.Success -> {
+                    Toast.makeText(this@TransfersActivity, "Team saved!", Toast.LENGTH_SHORT).show()
+                    goToLeaderboard() // or Home
                 }
-
-                hasSavedTeam = true
-                SLOT_ORDER.forEach { key -> initialBySlot[key] = selectedBySlot[key] }
-
-                Toast.makeText(
-                    this@TransfersActivity,
-                    if (created) "Team saved!" else "Transfers saved!",
-                    Toast.LENGTH_SHORT
-                ).show()
-                //Save and go to Leaderboard (for now)
-                goToLeaderboard()
-
-            } catch (e: Exception) {
-                Toast.makeText(this@TransfersActivity, "Save failed: ${e.message}", Toast.LENGTH_LONG).show()
+                is RepoResult.Error -> {
+                    // btnSave.isEnabled = true
+                    Toast.makeText(this@TransfersActivity, result.message, Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -272,7 +286,7 @@ class TransfersActivity : AppCompatActivity() {
             .setMessage("Save these changes to your team?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Confirm") { _, _ ->
-                saveTeamFromTransfersUi(playerIds) // pass ids so you don't recompute
+                finalizeRegistrationAndSaveTeam(playerIds) // pass ids so you don't recompute
             }
             .show()
     }

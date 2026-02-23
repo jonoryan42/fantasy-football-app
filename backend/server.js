@@ -344,6 +344,107 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
+// Register + create team in one go (final step)
+app.post("/api/auth/register-with-team", async (req, res) => {
+  const session = client.startSession();
+
+  try {
+    let { fname, lname, email, password, teamName, playerIds } = req.body;
+
+    // --- Validate required fields ---
+    if (!fname || !lname || !email || !password || !teamName || !playerIds) {
+      return res.status(400).json({
+        message: "fname, lname, email, password, teamName, playerIds are required",
+      });
+    }
+
+    // --- Validate email/password ---
+    email = String(email).trim().toLowerCase();
+    if (!email.includes("@") || String(password).length < 6) {
+      return res.status(400).json({ message: "Invalid email or password too short" });
+    }
+
+    // --- Validate teamName ---
+    if (typeof teamName !== "string" || !teamName.trim()) {
+      return res.status(400).json({ message: "Team Name is required" });
+    }
+
+    // --- Validate playerIds ---
+    if (!Array.isArray(playerIds) || playerIds.length !== TEAM_SIZE) {
+      return res
+        .status(400)
+        .json({ message: `playerIds must be an array of ${TEAM_SIZE} items` });
+    }
+
+    playerIds = playerIds.map((x) => Number(x));
+    if (playerIds.some((x) => !Number.isInteger(x))) {
+      return res.status(400).json({ message: "playerIds must be integers" });
+    }
+    if (new Set(playerIds).size !== playerIds.length) {
+      return res.status(400).json({ message: "playerIds must be unique" });
+    }
+
+    // --- Transaction (best practice) ---
+    // Note: transactions require a replica set (Atlas supports this).
+    const result = await session.withTransaction(async () => {
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // 1) Create user
+      const userDoc = {
+        fname: fname.trim(),
+        lname: lname.trim(),
+        email,
+        passwordHash,
+        teamName: teamName.trim(), // optional but useful
+        createdAt: new Date(),
+      };
+
+      const userInsert = await usersCollection.insertOne(userDoc, { session });
+      const userId = userInsert.insertedId;
+
+      // 2) Create leaderboard team
+      const teamDoc = {
+        userId, // ObjectId
+        teamName: teamName.trim(),
+        playerIds,
+        createdAt: new Date(),
+        points: 0,
+      };
+
+      const teamInsert = await leaderboardCollection.insertOne(teamDoc, { session });
+
+      // 3) Create auth response
+      const userForToken = { _id: userId, email };
+      const token = signToken(userForToken);
+
+      return {
+        token,
+        user: {
+          _id: userId,
+          fname: userDoc.fname,
+          lname: userDoc.lname,
+          email: userDoc.email,
+          teamName: userDoc.teamName,
+        },
+        teamId: teamInsert.insertedId,
+      };
+    });
+
+    return res.status(201).json({ token: result.token, user: result.user });
+  } catch (err) {
+    // duplicate email OR duplicate userId in leaderboard (unique indexes)
+    if (err?.code === 11000) {
+      // Could be users.email or leaderboard.userId
+      return res.status(409).json({ message: "Email already registered or team already exists" });
+    }
+
+    console.error("POST /api/auth/register-with-team error:", err);
+    return res.status(500).json({ message: "Failed to register" });
+  } finally {
+    await session.endSession();
+  }
+});
+
 //Login
 app.post("/api/auth/login", async (req, res) => {
   try {

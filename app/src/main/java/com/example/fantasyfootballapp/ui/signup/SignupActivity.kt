@@ -11,7 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.model.RegistrationDraft
+import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.ui.teamSetup.CreateTeamActivity
 import com.example.fantasyfootballapp.util.RepoResult
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -65,32 +68,19 @@ class SignupActivity : AppCompatActivity() {
 
             if (!ok) return@setOnClickListener
 
-            // STEP 3: call backend register
-            lifecycleScope.launch {
-                btn.isEnabled = false
+            // after all validation passes:
+            val draft = RegistrationDraft(
+                firstName = fnText,
+                lastName = lnText,
+                email = emailText,
+                password = passText,
+                teamName = null
+            )
 
-                when (val result = repo.registerSafe(
-                    fname = fnText,
-                    lname = lnText,
-                    email = emailText,
-                    password = passText
-                )) {
-                    is RepoResult.Success -> {
-                        startActivity(
-                            Intent(
-                                this@SignupActivity,
-                                com.example.fantasyfootballapp.ui.teamSetup.CreateTeamActivity::class.java
-                            )
-                        )
-                        finish()
-                    }
-
-                    is RepoResult.Error -> {
-                        btn.isEnabled = true
-                        Toast.makeText(this@SignupActivity, result.message, Toast.LENGTH_LONG).show()
-                    }
-                }
-            }
+            startActivity(
+                Intent(this, CreateTeamActivity::class.java) // or TeamNameActivity
+                    .putExtra(NavKeys.REG_DRAFT, draft)
+            )
         }
     }
 

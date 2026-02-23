@@ -6,6 +6,7 @@ import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
 import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiService
@@ -131,6 +132,48 @@ class FantasyRepository(
             RepoResult.Success(res)
         } catch (e: Exception) {
             RepoResult.Error(e.message ?: "Registration failed")
+        }
+    }
+
+    suspend fun registerWithTeam(
+        fname: String,
+        lname: String,
+        email: String,
+        password: String,
+        teamName: String,
+        playerIds: List<Int>
+    ): AuthResponse {
+
+        val body = RegisterWithTeamRequest(
+            fname = fname.trim(),
+            lname = lname.trim(),
+            email = email.trim(),
+            password = password,
+            teamName = teamName.trim(),
+            playerIds = playerIds
+        )
+
+        val response = api.registerWithTeam(body)
+
+        //store token for future authenticated calls
+        tokenStore.saveToken(response.token)
+
+        return response
+    }
+
+    suspend fun registerWithTeamSafe(
+        fname: String,
+        lname: String,
+        email: String,
+        password: String,
+        teamName: String,
+        playerIds: List<Int>
+    ): RepoResult<AuthResponse> {
+        return try {
+            val res = registerWithTeam(fname, lname, email, password, teamName, playerIds)
+            RepoResult.Success(data = res)
+        } catch (e: Exception) {
+            RepoResult.Error(message = e.message ?: "Registration failed")
         }
     }
 
