@@ -1,8 +1,13 @@
 package com.example.fantasyfootballapp.model
 
-enum class RosterSlotKey(val position: String) {
-    GK1("GK"), GK2("GK"),
-    DEF1("DEF"), DEF2("DEF"), DEF3("DEF"), DEF4("DEF"), DEF5("DEF"),
-    MID1("MID"), MID2("MID"), MID3("MID"), MID4("MID"), MID5("MID"),
-    STR1("STR"), STR2("STR"), STR3("STR")
+enum class RosterSlotKey(val position: Position) {
+    GK1(Position.GK), GK2(Position.GK),
+
+    DEF1(Position.DEF), DEF2(Position.DEF),
+    DEF3(Position.DEF), DEF4(Position.DEF), DEF5(Position.DEF),
+
+    MID1(Position.MID), MID2(Position.MID),
+    MID3(Position.MID), MID4(Position.MID), MID5(Position.MID),
+
+    STR1(Position.STR), STR2(Position.STR), STR3(Position.STR)
 }

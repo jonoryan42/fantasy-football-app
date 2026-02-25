@@ -38,10 +38,23 @@ object ApiClient {
         chain.proceed(request)
     }
 
+    //For 401 exceptions
+    private val unauthorizedInterceptor = Interceptor { chain ->
+        val response = chain.proceed(chain.request())
+
+        if (response.code == 401) {
+            //Token is invalid/expired/etc.
+            tokenStore.clearToken()
+        }
+
+        response
+    }
+
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .addInterceptor(authInterceptor) // ✅ add token
-            .addInterceptor(logging)         // ✅ keep logging
+            .addInterceptor(authInterceptor)          // add token to request
+            .addInterceptor(unauthorizedInterceptor)  // react to 401 responses
+            .addInterceptor(logging)                  // keep logging
             .build()
     }
 

@@ -105,6 +105,8 @@ class FantasyRepository(
         tokenStore.clearToken()
     }
 
+    fun getTokenOrNull(): String? = tokenStore.getToken()
+
     suspend fun register(fname: String, lname: String, email: String, password: String): AuthResponse {
         val body = RegisterRequest(
             fname = fname.trim(),

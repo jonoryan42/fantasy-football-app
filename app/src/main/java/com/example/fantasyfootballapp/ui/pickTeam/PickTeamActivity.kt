@@ -13,7 +13,9 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,23 +23,26 @@ import kotlinx.coroutines.withContext
 
 class PickTeamActivity : AppCompatActivity() {
 
-    private val repo by lazy {
-        val tokenStore = TokenStore(applicationContext)
-        FantasyRepository(ApiClient.service, tokenStore)
-    }
+    private var teamName: String = "My Team"
 
+    private lateinit var slotViews: Map<RosterSlotKey, PlayerSlotView>
+
+    private val selectedBySlot = mutableMapOf<RosterSlotKey, Int?>()
     private lateinit var starterAdapter: SlotAdapter
     private lateinit var benchAdapter: SlotAdapter
-
-    private val totalBudget = 100.0
 
     private var allPlayers: List<Player> = emptyList()
     private lateinit var starterSlots: MutableList<PlayerSlot>
     private lateinit var benchSlots: MutableList<PlayerSlot>
 
-    private lateinit var txtBudgetRemaining: TextView
     private lateinit var recyclerStarters: RecyclerView
     private lateinit var recyclerBench: RecyclerView
+
+    private val repo by lazy {
+        val tokenStore = TokenStore(applicationContext)
+        FantasyRepository(ApiClient.service, tokenStore)
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +57,6 @@ class PickTeamActivity : AppCompatActivity() {
             finish()
         }
 
-        txtBudgetRemaining = findViewById(R.id.txtBudgetRemaining)
         recyclerStarters = findViewById(R.id.recyclerStarters)
         recyclerBench = findViewById(R.id.recyclerBench)
 
@@ -157,9 +161,7 @@ class PickTeamActivity : AppCompatActivity() {
             .mapNotNull { id -> allPlayers.firstOrNull { it.id == id } }
             .sumOf { it.price }
 
-        val remaining = totalBudget - spent
 
-        txtBudgetRemaining.text = "Budget: €%.1fm".format(remaining)
     }
 
     private fun showPickerForSlot(slot: PlayerSlot, onDone: () -> Unit) {
