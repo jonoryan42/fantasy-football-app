@@ -36,6 +36,8 @@ class TransfersActivity : AppCompatActivity() {
     private lateinit var slotViews: Map<RosterSlotKey, PlayerSlotView>
     private val selectedBySlot = mutableMapOf<RosterSlotKey, Int?>()
 
+    private val initialBySlot = mutableMapOf<RosterSlotKey, Int?>()
+
     private var allPlayers: List<Player> = emptyList()
     private val totalBudget = 100.0
 
@@ -44,7 +46,6 @@ class TransfersActivity : AppCompatActivity() {
     private lateinit var chipTransfers: TextView
     private lateinit var chipDeadline: TextView
 
-    private val initialBySlot = mutableMapOf<RosterSlotKey, Int?>()
     private var freeTransfers = 15 // later this comes from backend per gameweek
 
     private var hasSavedTeam: Boolean = false
@@ -236,86 +237,22 @@ class TransfersActivity : AppCompatActivity() {
         builder.show()
     }
 
-    //Save team for new user
-    private fun finalizeRegistrationAndSaveTeam(playerIds: List<Int>) {
-        val draft = onboardingDraft ?: run {
-            Toast.makeText(this, "Missing registration details.", Toast.LENGTH_LONG).show()
-            return
+    private fun goToPickTeam(playerIds: List<Int>) {
+        val intent = Intent(this, com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity::class.java)
+
+        // pass the chosen squad to Pick Team
+        intent.putIntegerArrayListExtra(NavKeys.PLAYER_IDS, ArrayList(playerIds))
+
+        // pass onboarding draft if present (so PickTeam can register+save there)
+        onboardingDraft?.let { draft ->
+            intent.putExtra(NavKeys.REG_DRAFT, draft)
         }
 
-        val teamName = draft.teamName?.trim().orEmpty()
-        if (teamName.isBlank()) {
-            Toast.makeText(this, "Missing team name. Please go back.", Toast.LENGTH_LONG).show()
-            return
-        }
+        // optional
+        intent.putExtra("teamName", teamName)
 
-        lifecycleScope.launch {
-
-            val result = repo.registerWithTeamSafe(
-                fname = draft.firstName,
-                lname = draft.lastName,
-                email = draft.email,
-                password = draft.password,
-                teamName = teamName,
-                playerIds = playerIds
-            )
-
-            when (result) {
-                is RepoResult.Success -> {
-                    Toast.makeText(this@TransfersActivity, "Team saved!", Toast.LENGTH_SHORT).show()
-                    goToLeaderboard() // or Home
-                }
-                is RepoResult.Error -> {
-                    // btnSave.isEnabled = true
-                    Toast.makeText(this@TransfersActivity, result.message, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    //Saving team for logged in user
-    private fun saveTeamFromTransfersUi(playerIds: List<Int>) {
-        lifecycleScope.launch {
-            try {
-                // Normal path: existing user updates their team
-                repo.updateMyTeamPlayers(playerIds)
-
-                Toast.makeText(this@TransfersActivity, "Transfers saved!", Toast.LENGTH_SHORT).show()
-                goToLeaderboard()
-
-            } catch (e: Exception) {
-                // If they somehow don't have a team yet, create one.
-                // We'll fetch the teamName from current user (or fallback).
-                try {
-                    val user = repo.getCurrentUser()
-                    val teamName = user.teamName?.trim().takeUnless { it.isNullOrBlank() } ?: "My Team"
-
-                    repo.submitTeamToBackend(teamName, playerIds)
-
-                    Toast.makeText(this@TransfersActivity, "Team created!", Toast.LENGTH_SHORT).show()
-                    goToLeaderboard()
-
-                } catch (createErr: Exception) {
-                    Toast.makeText(
-                        this@TransfersActivity,
-                        createErr.message ?: "Save failed",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-        }
-    }
-
-//    private fun saveTeamForLoggedInUser(playerIds: List<Int>) {
-//        saveTeamFromTransfersUi(playerIds) // reuse your existing logic
-//    }
-
-    private fun onConfirm(playerIds: List<Int>) {
-        if (onboardingDraft != null) {
-            finalizeRegistrationAndSaveTeam(playerIds)
-        } else {
-            saveTeamFromTransfersUi(playerIds)
-        }
+        startActivity(intent)
+        finish() // so back doesn't return to Transfers
     }
 
     private fun confirmAndSave() {
@@ -337,17 +274,9 @@ class TransfersActivity : AppCompatActivity() {
             .setMessage("Save these changes to your team?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Confirm") { _, _ ->
-                onConfirm(playerIds)  // pass ids so you don't recompute
+                goToPickTeam(playerIds)  // pass ids so you don't recompute
             }
             .show()
-    }
-
-    private fun goToLeaderboard() {
-        val intent = Intent(this, LeaderboardActivity::class.java)
-        // optional: prevents coming back to Transfers with back button
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
-        startActivity(intent)
-        finish()
     }
 
     private fun hasChanges(): Boolean =
