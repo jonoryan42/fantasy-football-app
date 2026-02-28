@@ -16,7 +16,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.model.Formation
+import com.example.fantasyfootballapp.model.LineupManager
+import com.example.fantasyfootballapp.model.LineupState
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.Position
 import com.example.fantasyfootballapp.model.RegistrationDraft
 import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.navigation.NavKeys
@@ -46,15 +50,20 @@ class PickTeamActivity : AppCompatActivity() {
 
     private var hasSavedTeam: Boolean = false
 
-    private val SLOT_ORDER = RosterSlotKey.entries.toList()
+    private val SLOT_ORDER = RosterSlotKey.SLOT_ORDER
+
+    private val lineupManager = LineupManager()
+    private lateinit var lineupState: LineupState
+
+    private var currentFormation = Formation.F442
+
+    //Sub state
+    private var subModeActive: Boolean = false
+    private var subSourceSlot: RosterSlotKey? = null
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
         FantasyRepository(ApiClient.service, tokenStore)
-    }
-
-    private val incomingPlayerIds: List<Int>? by lazy {
-        intent.getIntegerArrayListExtra(NavKeys.PLAYER_IDS)?.toList()
     }
 
     private val onboardingDraft: RegistrationDraft? by lazy {
@@ -64,6 +73,10 @@ class PickTeamActivity : AppCompatActivity() {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra(NavKeys.REG_DRAFT)
         }
+    }
+
+    private val isFirstTeamCreate by lazy {
+        intent.getBooleanExtra("EXTRA_FIRST_TEAM_CREATE", false)
     }
 
 
@@ -143,31 +156,46 @@ class PickTeamActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // 1.5) If Transfers sent us a squad, apply it immediately (skip getMyTeam)
-            val incomingIds = intent.getIntegerArrayListExtra(NavKeys.PLAYER_IDS)?.toList()
-            if (!incomingIds.isNullOrEmpty() && incomingIds.size == SLOT_ORDER.size) {
+            // 1.5) Transfers sends a 15-player squad
+            val incomingSquad = intent.getIntegerArrayListExtra(NavKeys.PLAYER_IDS)?.toList()
+            val hasIncomingSquad = !incomingSquad.isNullOrEmpty() && incomingSquad.size == 15
 
-                // treat this as the "current team" on entry
-                hasSavedTeam = true
-
-                SLOT_ORDER.forEachIndexed { index, key ->
-                    val id = incomingIds[index]
-                    selectedBySlot[key] = id
-                    initialBySlot[key] = id // so "No changes" works in Pick Team
-                }
-
-                renderAll()
+            if (hasIncomingSquad && isFirstTeamCreate) {
+                // First-time team creation: starting lineup and bench from the squad
+                seedSelectedBySlotFromTransferOrder(incomingSquad)
+                hasSavedTeam = false
+                applyDefault442() // seeds -> applyFormation -> renderLineup
                 return@launch
             }
 
-            // 2) Optionally load saved team (auth endpoint) – do NOT toast 401
+
+            // 2) load saved team if exists
             val isOnboarding = onboardingDraft != null
             val token = repo.getTokenOrNull()
 
             if (!isOnboarding && !token.isNullOrBlank()) {
                 try {
                     val team = withContext(Dispatchers.IO) { repo.getMyTeam() }
-                    if (team != null) populateUiWithSavedTeam(team)
+
+                    if (team != null) {
+                        val slotMap = decodeSlotMap(team) // Map<RosterSlotKey, Int?>
+                        val hasAnySlots = slotMap.values.any { it != null }
+
+                        if (hasAnySlots) {
+                            val savedSlots = decodeSlotMap(team).toMutableMap()
+                            val squad = incomingSquad ?: getSquadIds(team)
+
+                            reconcileSlotsWithSquadByPosition(savedSlots, squad)
+
+                            loadFromSavedSlots(team, savedSlots)   // ✅ use reconciled
+                        } else {
+                            val squad = getSquadIds(team)
+                            loadFirstTimeFromSquad(squad)
+                        }
+
+                        return@launch // important: avoid renderAll() overriding your lineup render
+                    }
+
                 } catch (e: Exception) {
                     if (!isUnauthorized(e)) {
                         Toast.makeText(
@@ -179,10 +207,58 @@ class PickTeamActivity : AppCompatActivity() {
                 }
             }
 
-            // 3) Render UI regardless
+            // 3) Render UI regardless (empty state)
             renderAll()
         }
     }
+        private fun decodeSlotMap(team: LeaderboardTeamDto): Map<RosterSlotKey, Int?> {
+            val raw = team.slotPlayerIds ?: return emptyMap()
+
+            return raw.mapNotNull { (k, v) ->
+                val key = runCatching { RosterSlotKey.valueOf(k) }.getOrNull()
+                key?.let { it to v }
+            }.toMap()
+        }
+
+        private fun getSquadIds(team: LeaderboardTeamDto): List<Int> {
+            return team.squadPlayerIds ?: team.playerIds
+        }
+
+        private fun seedSelectedBySlotFromTransferOrder(squad: List<Int>) {
+            // PITCH_ORDER must be the 15 transfer-style placeholders (GK1..STR3)
+            val pitchOrder = RosterSlotKey.PITCH_ORDER
+
+            selectedBySlot.clear()
+            pitchOrder.forEachIndexed { i, key ->
+                selectedBySlot[key] = squad[i]
+            }
+
+            // bench keys start empty (formation will move extras into BENCH1..4)
+            selectedBySlot[RosterSlotKey.BENCH1] = null
+            selectedBySlot[RosterSlotKey.BENCH2] = null
+            selectedBySlot[RosterSlotKey.BENCH3] = null
+            selectedBySlot[RosterSlotKey.BENCH4] = null
+        }
+
+    private fun loadFromSavedSlots(team: LeaderboardTeamDto, slotMap: Map<RosterSlotKey, Int?>) {
+        lineupState = LineupState.fromSlotMap(slotMap)
+
+        currentFormation = Formation.fromKey(team.formationKey)
+
+        renderLineup(lineupState, currentFormation)
+
+        // ✅ baseline so hasChanges() is false on entry
+        initialBySlot.clear()
+        initialBySlot.putAll(selectedBySlot)
+        hasSavedTeam = true
+    }
+
+        private fun loadFirstTimeFromSquad(squad: List<Int>) {
+            if (squad.size != 15) return
+
+            seedSelectedBySlotFromTransferOrder(squad)
+            applyDefault442() // seeds -> applyFormation -> renderLineup
+        }
 
     //Save team for new user
     private fun finalizeRegistrationAndSaveTeam(playerIds: List<Int>) {
@@ -222,78 +298,69 @@ class PickTeamActivity : AppCompatActivity() {
         }
     }
 
-    //Saving team for logged in user
-    private fun saveTeamFromTransfersUi(playerIds: List<Int>) {
+    private fun onConfirmSlotMap(slotMap: Map<String, Int?>) {
         lifecycleScope.launch {
             try {
-                // Normal path: existing user updates their team
-                repo.updateMyTeamPlayers(playerIds)
-
-                Toast.makeText(this@PickTeamActivity, "Transfers saved!", Toast.LENGTH_SHORT).show()
-                goToLeaderboard()
-
-            } catch (e: Exception) {
-                // If they somehow don't have a team yet, create one.
-                // We'll fetch the teamName from current user (or fallback).
-                try {
-                    val user = repo.getCurrentUser()
-                    val teamName =
-                        user.teamName?.trim().takeUnless { it.isNullOrBlank() } ?: "My Team"
-
-                    repo.submitTeamToBackend(teamName, playerIds)
-
-                    Toast.makeText(this@PickTeamActivity, "Team created!", Toast.LENGTH_SHORT)
-                        .show()
+                if (onboardingDraft != null) {
+                    // If onboarding needs to register + save, do that here or keep your existing flow.
+                    // For now, you probably want to call your existing finalizeRegistrationAndSaveTeam
+                    // BUT that expects a List<Int> (15). See note below.
+                    finalizeRegistrationAndSaveTeam(buildPitch15PlayerIds()) // minimal, keeps your existing registration pipeline
+                } else {
+                    repo.updateMyTeamSlots(
+                        slotMap,
+                        formationKey = Formation.keyOf(currentFormation)) // implement in repo to call backend route
+                    onSavedSuccessfully()
                     goToLeaderboard()
-
-                } catch (createErr: Exception) {
-                    Toast.makeText(
-                        this@PickTeamActivity,
-                        createErr.message ?: "Save failed",
-                        Toast.LENGTH_LONG
-                    ).show()
                 }
+            } catch (e: Exception) {
+                Toast.makeText(this@PickTeamActivity, e.message ?: "Save failed", Toast.LENGTH_LONG).show()
             }
         }
     }
 
-    private fun onConfirm(playerIds: List<Int>) {
-        if (onboardingDraft != null) {
-            finalizeRegistrationAndSaveTeam(playerIds)
-        } else {
-            saveTeamFromTransfersUi(playerIds)
-        }
-    }
-
     private fun confirmAndSave() {
+        val payload = buildSlotMapPayload()
 
-        val playerIds = build15PlayerIds()
-        // Optional: if nothing changed, don't prompt
-        if (hasSavedTeam && !hasChanges()) {
-            Toast.makeText(this, "No changes to save.", Toast.LENGTH_SHORT).show()
+        // If you truly guarantee validity always, you can skip validation.
+        // But I'd still keep a cheap duplicate check if you've had issues before.
+
+        val shouldPrompt =
+            hasSavedTeam && startingXiChanged(currentFormation)
+
+        if (!shouldPrompt) {
+            // Save immediately, no dialog
+            onConfirmSlotMap(payload)
             return
         }
 
         AlertDialog.Builder(this)
             .setTitle("Confirm")
-            .setMessage("Save these changes to your team?")
+            .setMessage("Save these changes to your starting XI?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Confirm") { _, _ ->
-                onConfirm(playerIds)  // pass ids so you don't recompute
+                onConfirmSlotMap(payload)
             }
             .show()
     }
 
+    private fun onSavedSuccessfully() {
+        initialBySlot.clear()
+        initialBySlot.putAll(selectedBySlot)
+        hasSavedTeam = true
+    }
     private fun goToLeaderboard() {
         val intent = Intent(this, LeaderboardActivity::class.java)
-        // optional: prevents coming back to Transfers with back button
+        //prevents coming back to Transfers with back button
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()
     }
 
     private fun hasChanges(): Boolean =
-        RosterSlotKey.entries.any { key -> selectedBySlot[key] != initialBySlot[key] }
+        RosterSlotKey.PITCH_ORDER.any { key ->
+            selectedBySlot[key] != initialBySlot[key]
+        }
 
     private fun populateUiWithSavedTeam(team: LeaderboardTeamDto) {
         val ids = team.playerIds
@@ -341,15 +408,180 @@ class PickTeamActivity : AppCompatActivity() {
         view.clearButton?.visibility = View.VISIBLE
     }
 
-    private fun build15PlayerIds(): List<Int> {
-        val ids = SLOT_ORDER.mapNotNull { selectedBySlot[it] }
-        if (ids.size != SLOT_ORDER.size) {
-            Toast.makeText(this, "Team not loaded yet.", Toast.LENGTH_SHORT).show()
+    private fun buildPitch15PlayerIds(): List<Int> {
+        val ids = RosterSlotKey.PITCH_ORDER.mapNotNull { selectedBySlot[it] }
+        if (ids.size != RosterSlotKey.PITCH_ORDER.size) {
+            Toast.makeText(this, "Team not complete yet.", Toast.LENGTH_SHORT).show()
             return emptyList()
         }
         return ids
     }
 
+    private fun buildSlot19PlayerIdsOrNull(): List<Int?> {
+        return RosterSlotKey.SLOT_ORDER.map { selectedBySlot[it] } // Int? list
+    }
+
+    private fun slotGroup(key: RosterSlotKey): Position? = when {
+        key.name.startsWith("GK") -> Position.GK
+        key.name.startsWith("DEF") -> Position.DEF
+        key.name.startsWith("MID") -> Position.MID
+        key.name.startsWith("STR") -> Position.STR   // or Position.STR if that's what you use
+        else -> null // bench
+    }
+
+    private fun playerPos(id: Int): Position? =
+        allPlayers.firstOrNull { it.id == id }?.position  // adjust field name
+
+    private fun reconcileSlotsWithSquadByPosition(
+        slotMap: MutableMap<RosterSlotKey, Int?>,
+        newSquad: List<Int>
+    ) {
+        val squadSet = newSquad.toSet()
+
+        // 1) Remove transferred-out players
+        for (k in RosterSlotKey.SLOT_ORDER) {
+            val pid = slotMap[k]
+            if (pid != null && pid !in squadSet) slotMap[k] = null
+        }
+
+        // 2) Determine missing/new players not yet placed
+        val used = slotMap.values.filterNotNull().toMutableSet()
+        val missing = newSquad.filter { it !in used }.toMutableList()
+
+        // 3) Fill empty PITCH slots first by matching position group
+        val pitchKeys = RosterSlotKey.PITCH_ORDER
+        for (k in pitchKeys) {
+            if (slotMap[k] != null) continue
+            val need = slotGroup(k)
+
+            val idx = missing.indexOfFirst { id -> playerPos(id) == need }
+            if (idx != -1) {
+                slotMap[k] = missing.removeAt(idx)
+            }
+        }
+
+        // 4) Fill bench with whatever remains (or also position-sort if you want)
+        val benchKeys = listOf(RosterSlotKey.BENCH1, RosterSlotKey.BENCH2, RosterSlotKey.BENCH3, RosterSlotKey.BENCH4)
+        for (k in benchKeys) {
+            if (missing.isEmpty()) break
+            if (slotMap[k] == null) slotMap[k] = missing.removeAt(0)
+        }
+
+        // 5) Any leftovers (shouldn't happen) can fill remaining null pitch slots
+        for (k in pitchKeys) {
+            if (missing.isEmpty()) break
+            if (slotMap[k] == null) slotMap[k] = missing.removeAt(0)
+        }
+    }
+
+    private fun buildSlotMapPayload(): Map<String, Int?> {
+        return RosterSlotKey.SLOT_ORDER.associate { key ->
+            key.name to selectedBySlot[key]
+        }
+    }
+
+    private fun startingXiChanged(formation: Formation): Boolean {
+        val keys = lineupManager.activeStarterKeys(formation)
+        val before = keys.mapNotNull { initialBySlot[it] }.toSet()
+        val now = keys.mapNotNull { selectedBySlot[it] }.toSet()
+        return before != now
+    }
+
     private fun renderAll() = slotViews.keys.forEach { renderSlot(it) }
+
+    private fun renderLineup(
+        state: LineupState,
+        formation: Formation
+    ) {
+        val activeKeys = lineupManager.activeStarterKeys(formation).toSet()
+
+        // 0) Clear to avoid stale hidden slots keeping old values
+//        selectedBySlot.clear()
+
+        // 1) Show/hide pitch slots (bench always visible)
+        slotViews.keys.forEach { key ->
+            slotViews[key]?.root?.visibility =
+                if (key in activeKeys || key.isBench()) View.VISIBLE else View.GONE
+        }
+
+        // 2) Update selectedBySlot for starters (includes extras too, but that's ok)
+        state.starters.forEach { (key, playerId) ->
+            selectedBySlot[key] = playerId
+        }
+
+        // 3) Update bench slots
+        val benchKeys = listOf(
+            RosterSlotKey.BENCH1, RosterSlotKey.BENCH2,
+            RosterSlotKey.BENCH3, RosterSlotKey.BENCH4
+        )
+        benchKeys.forEachIndexed { index, benchKey ->
+            selectedBySlot[benchKey] = state.bench.getOrNull(index)
+        }
+
+        // 4) Re-render everything
+        renderAll()
+    }
+
+    private fun seedStateFromSelectedSlotsInto(state: LineupState) {
+        val pitchKeys = listOf(
+            RosterSlotKey.GK1, RosterSlotKey.GK2,
+            RosterSlotKey.DEF1, RosterSlotKey.DEF2, RosterSlotKey.DEF3, RosterSlotKey.DEF4, RosterSlotKey.DEF5,
+            RosterSlotKey.MID1, RosterSlotKey.MID2, RosterSlotKey.MID3, RosterSlotKey.MID4, RosterSlotKey.MID5,
+            RosterSlotKey.STR1, RosterSlotKey.STR2, RosterSlotKey.STR3
+        )
+
+        // Fill starters from your existing selectedBySlot map
+        pitchKeys.forEach { key ->
+            state.starters[key] = selectedBySlot[key]
+        }
+
+        // Bench: seed from selectedBySlot if present (otherwise null)
+        state.bench[0] = selectedBySlot[RosterSlotKey.BENCH1]
+        state.bench[1] = selectedBySlot[RosterSlotKey.BENCH2]
+        state.bench[2] = selectedBySlot[RosterSlotKey.BENCH3]
+        state.bench[3] = selectedBySlot[RosterSlotKey.BENCH4]    }
+
+    private fun applyDefault442() {
+        currentFormation = Formation.F442
+
+        // make sure lineupState reflects selectedBySlot
+        seedStateFromSelectedSlotsInto(lineupState)
+
+        renderLineup(lineupState, currentFormation)
+    }
+
+    //Functions handling substitutions
+    private fun isStarterSlot(key: RosterSlotKey): Boolean =
+        !key.isBench() && (key in lineupManager.activeStarterKeys(currentFormation))
+
+    private fun getSwitchableTargets(from: RosterSlotKey): Set<RosterSlotKey> {
+        val activeStarters = lineupManager.activeStarterKeys(currentFormation).toSet()
+        val benchKeys = setOf(RosterSlotKey.BENCH1, RosterSlotKey.BENCH2, RosterSlotKey.BENCH3, RosterSlotKey.BENCH4)
+
+        return if (from in activeStarters) benchKeys else activeStarters
+    }
+
+    private fun swapSlots(a: RosterSlotKey, b: RosterSlotKey) {
+        val tmp = selectedBySlot[a]
+        selectedBySlot[a] = selectedBySlot[b]
+        selectedBySlot[b] = tmp
+    }
+
+    private fun setSlotHighlighted(slot: RosterSlotKey, on: Boolean) {
+        val v = slotViews[slot]?.root ?: return
+        v.isSelected = on
+    }
+
+    private fun clearAllHighlights() {
+        slotViews.keys.forEach { setSlotHighlighted(it, false) }
+    }
+
+    private fun changeFormation(to: Formation) {
+        if (to == currentFormation) return
+        seedStateFromSelectedSlotsInto(lineupState)
+        lineupState = lineupManager.applyFormation(lineupState, from = currentFormation, to = to)
+        currentFormation = to
+        renderLineup(lineupState, currentFormation)
+    }
 
 }

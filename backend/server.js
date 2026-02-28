@@ -42,6 +42,76 @@ let usersCollection;
 
 const TEAM_SIZE = 15;
 
+// All possible UI slot keys (max formation support)
+const SLOT_KEYS = [
+  "GK1", "GK2",
+  "DEF1", "DEF2", "DEF3", "DEF4", "DEF5",
+  "MID1", "MID2", "MID3", "MID4", "MID5",
+  "STR1", "STR2", "STR3",
+  "BENCH1", "BENCH2", "BENCH3", "BENCH4",
+];
+
+const FORMATION_KEYS = [
+  "F442", "F433", "F451", "F532", "F523", "F541", "F343", "F352"
+];
+
+
+//Accounting for bench and starter players in the backend
+function normalizeSlotMap(slotMap) {
+  if (!slotMap || typeof slotMap !== "object") return null;
+
+  const out = {};
+  for (const k of SLOT_KEYS) {
+    const v = slotMap[k];
+    if (v == null) {
+      out[k] = null;
+    } else {
+      const n = Number(v);
+      if (!Number.isInteger(n)) return null;
+      out[k] = n;
+    }
+  }
+  return out;
+}
+
+function mergeSquadAndSlots(squadPlayerIds, slotPlayerIds) {
+  const squadSet = new Set(squadPlayerIds);
+
+  const merged = {};
+  const used = new Set();
+
+  for (const k of SLOT_KEYS) {
+    const pid = slotPlayerIds?.[k] ?? null;
+
+    if (pid === null) {
+      merged[k] = null;
+      continue;
+    }
+
+    // must be in squad
+    if (!squadSet.has(pid)) {
+      merged[k] = null;
+      continue;
+    }
+
+    // must not appear twice
+    if (used.has(pid)) {
+      merged[k] = null;
+      continue;
+    }
+
+    merged[k] = pid;
+    used.add(pid);
+  }
+
+  return merged;
+}
+
+function normalizeFormationKey(v) {
+  if (v == null) return null;
+  const s = String(v).trim().toUpperCase();
+  return FORMATION_KEYS.includes(s) ? s : null;
+}
 
 async function connectToMongo() {
   client = new MongoClient(process.env.MONGODB_URI);
@@ -124,8 +194,7 @@ app.get("/api/leaderboard", async (req, res) => {
 
     const computed = await Promise.all(
       teams.map(async (team) => {
-        const playerIds = (team.playerIds || []).map(Number);
-
+        const playerIds = (team.squadPlayerIds || team.playerIds || []).map(Number);
         const players = await playersCollection
           .find({ id: { $in: playerIds } })
           .toArray();
@@ -281,12 +350,30 @@ app.post("/api/leaderboard", requireAuth, async (req, res) => {
       return res.status(409).json({ message: "User already has a team" });
     }
 
+    //For managing bench and starter players
+    const squadPlayerIds = playerIds; // for now reuse your existing variable name
+    let slots = Object.fromEntries(SLOT_KEYS.map((k) => [k, null]));
+    if (req.body.slotPlayerIds !== undefined) {
+      const normalized = normalizeSlotMap(req.body.slotPlayerIds);
+      if (normalized === null) {
+        return res.status(400).json({ message: "slotPlayerIds invalid" });
+      }
+      slots = normalized;
+    }
+    slots = mergeSquadAndSlots(squadPlayerIds, slots);
+
+    //For the formation for Pick Team
+    let formationKey = normalizeFormationKey(req.body.formationKey) || "F442";
+
     const doc = {
-      userId, // link to user
+      userId,
       teamName: teamName.trim(),
-      playerIds,
+      squadPlayerIds,
+      slotPlayerIds: slots,
       createdAt: new Date(),
-      points: 0, // GET calculates anyway
+      updatedAt: new Date(),
+      points: 0,
+      formationKey,
     };
 
     const result = await leaderboardCollection.insertOne(doc);
@@ -386,8 +473,19 @@ app.post("/api/auth/register-with-team", async (req, res) => {
 
     // --- Transaction (best practice) ---
     // Note: transactions require a replica set (Atlas supports this).
+
+    let initialSlots = null;
+
+    if (req.body.slotPlayerIds !== undefined) {
+      const normalized = normalizeSlotMap(req.body.slotPlayerIds);
+      if (normalized === null) {
+        return res.status(400).json({ message: "slotPlayerIds invalid" });
+      }
+      initialSlots = normalized;
+    }
+
     const result = await session.withTransaction(async () => {
-      const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
       // 1) Create user
       const userDoc = {
@@ -402,14 +500,21 @@ app.post("/api/auth/register-with-team", async (req, res) => {
       const userInsert = await usersCollection.insertOne(userDoc, { session });
       const userId = userInsert.insertedId;
 
-      // 2) Create leaderboard team
-      const teamDoc = {
-        userId, // ObjectId
-        teamName: teamName.trim(),
-        playerIds,
-        createdAt: new Date(),
-        points: 0,
-      };
+     // 2) Create leaderboard team
+     let slots = initialSlots ?? Object.fromEntries(SLOT_KEYS.map((k) => [k, null]));
+
+     // Merge constraints (in squad + no duplicates)
+     slots = mergeSquadAndSlots(playerIds, slots);
+
+    const teamDoc = {
+      userId,
+      teamName: teamName.trim(),
+      squadPlayerIds: playerIds,
+      slotPlayerIds: slots,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      points: 0,
+    };
 
       const teamInsert = await leaderboardCollection.insertOne(teamDoc, { session });
 
@@ -502,47 +607,75 @@ app.patch("/api/leaderboard/me", requireAuth, async (req, res) => {
   console.log("PATCH /api/leaderboard/me Body:", req.body);
 
   try {
-    let { playerIds } = req.body;
+    let { playerIds, squadPlayerIds, slotPlayerIds } = req.body;
     const userId = new ObjectId(req.auth.userId);
 
-    //Validate playerIds
-    if (!Array.isArray(playerIds) || playerIds.length !== TEAM_SIZE) {
-      return res
-        .status(400)
-        .json({ message: `playerIds must be an array of ${TEAM_SIZE} items` });
+   // allow old name (playerIds) for now
+let squad = squadPlayerIds ?? playerIds;
+
+// load existing team (needed if client only sent slotPlayerIds)
+const existing = await leaderboardCollection.findOne({ userId });
+if (!existing) return res.status(404).json({ message: "No team found for user" });
+
+// if squad not provided, fall back to existing squad
+if (squad === undefined) {
+  squad = existing.squadPlayerIds;
+}
+
+// validate squad (either provided by client or taken from existing)
+if (!Array.isArray(squad) || squad.length !== TEAM_SIZE) {
+  return res.status(400).json({ message: `squadPlayerIds must be an array of ${TEAM_SIZE} items` });
+}
+squad = squad.map((x) => Number(x));
+if (squad.some((x) => !Number.isInteger(x))) {
+  return res.status(400).json({ message: "squadPlayerIds must be integers" });
+}
+if (new Set(squad).size !== squad.length) {
+  return res.status(400).json({ message: "squadPlayerIds must be unique" });
+}
+
+    // base slots = existing OR empty
+    let slots =
+    existing.slotPlayerIds && typeof existing.slotPlayerIds === "object"
+    ? normalizeSlotMap(existing.slotPlayerIds) // ensures missing keys become null
+    : Object.fromEntries(SLOT_KEYS.map((k) => [k, null]));
+
+    // if client sent slots, validate them
+    if (slotPlayerIds !== undefined) {
+      const normalized = normalizeSlotMap(slotPlayerIds);
+      if (normalized === null) {
+        return res.status(400).json({ message: "slotPlayerIds invalid" });
+      }
+      slots = normalized;
     }
 
-    //Force numeric IDs
-    playerIds = playerIds.map((x) => Number(x));
+    let formationKey = existing.formationKey || "F442";
 
-    //Validate integers
-    if (playerIds.some((x) => !Number.isInteger(x))) {
-      return res.status(400).json({ message: "playerIds must be integers" });
-    }
+if (req.body.formationKey !== undefined) {
+  const normalized = normalizeFormationKey(req.body.formationKey);
+  if (normalized === null) {
+    return res.status(400).json({ message: "formationKey invalid" });
+  }
+  formationKey = normalized;
+}
 
-    //Validate no duplicates
-    if (new Set(playerIds).size !== playerIds.length) {
-      return res.status(400).json({ message: "playerIds must be unique" });
-    }
+    // merge constraints
+    slots = mergeSquadAndSlots(squad, slots);
 
-    //Ensure team exists for user
-    const existing = await leaderboardCollection.findOne({ userId });
-    if (!existing) {
-      return res.status(404).json({ message: "No team found for user" });
-    }
-
-    // Update the team
+    // save
     await leaderboardCollection.updateOne(
       { userId },
       {
         $set: {
-          playerIds,
+          squadPlayerIds: squad,
+          slotPlayerIds: slots,
+          formationKey,
           updatedAt: new Date(),
         },
       }
     );
 
-    res.json({ ok: true, playerIds });
+    res.json({ ok: true, squadPlayerIds: squad, slotPlayerIds: slots, formationKey });
   } catch (err) {
     console.error("PATCH /api/leaderboard/me error:", err);
     res.status(500).json({ message: "Failed to update team" });

@@ -166,13 +166,6 @@
                     app:layout_constraintGuide_percent="0.2" />
 
                 <androidx.constraintlayout.widget.Guideline
-                    android:id="@+id/rowDEF"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    app:layout_constraintGuide_percent="0.36" />
-
-                <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/rowGK"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -186,6 +179,105 @@
                     android:orientation="horizontal"
                     app:layout_constraintGuide_percent="0.82" />
 
+                <!-- Central Centre back in back 5 -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF5_CCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.41" />
+
+                <!-- Back-4 defender rows (tighter / different slope) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_LB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.38"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_LCB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.395"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_RCB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.41"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_RB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.425"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <!-- Midfield-4 / 4-4-2 midfield rows (gentle left -> right slope) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_LM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.215" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_LCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.23" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_RCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.245" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_RM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.26" />
+
+                <!-- Mid 5 CCM -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID5_CM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.245" />
+
+                <!-- Striker 2 Rows -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST2_LS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.065" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST2_RS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.08" />
+
+                <!-- Striker 1 or 3 Row -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.08" />
+
+
+                <!-- Vertical Regular Columns -->
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/col1"
                     android:layout_width="wrap_content"
@@ -221,6 +313,113 @@
                     android:orientation="vertical"
                     app:layout_constraintGuide_percent="0.88"/>
 
+                <!-- ================= Formation-specific columns ================= -->
+
+                <!-- Back-4 defender columns (centered + evenly spaced) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_LB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.16" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_LCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.34" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_RCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.52" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_RB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.7" />
+
+                <!-- Dedicated GK column -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colGK"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.2" />
+
+                <!-- Dedicated CCB column -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colCCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.46" />
+
+                <!-- 4-midfield columns (centered + slightly narrower than DEF4) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_LM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.22" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_LCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.4" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_RCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.58" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_RM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.76" />
+
+                <!-- Mid 5 to hard-center a CCM  -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col_MID5_CM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5" />
+
+                <!-- Strikers 2 -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colST2_LS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.56" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colST2_RS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.74" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colST"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.675" />
+
+                <!-- Starting Slots -->
                 <!-- ================= GK (2) ================= -->
                 <include
                     android:id="@+id/slotGK1"
@@ -228,21 +427,19 @@
                     android:layout_width="64dp"
                     android:layout_height="82dp"
                     app:layout_constraintTop_toTopOf="@id/rowGK"
-                    app:layout_constraintStart_toStartOf="@id/col1"
-                    android:layout_marginStart="-20dp"
+                    app:layout_constraintStart_toStartOf="@id/colGK"
+                    app:layout_constraintEnd_toEndOf="@id/colGK"
                     />
-
 
                 <include
                     android:id="@+id/slotGK2"
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
+                    android:visibility="gone"
                     app:layout_constraintTop_toTopOf="@id/rowGK"
-                    app:layout_constraintStart_toStartOf="@id/col2"
-                    android:layout_marginStart="-14dp"
-                    android:layout_marginTop="10dp"
-                    />
+                    app:layout_constraintStart_toStartOf="@id/colGK"
+                    app:layout_constraintEnd_toEndOf="@id/colGK" />
 
                 <!-- ================= DEF (4) ================= -->
                 <include
@@ -250,10 +447,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowDEF"
-                    app:layout_constraintStart_toStartOf="@id/col1"
-                    android:layout_marginStart="-36dp"
-                    android:layout_marginTop="10dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_LB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_LB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_LB"
                     />
 
                 <include
@@ -261,10 +457,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowDEF"
-                    app:layout_constraintStart_toStartOf="@id/col2"
-                    android:layout_marginStart="-30dp"
-                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_LCB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_LCB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_LCB"
                     />
 
                 <include
@@ -272,10 +467,10 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowDEF"
-                    app:layout_constraintStart_toStartOf="@id/col3"
-                    android:layout_marginStart="-48dp"
-                    android:layout_marginTop="30dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF5_CCB"
+                    app:layout_constraintStart_toStartOf="@id/colCCB"
+                    app:layout_constraintEnd_toEndOf="@id/colCCB"
+                    android:visibility="gone"
                     />
 
                 <include
@@ -283,10 +478,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowDEF"
-                    app:layout_constraintStart_toStartOf="@id/col4"
-                    android:layout_marginStart="-66dp"
-                    android:layout_marginTop="40dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_RCB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_RCB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_RCB"
                     />
 
                 <include
@@ -294,10 +488,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowDEF"
-                    app:layout_constraintStart_toStartOf="@id/col5"
-                    android:layout_marginStart="-60dp"
-                    android:layout_marginTop="50dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_RB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_RB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_RB"
                     />
 
                 <!-- ================= MID (5) ================= -->
@@ -306,10 +499,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowMID"
-                    app:layout_constraintStart_toStartOf="@id/col1"
-                    android:layout_marginStart="-20dp"
-                    android:layout_marginTop="10dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_LM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_LM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_LM"
                     />
 
                 <include
@@ -317,10 +509,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowMID"
-                    app:layout_constraintStart_toStartOf="@id/col2"
-                    android:layout_marginStart="-14dp"
-                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_LCM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_LCM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_LCM"
                     />
 
                 <include
@@ -328,10 +519,10 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowMID"
-                    app:layout_constraintStart_toStartOf="@id/col3"
-                    android:layout_marginStart="-32dp"
-                    android:layout_marginTop="30dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID5_CM"
+                    app:layout_constraintStart_toStartOf="@id/col_MID5_CM"
+                    app:layout_constraintEnd_toEndOf="@id/col_MID5_CM"
+                    android:visibility="gone"
                     />
 
                 <include
@@ -339,10 +530,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowMID"
-                    app:layout_constraintStart_toStartOf="@id/col4"
-                    android:layout_marginStart="-50dp"
-                    android:layout_marginTop="40dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_RCM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_RCM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_RCM"
                     />
 
                 <include
@@ -350,10 +540,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowMID"
-                    app:layout_constraintStart_toStartOf="@id/col5"
-                    android:layout_marginStart="-44dp"
-                    android:layout_marginTop="50dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_RM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_RM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_RM"
                     />
 
                 <!-- ================= ST (3) ================= -->
@@ -362,10 +551,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowST"
-                    app:layout_constraintStart_toStartOf="@id/col3"
-                    android:layout_marginStart="-32dp"
-                    android:layout_marginTop="10dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST2_LS"
+                    app:layout_constraintStart_toStartOf="@id/colST2_LS"
+                    app:layout_constraintEnd_toEndOf="@id/colST2_LS"
                     />
 
                 <include
@@ -373,10 +561,10 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowST"
-                    app:layout_constraintStart_toStartOf="@id/col4"
-                    android:layout_marginStart="-50dp"
-                    android:layout_marginTop="20dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST1"
+                    app:layout_constraintStart_toStartOf="@id/colST"
+                    app:layout_constraintEnd_toEndOf="@id/colST"
+                    android:visibility="gone"
                     />
 
                 <include
@@ -384,10 +572,9 @@
                     layout="@layout/view_player_slot"
                     android:layout_width="64dp"
                     android:layout_height="82dp"
-                    app:layout_constraintTop_toTopOf="@id/rowST"
-                    app:layout_constraintStart_toStartOf="@id/col5"
-                    android:layout_marginStart="-44dp"
-                    android:layout_marginTop="30dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST2_RS"
+                    app:layout_constraintStart_toStartOf="@id/colST2_RS"
+                    app:layout_constraintEnd_toEndOf="@id/colST2_RS"
                     />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

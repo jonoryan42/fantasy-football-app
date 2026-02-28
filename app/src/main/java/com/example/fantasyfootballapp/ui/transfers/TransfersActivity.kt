@@ -50,7 +50,7 @@ class TransfersActivity : AppCompatActivity() {
 
     private var hasSavedTeam: Boolean = false
 
-    private val SLOT_ORDER = RosterSlotKey.entries.toList()
+    private val SLOT_ORDER = RosterSlotKey.PITCH_ORDER
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
@@ -246,6 +246,9 @@ class TransfersActivity : AppCompatActivity() {
         // pass onboarding draft if present (so PickTeam can register+save there)
         onboardingDraft?.let { draft ->
             intent.putExtra(NavKeys.REG_DRAFT, draft)
+
+            //Force default 4-4-2 in Pick Team
+            intent.putExtra(NavKeys.EXTRA_FIRST_TEAM_CREATE, true)
         }
 
         // optional
@@ -258,10 +261,6 @@ class TransfersActivity : AppCompatActivity() {
     private fun confirmAndSave() {
         //stop immediately if not complete
         val playerIds = build15PlayerIdsOrNull()
-        if (playerIds == null) {
-            Toast.makeText(this, "Please fill all slots before confirming.", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         // Optional: if nothing changed, don't prompt
         if (hasSavedTeam && !hasChanges()) {
@@ -298,9 +297,10 @@ class TransfersActivity : AppCompatActivity() {
         updateHeader()
     }
 
-    private fun build15PlayerIdsOrNull(): List<Int>? {
-        val ids = SLOT_ORDER.map { key -> selectedBySlot[key] }
-        return if (ids.any { it == null }) null else ids.filterNotNull()
+    private fun build15PlayerIdsOrNull(): List<Int> {
+        val ids = RosterSlotKey.PITCH_ORDER.mapNotNull { selectedBySlot[it] }
+        if (ids.size != RosterSlotKey.PITCH_ORDER.size) return emptyList()
+        return ids
     }
 
     private fun spentNow(): Double =

@@ -5,6 +5,7 @@ import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
+import com.example.fantasyfootballapp.model.UpdateLeaderboardTeamRequest
 import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
 import retrofit2.Response
@@ -55,5 +56,7 @@ interface ApiService {
     suspend fun updateMyTeamName(@Body req: UpdateTeamNameRequest): retrofit2.Response<Unit>
 
     @PATCH("/api/leaderboard/me")
-    suspend fun updateMyTeamPlayers(@Body req: UpdateTeamPlayersRequest): Response<Unit>
+    suspend fun patchMyTeam(
+        @Body body: UpdateLeaderboardTeamRequest
+    ): Response<LeaderboardTeamDto>
 }

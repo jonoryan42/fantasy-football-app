@@ -60,6 +60,11 @@ data class LeaderboardTeamDto(
     val _id: String,
     val userId: String,
     val teamName: String,
+    // NEW schema
+    val squadPlayerIds: List<Int>? = null,
+    val slotPlayerIds: Map<String, Int?>? = null,
+    val formationKey: String? = null,
+    //Old
     val playerIds: List<Int>,
     val createdAt: String,
     val points: Int

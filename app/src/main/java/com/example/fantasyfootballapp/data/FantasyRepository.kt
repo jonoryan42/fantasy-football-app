@@ -7,6 +7,7 @@ import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
+import com.example.fantasyfootballapp.model.UpdateLeaderboardTeamRequest
 import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiService
@@ -16,6 +17,7 @@ import com.example.fantasyfootballapp.network.RegisterRequest
 import com.example.fantasyfootballapp.util.RepoResult
 import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
+import okhttp3.internal.format
 
 class FantasyRepository(
     private val api: ApiService,
@@ -64,11 +66,24 @@ class FantasyRepository(
         }
     }
 
-    suspend fun updateMyTeamPlayers(playerIds: List<Int>) {
-        val res = api.updateMyTeamPlayers(UpdateTeamPlayersRequest(playerIds))
+//    suspend fun updateMyTeamPlayers(playerIds: List<Int>) {
+//        val res = api.updateMyTeamPlayers(UpdateTeamPlayersRequest(playerIds))
+//        if (!res.isSuccessful) {
+//            val err = res.errorBody()?.string()
+//            Log.e("FantasyRepository", "UpdateTeam failed ${res.code()} body=$err")
+//            throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
+//        }
+//    }
+
+    suspend fun updateMyTeamSlots(
+        slotPlayerIds: Map<String, Int?>,
+        formationKey: String?) {
+        val res = api.patchMyTeam(UpdateLeaderboardTeamRequest(
+            slotPlayerIds = slotPlayerIds,
+            formationKey = formationKey
+        ))
         if (!res.isSuccessful) {
             val err = res.errorBody()?.string()
-            Log.e("FantasyRepository", "UpdateTeam failed ${res.code()} body=$err")
             throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
         }
     }
