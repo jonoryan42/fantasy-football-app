@@ -119,7 +119,14 @@ class PickTeamActivity : AppCompatActivity() {
             RosterSlotKey.STR1 to bindPlayerSlot(R.id.slotLS),
             RosterSlotKey.STR2 to bindPlayerSlot(R.id.slotST),
             RosterSlotKey.STR3 to bindPlayerSlot(R.id.slotRS),
+
+            RosterSlotKey.BENCH1 to bindPlayerSlot(R.id.benchSlot1),
+            RosterSlotKey.BENCH2 to bindPlayerSlot(R.id.benchSlot2),
+            RosterSlotKey.BENCH3 to bindPlayerSlot(R.id.benchSlot3),
+            RosterSlotKey.BENCH4 to bindPlayerSlot(R.id.benchSlot4),
         )
+
+        lineupState = LineupState() //initialise lineup state
 
         loadPlayers()
         renderAll()
@@ -161,10 +168,11 @@ class PickTeamActivity : AppCompatActivity() {
             val hasIncomingSquad = !incomingSquad.isNullOrEmpty() && incomingSquad.size == 15
 
             if (hasIncomingSquad && isFirstTeamCreate) {
-                // First-time team creation: starting lineup and bench from the squad
                 seedSelectedBySlotFromTransferOrder(incomingSquad)
                 hasSavedTeam = false
-                applyDefault442() // seeds -> applyFormation -> renderLineup
+
+                //convert Transfer-style 15 into PickTeam 4-4-2 + bench
+                force442AndFillBenchFromExtras()
                 return@launch
             }
 
@@ -247,7 +255,7 @@ class PickTeamActivity : AppCompatActivity() {
 
         renderLineup(lineupState, currentFormation)
 
-        // ✅ baseline so hasChanges() is false on entry
+        // hasChanges() is false on entry
         initialBySlot.clear()
         initialBySlot.putAll(selectedBySlot)
         hasSavedTeam = true
@@ -548,6 +556,57 @@ class PickTeamActivity : AppCompatActivity() {
         seedStateFromSelectedSlotsInto(lineupState)
 
         renderLineup(lineupState, currentFormation)
+    }
+
+    private fun force442AndFillBenchFromExtras() {
+        currentFormation = Formation.F442
+
+        //1. Capture the players currently in the "right side" + extra GK ----
+        val benchIds = listOf(
+            selectedBySlot[RosterSlotKey.GK2],   // extra GK
+            selectedBySlot[RosterSlotKey.DEF5],  // RB
+            selectedBySlot[RosterSlotKey.MID5],  // RM
+            selectedBySlot[RosterSlotKey.STR3]   // RS
+        )
+
+        // 2. Shift central -> right (and right -> further right) ----
+        // DEF shift: CCB -> RCB, RCB -> RB
+        val ccb = selectedBySlot[RosterSlotKey.DEF3]
+        val rcb = selectedBySlot[RosterSlotKey.DEF4]
+        selectedBySlot[RosterSlotKey.DEF4] = ccb
+        selectedBySlot[RosterSlotKey.DEF5] = rcb
+
+        // MID shift: CM -> RCM, RCM -> RM
+        val cm = selectedBySlot[RosterSlotKey.MID3]
+        val rcm = selectedBySlot[RosterSlotKey.MID4]
+        selectedBySlot[RosterSlotKey.MID4] = cm
+        selectedBySlot[RosterSlotKey.MID5] = rcm
+
+        // STR shift: ST -> RS
+        val st = selectedBySlot[RosterSlotKey.STR2]
+        selectedBySlot[RosterSlotKey.STR3] = st
+
+        // ---- 3) Clear hidden/unused pitch slots for 4-4-2 ----
+        selectedBySlot[RosterSlotKey.GK2] = null
+        selectedBySlot[RosterSlotKey.DEF3] = null
+        selectedBySlot[RosterSlotKey.MID3] = null
+        selectedBySlot[RosterSlotKey.STR2] = null
+
+        // ---- 4) Put captured right-side players onto bench ----
+        val benchKeys = listOf(
+            RosterSlotKey.BENCH1,
+            RosterSlotKey.BENCH2,
+            RosterSlotKey.BENCH3,
+            RosterSlotKey.BENCH4
+        )
+        benchKeys.forEachIndexed { i, k -> selectedBySlot[k] = benchIds.getOrNull(i) }
+
+        // ---- 5) Render + baseline ----
+        lineupState = LineupState.fromSlotMap(selectedBySlot)
+        renderLineup(lineupState, currentFormation)
+
+        initialBySlot.clear()
+        initialBySlot.putAll(selectedBySlot)
     }
 
     //Functions handling substitutions

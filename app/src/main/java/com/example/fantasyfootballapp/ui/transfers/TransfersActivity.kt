@@ -264,13 +264,13 @@ class TransfersActivity : AppCompatActivity() {
 
         // Optional: if nothing changed, don't prompt
         if (hasSavedTeam && !hasChanges()) {
-            Toast.makeText(this, "No changes to save.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "No changes pending.", Toast.LENGTH_SHORT).show()
             return
         }
 
         AlertDialog.Builder(this)
             .setTitle("Confirm")
-            .setMessage("Save these changes to your team?")
+            .setMessage("Confirm these changes to your team?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Confirm") { _, _ ->
                 goToPickTeam(playerIds)  // pass ids so you don't recompute

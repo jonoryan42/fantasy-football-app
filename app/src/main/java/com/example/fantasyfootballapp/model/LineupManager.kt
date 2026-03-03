@@ -18,6 +18,26 @@ class LineupManager(
 
     /** Slots that are active on the pitch for a given formation. */
     fun activeStarterKeys(formation: Formation): List<RosterSlotKey> {
+
+        // Hard-coded key layouts for formations where "which 4" matters visually
+        if (formation == Formation.F442) {
+            return listOf(
+                gk1,
+
+                // Back 4: LB, LCB, RCB, RB  (hide CCB = DEF3)
+                RosterSlotKey.DEF1, RosterSlotKey.DEF2,
+                RosterSlotKey.DEF4, RosterSlotKey.DEF5,
+
+                // Mid 4: LM, LCM, RCM, RM (hide CM = MID3)
+                RosterSlotKey.MID1, RosterSlotKey.MID2,
+                RosterSlotKey.MID4, RosterSlotKey.MID5,
+
+                // Front 2: LS, RS (hide ST = STR2)
+                RosterSlotKey.STR1, RosterSlotKey.STR3
+            )
+        }
+
+        // Default behaviour (works fine for most other formations)
         return buildList {
             add(gk1)
             addAll(defKeys.take(formation.def))
@@ -29,10 +49,12 @@ class LineupManager(
     /** Slots that are NOT used on the pitch for a given formation (extras). */
     fun inactivePitchKeys(formation: Formation): List<RosterSlotKey> {
         val active = activeStarterKeys(formation).toSet()
+
         val allPitch = buildList {
             add(gk1); add(gk2)
             addAll(defKeys); addAll(midKeys); addAll(fwdKeys)
         }
+
         return allPitch.filter { it !in active }
     }
 
