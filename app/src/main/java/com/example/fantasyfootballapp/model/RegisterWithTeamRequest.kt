@@ -6,5 +6,7 @@ data class RegisterWithTeamRequest(
     val email: String,
     val password: String,
     val teamName: String,
-    val playerIds: List<Int>
+    val playerIds: List<Int>,
+    val slotPlayerIds: Map<String, Int?>? = null,
+    val formationKey: String? = null
 )

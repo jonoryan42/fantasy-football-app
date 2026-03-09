@@ -436,8 +436,7 @@ app.post("/api/auth/register-with-team", async (req, res) => {
   const session = client.startSession();
 
   try {
-    let { fname, lname, email, password, teamName, playerIds } = req.body;
-
+    let { fname, lname, email, password, teamName, playerIds, slotPlayerIds, formationKey } = req.body;
     // --- Validate required fields ---
     if (!fname || !lname || !email || !password || !teamName || !playerIds) {
       return res.status(400).json({
@@ -476,8 +475,8 @@ app.post("/api/auth/register-with-team", async (req, res) => {
 
     let initialSlots = null;
 
-    if (req.body.slotPlayerIds !== undefined) {
-      const normalized = normalizeSlotMap(req.body.slotPlayerIds);
+    if (slotPlayerIds !== undefined) {
+      const normalized = normalizeSlotMap(slotPlayerIds);
       if (normalized === null) {
         return res.status(400).json({ message: "slotPlayerIds invalid" });
       }
@@ -511,6 +510,7 @@ app.post("/api/auth/register-with-team", async (req, res) => {
       teamName: teamName.trim(),
       squadPlayerIds: playerIds,
       slotPlayerIds: slots,
+      formationKey: formationKey ?? "F442",
       createdAt: new Date(),
       updatedAt: new Date(),
       points: 0,

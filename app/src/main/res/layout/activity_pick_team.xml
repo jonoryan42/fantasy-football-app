@@ -283,7 +283,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_end="362dp" />
+                    app:layout_constraintGuide_percent="0.11922141" />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/col2"
@@ -358,7 +358,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_percent="0.46" />
+                    app:layout_constraintGuide_begin="189dp" />
 
                 <!-- 4-midfield columns (centered + slightly narrower than DEF4) -->
                 <androidx.constraintlayout.widget.Guideline
@@ -577,13 +577,16 @@
                     app:layout_constraintEnd_toEndOf="@id/colST2_RS"
                     />
 
+                <androidx.constraintlayout.widget.Guideline android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Bench banner (bottom) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/benchBanner"
                 android:layout_width="0dp"
-                android:layout_height="120dp"
+                android:layout_height="135dp"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="4dp"
                 android:layout_marginStart="12dp"
@@ -598,6 +601,58 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/benchRole1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/GK"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot1"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot1"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot1"/>
+
+                    <TextView
+                        android:id="@+id/benchRole2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/DEF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot2"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot2"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot2"/>
+
+                    <TextView
+                        android:id="@+id/benchRole3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/MID"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot3"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot3"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot3"/>
+
+                    <TextView
+                        android:id="@+id/benchRole4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/STR"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot4"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot4"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot4"/>
 
                     <include
                         android:id="@+id/benchSlot1"

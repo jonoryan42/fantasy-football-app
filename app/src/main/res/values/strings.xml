@@ -59,6 +59,9 @@
     <string name="transfers1">Transfers</string>
     <string name="haaland">Haaland</string>
     <string name="che">CHE (A)</string>
+    <string name="DEF">DEF</string>
+    <string name="MID">MID</string>
+    <string name="STR">STR</string>
 
 
 </resources>

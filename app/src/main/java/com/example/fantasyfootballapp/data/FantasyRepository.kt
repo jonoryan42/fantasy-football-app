@@ -158,7 +158,9 @@ class FantasyRepository(
         email: String,
         password: String,
         teamName: String,
-        playerIds: List<Int>
+        playerIds: List<Int>,
+        slotPlayerIds: Map<String, Int?>,
+        formationKey: String
     ): AuthResponse {
 
         val body = RegisterWithTeamRequest(
@@ -167,7 +169,9 @@ class FantasyRepository(
             email = email.trim(),
             password = password,
             teamName = teamName.trim(),
-            playerIds = playerIds
+            playerIds = playerIds,
+            slotPlayerIds = slotPlayerIds,
+            formationKey = formationKey
         )
 
         val response = api.registerWithTeam(body)
@@ -184,10 +188,21 @@ class FantasyRepository(
         email: String,
         password: String,
         teamName: String,
-        playerIds: List<Int>
+        playerIds: List<Int>,
+        slotPlayerIds: Map<String, Int?>,
+        formationKey: String
     ): RepoResult<AuthResponse> {
         return try {
-            val res = registerWithTeam(fname, lname, email, password, teamName, playerIds)
+            val res = registerWithTeam(
+                fname = fname,
+                lname = lname,
+                email = email,
+                password = password,
+                teamName = teamName,
+                playerIds = playerIds,
+                slotPlayerIds = slotPlayerIds,
+                formationKey = formationKey
+            )
             RepoResult.Success(data = res)
         } catch (e: Exception) {
             RepoResult.Error(message = e.message ?: "Registration failed")

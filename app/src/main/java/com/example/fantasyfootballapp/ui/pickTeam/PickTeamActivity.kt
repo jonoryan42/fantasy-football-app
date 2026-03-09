@@ -3,6 +3,7 @@ package com.example.fantasyfootballapp.ui.pickTeam
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -141,6 +142,7 @@ class PickTeamActivity : AppCompatActivity() {
         wireSlotClicks()
         loadPlayers()
         renderAll()
+        renderBenchPosLabels()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -201,6 +203,10 @@ class PickTeamActivity : AppCompatActivity() {
                         val slotMap = decodeSlotMap(team) // Map<RosterSlotKey, Int?>
                         val hasAnySlots = slotMap.values.any { it != null }
 
+                        Log.d("PickTeam", "team = $team")
+                        Log.d("PickTeam", "decoded slotMap = $slotMap")
+                        Log.d("PickTeam", "hasAnySlots = $hasAnySlots")
+
                         if (hasAnySlots) {
                             val savedSlots = decodeSlotMap(team).toMutableMap()
                             val squad = incomingSquad ?: getSquadIds(team)
@@ -229,6 +235,7 @@ class PickTeamActivity : AppCompatActivity() {
 
             // 3) Render UI regardless (empty state)
             renderAll()
+            renderBenchPosLabels()
         }
     }
         private fun decodeSlotMap(team: LeaderboardTeamDto): Map<RosterSlotKey, Int?> {
@@ -273,6 +280,7 @@ class PickTeamActivity : AppCompatActivity() {
         hasSavedTeam = true
     }
 
+    //For Loading the team after new user has selected their team
         private fun loadFirstTimeFromSquad(squad: List<Int>) {
             if (squad.size != 15) return
 
@@ -281,7 +289,11 @@ class PickTeamActivity : AppCompatActivity() {
         }
 
     //Save team for new user
-    private fun finalizeRegistrationAndSaveTeam(playerIds: List<Int>) {
+    private fun finalizeRegistrationAndSaveTeam(
+        playerIds: List<Int>,
+        slotMap: Map<String, Int?>,
+        formationKey: String
+    ) {
         val draft = onboardingDraft ?: run {
             Toast.makeText(this, "Missing registration details.", Toast.LENGTH_LONG).show()
             return
@@ -301,7 +313,9 @@ class PickTeamActivity : AppCompatActivity() {
                 email = draft.email,
                 password = draft.password,
                 teamName = teamName,
-                playerIds = playerIds
+                playerIds = playerIds,
+                slotPlayerIds = slotMap,
+                formationKey = formationKey
             )
 
             when (result) {
@@ -325,7 +339,11 @@ class PickTeamActivity : AppCompatActivity() {
                     // If onboarding needs to register + save, do that here or keep your existing flow.
                     // For now, you probably want to call your existing finalizeRegistrationAndSaveTeam
                     // BUT that expects a List<Int> (15). See note below.
-                    finalizeRegistrationAndSaveTeam(playerIds = buildCurrentSquadIds())
+                    finalizeRegistrationAndSaveTeam(
+                        playerIds = buildCurrentSquadIds(),
+                        slotMap = slotMap,
+                        formationKey = Formation.keyOf(currentFormation)
+                    )
                 } else {
                     repo.updateMyTeamSlots(
                         slotMap,
@@ -516,7 +534,9 @@ class PickTeamActivity : AppCompatActivity() {
         return before != now
     }
 
-    private fun renderAll() = slotViews.keys.forEach { renderSlot(it) }
+    private fun renderAll() = slotViews.keys.forEach { renderSlot(it)
+    renderBenchPosLabels()
+    }
 
     private fun renderLineup(
         state: LineupState,
@@ -549,6 +569,7 @@ class PickTeamActivity : AppCompatActivity() {
 
         // 4) Re-render everything
         renderAll()
+        renderBenchPosLabels()
     }
 
     private fun seedStateFromSelectedSlotsInto(state: LineupState) {
@@ -877,4 +898,36 @@ class PickTeamActivity : AppCompatActivity() {
         renderLineup(lineupState, currentFormation)
     }
 
+    //Bench Position labels
+    private fun renderBenchPosLabels() {
+        val labels = listOf(
+            findViewById<TextView>(R.id.benchRole1),
+            findViewById(R.id.benchRole2),
+            findViewById(R.id.benchRole3),
+            findViewById(R.id.benchRole4)
+        )
+
+        val benchSlots = listOf(
+            RosterSlotKey.BENCH1,
+            RosterSlotKey.BENCH2,
+            RosterSlotKey.BENCH3,
+            RosterSlotKey.BENCH4
+        )
+
+        benchSlots.forEachIndexed { i, slot ->
+            val id = selectedBySlot[slot]
+            val player = id?.let { playerById[it] }
+            labels[i].text = shortPos(player?.position)
+        }
+    }
+
+    private fun shortPos(pos: Position?): String {
+        return when (pos) {
+            Position.GK -> "GK"
+            Position.DEF -> "DEF"
+            Position.MID -> "MID"
+            Position.STR -> "STR"
+            else -> ""
+        }
+    }
 }

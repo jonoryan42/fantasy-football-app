@@ -17,6 +17,7 @@ import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.main.MainActivity
+import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
 import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
 import com.example.fantasyfootballapp.ui.viewTeam.ViewTeamActivity
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ class LeaderboardActivity : AppCompatActivity() {
 
     private lateinit var txtHelloUser: TextView
     private lateinit var btnTransfers: Button
+    private lateinit var btnPickTeam: Button
     private lateinit var btnLogout: Button
 
     private lateinit var leaderboardAdapter: LeaderboardAdapter
@@ -42,9 +44,10 @@ class LeaderboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_leaderboard)
 
-        txtHelloUser = findViewById<TextView>(R.id.txtHelloUser)
-        btnLogout = findViewById<Button>(R.id.btnLogout)
-        btnTransfers = findViewById<Button>(R.id.btnTransfers)
+        txtHelloUser = findViewById(R.id.txtHelloUser)
+        btnLogout = findViewById(R.id.btnLogout)
+        btnTransfers = findViewById(R.id.btnTransfers)
+        btnPickTeam = findViewById(R.id.btnPickTeam)
 
 
         val recyclerLeaderboard = findViewById<RecyclerView>(R.id.recyclerLeaderboard)
@@ -89,6 +92,21 @@ class LeaderboardActivity : AppCompatActivity() {
                         return@launch
                     }
                     startActivity(Intent(this@LeaderboardActivity, TransfersActivity::class.java))
+                }
+            }
+        }
+
+        btnPickTeam.setOnClickListener {
+            if (DEMO_MODE) {
+                startActivity(Intent(this, PickTeamActivity::class.java))
+            } else {
+                lifecycleScope.launch {
+                    val user = try { repo.getCurrentUser() } catch (_: Exception) { null }
+                    if (user == null) {
+                        Toast.makeText(this@LeaderboardActivity, "Please log in first", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+                    startActivity(Intent(this@LeaderboardActivity, PickTeamActivity::class.java))
                 }
             }
         }
