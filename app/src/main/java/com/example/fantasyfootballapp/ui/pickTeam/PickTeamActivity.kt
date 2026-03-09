@@ -52,14 +52,22 @@ class PickTeamActivity : AppCompatActivity() {
 
     private val SLOT_ORDER = RosterSlotKey.SLOT_ORDER
 
-    private val lineupManager = LineupManager()
-    private lateinit var lineupState: LineupState
+    private lateinit var lineupManager: LineupManager
+    private var lineupState = LineupState()          // keep latest state
+
+    private var playerById: Map<Int, Player> = emptyMap()
+
+    private var validBenchIndexes: Set<Int> = emptySet()
+    private var highlightedBenchIndexes: Set<Int> = emptySet()
 
     private var currentFormation = Formation.F442
 
     //Sub state
     private var subModeActive: Boolean = false
     private var subSourceSlot: RosterSlotKey? = null
+
+    private var subSourceBenchIndex: Int? = null
+    private var validStarterSlots: Set<RosterSlotKey> = emptySet()
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
@@ -85,6 +93,8 @@ class PickTeamActivity : AppCompatActivity() {
         setContentView(R.layout.activity_pick_team)
 
         teamName = intent.getStringExtra("teamName") ?: "My Team"
+
+        lineupManager = LineupManager()
 
         //Top Toolbar
         val toolbar =
@@ -128,6 +138,7 @@ class PickTeamActivity : AppCompatActivity() {
 
         lineupState = LineupState() //initialise lineup state
 
+        wireSlotClicks()
         loadPlayers()
         renderAll()
     }
@@ -154,6 +165,7 @@ class PickTeamActivity : AppCompatActivity() {
             // 1) Load all players (public endpoint)
             try {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
+                playerById = allPlayers.associateBy { it.id }
             } catch (e: Exception) {
                 Toast.makeText(
                     this@PickTeamActivity,
@@ -313,7 +325,7 @@ class PickTeamActivity : AppCompatActivity() {
                     // If onboarding needs to register + save, do that here or keep your existing flow.
                     // For now, you probably want to call your existing finalizeRegistrationAndSaveTeam
                     // BUT that expects a List<Int> (15). See note below.
-                    finalizeRegistrationAndSaveTeam(buildPitch15PlayerIds()) // minimal, keeps your existing registration pipeline
+                    finalizeRegistrationAndSaveTeam(playerIds = buildCurrentSquadIds())
                 } else {
                     repo.updateMyTeamSlots(
                         slotMap,
@@ -329,16 +341,19 @@ class PickTeamActivity : AppCompatActivity() {
 
     private fun confirmAndSave() {
         val payload = buildSlotMapPayload()
+        val squadIds = buildCurrentSquadIds()
 
-        // If you truly guarantee validity always, you can skip validation.
-        // But I'd still keep a cheap duplicate check if you've had issues before.
+        //Just a safety check
+        if (squadIds.size != 15) {
+            Toast.makeText(this, "Team not complete", Toast.LENGTH_LONG).show()
+            return
+        }
 
         val shouldPrompt =
             hasSavedTeam && startingXiChanged(currentFormation)
 
         if (!shouldPrompt) {
-            // Save immediately, no dialog
-            onConfirmSlotMap(payload)
+            onConfirmSlotMap(slotMap = payload)
             return
         }
 
@@ -347,7 +362,7 @@ class PickTeamActivity : AppCompatActivity() {
             .setMessage("Save these changes to your starting XI?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("Confirm") { _, _ ->
-                onConfirmSlotMap(payload)
+                onConfirmSlotMap(slotMap = payload)
             }
             .show()
     }
@@ -366,7 +381,7 @@ class PickTeamActivity : AppCompatActivity() {
     }
 
     private fun hasChanges(): Boolean =
-        RosterSlotKey.PITCH_ORDER.any { key ->
+        RosterSlotKey.SLOT_ORDER.any { key ->
             selectedBySlot[key] != initialBySlot[key]
         }
 
@@ -423,6 +438,12 @@ class PickTeamActivity : AppCompatActivity() {
             return emptyList()
         }
         return ids
+    }
+
+    private fun buildCurrentSquadIds(): List<Int> {
+        return RosterSlotKey.SLOT_ORDER
+            .mapNotNull { selectedBySlot[it] }
+            .distinct()
     }
 
     private fun buildSlot19PlayerIdsOrNull(): List<Int?> {
@@ -562,12 +583,14 @@ class PickTeamActivity : AppCompatActivity() {
         currentFormation = Formation.F442
 
         //1. Capture the players currently in the "right side" + extra GK ----
-        val benchIds = listOf(
-            selectedBySlot[RosterSlotKey.GK2],   // extra GK
-            selectedBySlot[RosterSlotKey.DEF5],  // RB
-            selectedBySlot[RosterSlotKey.MID5],  // RM
-            selectedBySlot[RosterSlotKey.STR3]   // RS
+        val capturedBenchIds = listOf(
+            selectedBySlot[RosterSlotKey.GK2],
+            selectedBySlot[RosterSlotKey.DEF5],
+            selectedBySlot[RosterSlotKey.MID5],
+            selectedBySlot[RosterSlotKey.STR3]
         )
+
+        val benchIds = lineupManager.sortBenchIds(capturedBenchIds, playerById)
 
         // 2. Shift central -> right (and right -> further right) ----
         // DEF shift: CCB -> RCB, RCB -> RB
@@ -609,7 +632,218 @@ class PickTeamActivity : AppCompatActivity() {
         initialBySlot.putAll(selectedBySlot)
     }
 
-    //Functions handling substitutions
+    //Clicking on Players
+    private fun wireSlotClicks() {
+        slotViews.forEach { (slotKey, slotView) ->
+            // Use whichever is your actual clickable view.
+            // From your renderLineup screenshot, you have slotViews[key]?.root
+            slotView.root.setOnClickListener { onSlotClicked(slotKey) }
+        }
+    }
+
+    private fun onSlotClicked(slot: RosterSlotKey) {
+        if (subModeActive) {
+            handleClickDuringSubMode(slot)
+            return
+        }
+
+        val playerId = selectedBySlot[slot] ?: return
+        val player = playerById[playerId] ?: return
+
+        showPlayerDialog(slot, player)
+    }
+
+    private fun getPlayerIdForSlot(slot: RosterSlotKey): Int? {
+        return if (slot.isBench()) {
+            selectedBySlot[slot] // bench ids live in selectedBySlot already
+        } else {
+            lineupState.starters[slot]
+        }
+    }
+
+    private fun showPlayerDialog(slot: RosterSlotKey, player: Player) {
+        AlertDialog.Builder(this)
+            .setTitle(player.name)
+            .setItems(arrayOf("View Stats", "Substitution")) { _, which ->
+                when (which) {
+                    0 -> showStatsDialog(player)
+                    1 -> {
+                        if (slot.isBench()) {
+                            beginBenchSubstitution(slot)
+                        } else {
+                            beginStarterSubstitution(slot)
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showStatsDialog(player: Player) {
+        val msg = buildString {
+            appendLine("Club: ${player.club}")
+            appendLine("Position: ${player.position}")
+            appendLine("Price: ${player.price}")
+            appendLine("Points: ${player.points}")
+            appendLine("Goals: ${player.goals}  Assists: ${player.assists}")
+            appendLine("Clean sheets: ${player.cleansheets}")
+            appendLine("Yellows: ${player.yellows}  Reds: ${player.reds}")
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle(player.name)
+            .setMessage(msg)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    //Making subs
+    private fun beginStarterSubstitution(starterSlot: RosterSlotKey) {
+        if (!isStarterSlot(starterSlot)) return
+
+        subModeActive = true
+        subSourceSlot = starterSlot
+
+        validBenchIndexes = lineupManager.validBenchIndexesForSub(
+            state = lineupState,
+            starterSlot = starterSlot,
+            playerById = playerById
+        )
+
+        applyBenchHighlighting(validBenchIndexes)
+    }
+
+    private fun applyBenchHighlighting(valid: Set<Int>) {
+        val benchKeys = listOf(
+            RosterSlotKey.BENCH1,
+            RosterSlotKey.BENCH2,
+            RosterSlotKey.BENCH3,
+            RosterSlotKey.BENCH4
+        )
+
+        benchKeys.forEachIndexed { idx, key ->
+            val view = slotViews[key] ?: return@forEachIndexed
+            val enabled = idx in valid
+
+            view.root.apply {
+                alpha = if (enabled) 1f else 0.35f
+                isEnabled = enabled
+            }
+        }
+    }
+
+    //Subbing from the bench
+    private fun beginBenchSubstitution(benchSlot: RosterSlotKey) {
+        if (!benchSlot.isBench()) return
+
+        val benchIndex = when (benchSlot) {
+            RosterSlotKey.BENCH1 -> 0
+            RosterSlotKey.BENCH2 -> 1
+            RosterSlotKey.BENCH3 -> 2
+            RosterSlotKey.BENCH4 -> 3
+            else -> return
+        }
+
+        subModeActive = true
+        subSourceSlot = null
+        subSourceBenchIndex = benchIndex
+        validBenchIndexes = emptySet()
+
+        validStarterSlots = lineupManager.validStarterSlotsForBenchSub(
+            state = lineupState,
+            benchIndex = benchIndex,
+            currentFormation = currentFormation,
+            playerById = playerById
+        )
+
+        applyStarterHighlighting(validStarterSlots)
+    }
+
+    private fun applyStarterHighlighting(valid: Set<RosterSlotKey>) {
+        val activeKeys = lineupManager.activeStarterKeys(currentFormation).toSet()
+
+        activeKeys.forEach { key ->
+            val slotView = slotViews[key] ?: return@forEach
+            val enabled = key in valid
+
+            slotView.root.alpha = if (enabled) 1f else 0.35f
+            slotView.root.isEnabled = enabled
+        }
+    }
+
+    private fun endSubMode() {
+        subModeActive = false
+        subSourceSlot = null
+        subSourceBenchIndex = null
+        validBenchIndexes = emptySet()
+        validStarterSlots = emptySet()
+
+        slotViews.forEach { (_, slotView) ->
+            slotView.root.alpha = 1f
+            slotView.root.isEnabled = true
+        }
+    }
+
+    private fun handleClickDuringSubMode(clickedSlot: RosterSlotKey) {
+        // Case 1: starter selected first, now waiting for bench target
+        val starterSource = subSourceSlot
+        if (starterSource != null) {
+            if (!clickedSlot.isBench()) {
+                endSubMode()
+                return
+            }
+
+            val benchIndex = when (clickedSlot) {
+                RosterSlotKey.BENCH1 -> 0
+                RosterSlotKey.BENCH2 -> 1
+                RosterSlotKey.BENCH3 -> 2
+                RosterSlotKey.BENCH4 -> 3
+                else -> return
+            }
+
+            if (benchIndex !in validBenchIndexes) return
+
+            val result = lineupManager.swapBenchWithStarterAutoFormation(
+                state = lineupState,
+                benchIndex = benchIndex,
+                starterSlot = starterSource,
+                currentFormation = currentFormation,
+                playerById = playerById
+            )
+
+            lineupState = result.state
+            currentFormation = result.formation
+
+            endSubMode()
+            renderLineup(lineupState, currentFormation)
+            return
+        }
+
+        // Case 2: bench selected first, now waiting for starter target
+        val benchSource = subSourceBenchIndex
+        if (benchSource != null) {
+            if (clickedSlot !in validStarterSlots) {
+                endSubMode()
+                return
+            }
+
+            val result = lineupManager.swapBenchWithStarterAutoFormation(
+                state = lineupState,
+                benchIndex = benchSource,
+                starterSlot = clickedSlot,
+                currentFormation = currentFormation,
+                playerById = playerById
+            )
+
+            lineupState = result.state
+            currentFormation = result.formation
+
+            endSubMode()
+            renderLineup(lineupState, currentFormation)
+        }
+    }
+
     private fun isStarterSlot(key: RosterSlotKey): Boolean =
         !key.isBench() && (key in lineupManager.activeStarterKeys(currentFormation))
 

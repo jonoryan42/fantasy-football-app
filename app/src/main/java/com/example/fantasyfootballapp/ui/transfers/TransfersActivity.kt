@@ -255,7 +255,7 @@ class TransfersActivity : AppCompatActivity() {
         intent.putExtra("teamName", teamName)
 
         startActivity(intent)
-        finish() // so back doesn't return to Transfers
+//        finish() // so back doesn't return to Transfers
     }
 
     private fun confirmAndSave() {
