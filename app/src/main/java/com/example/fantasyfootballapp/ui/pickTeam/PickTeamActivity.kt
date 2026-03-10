@@ -36,10 +36,13 @@ import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.view.isVisible
 
 class PickTeamActivity : AppCompatActivity() {
 
     private var teamName: String = "My Team"
+
+    private lateinit var pitchOverlay: View
 
     private lateinit var slotViews: Map<RosterSlotKey, PlayerSlotView>
 
@@ -70,6 +73,45 @@ class PickTeamActivity : AppCompatActivity() {
     private var subSourceBenchIndex: Int? = null
     private var validStarterSlots: Set<RosterSlotKey> = emptySet()
 
+    //Relating to positional rows
+    private val defRow = listOf(
+        RosterSlotKey.DEF1,
+        RosterSlotKey.DEF2,
+        RosterSlotKey.DEF3,
+        RosterSlotKey.DEF4,
+        RosterSlotKey.DEF5
+    )
+
+    private val midRow = listOf(
+        RosterSlotKey.MID1,
+        RosterSlotKey.MID2,
+        RosterSlotKey.MID3,
+        RosterSlotKey.MID4,
+        RosterSlotKey.MID5
+    )
+
+    private val strRow = listOf(
+        RosterSlotKey.STR1,
+        RosterSlotKey.STR2,
+        RosterSlotKey.STR3
+    )
+
+    private val gkRow = listOf(RosterSlotKey.GK1)
+
+    private val defFractions = mapOf(
+        3 to listOf(0.24f, 0.42f, 0.60f),
+        5 to listOf(0.12f, 0.30f, 0.48f, 0.66f, 0.84f)
+    )
+
+    private val midFractions = mapOf(
+        3 to listOf(0.32f, 0.50f, 0.68f),
+        5 to listOf(0.14f, 0.32f, 0.50f, 0.68f, 0.86f)
+    )
+
+    private val strFractions = mapOf(
+        3 to listOf(0.495f, 0.675f, 0.855f)
+    )
+
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
         FantasyRepository(ApiClient.service, tokenStore)
@@ -94,6 +136,8 @@ class PickTeamActivity : AppCompatActivity() {
         setContentView(R.layout.activity_pick_team)
 
         teamName = intent.getStringExtra("teamName") ?: "My Team"
+
+        pitchOverlay = findViewById(R.id.pitchOverlay)
 
         lineupManager = LineupManager()
 
@@ -570,6 +614,7 @@ class PickTeamActivity : AppCompatActivity() {
         // 4) Re-render everything
         renderAll()
         renderBenchPosLabels()
+        applyPitchSpacing()
     }
 
     private fun seedStateFromSelectedSlotsInto(state: LineupState) {
@@ -929,5 +974,85 @@ class PickTeamActivity : AppCompatActivity() {
             Position.STR -> "STR"
             else -> ""
         }
+    }
+
+    //Positional Rows logic
+    @SuppressLint("UseKtx")
+    private fun applyRowSpacing(
+        rowKeys: List<RosterSlotKey>,
+        fractionsMap: Map<Int, List<Float>>
+    ) {
+        //Array of visible slots
+        val visibleViews = rowKeys
+            .mapNotNull { key -> slotViews[key]?.root?.takeIf { it.visibility == View.VISIBLE } }
+
+        if (visibleViews.isEmpty()) return
+
+        val fractions = fractionsMap[visibleViews.size] ?: return
+        val parent = visibleViews.first().parent as? View ?: return
+        val parentWidth = parent.width.toFloat()
+        if (parentWidth <= 0f) return
+
+        visibleViews.forEachIndexed { index, view ->
+            val targetCenterX = parentWidth * fractions[index]
+            val currentCenterX = view.x + (view.width / 2f)
+            view.translationX = targetCenterX - currentCenterX
+        }
+    }
+
+    //For setting slot positions back to default
+    private fun resetPitchTranslations() {
+        val allPitchKeys = listOf(
+            RosterSlotKey.GK1,
+            RosterSlotKey.DEF1, RosterSlotKey.DEF2, RosterSlotKey.DEF3, RosterSlotKey.DEF4, RosterSlotKey.DEF5,
+            RosterSlotKey.MID1, RosterSlotKey.MID2, RosterSlotKey.MID3, RosterSlotKey.MID4, RosterSlotKey.MID5,
+            RosterSlotKey.STR1, RosterSlotKey.STR2, RosterSlotKey.STR3
+        )
+
+        allPitchKeys.forEach { key ->
+            slotViews[key]?.root?.translationX = 0f
+            slotViews[key]?.root?.translationY = 0f        }
+    }
+
+    private fun applyPitchSpacing() {
+        resetPitchTranslations()
+
+        // wait until views have been laid out with correct visibility
+        pitchOverlay.post {
+            applyRowSpacing(defRow, defFractions)
+            applyRowSpacing(midRow, midFractions)
+            applyRowSpacing(strRow, strFractions)
+
+            applyFiveRowShape(midRow)
+            applyFiveRowShape(defRow)
+
+            applyThreeRowShape(defRow)
+            applyThreeRowShape(midRow)
+            applyThreeRowShape(strRow)
+        }
+    }
+
+    @SuppressLint("UseKtx")
+    private fun applyFiveRowShape(rowKeys: List<RosterSlotKey>) {
+
+        val visibleViews = rowKeys
+            .mapNotNull { key -> slotViews[key]?.root?.takeIf { it.visibility == View.VISIBLE } }
+
+        if (visibleViews.size != 5) return
+
+        // dip the 3rd and 4th players slightly
+        visibleViews[3].translationY = 21f
+        visibleViews[4].translationY = 19f
+    }
+
+    @SuppressLint("UseKtx")
+    private fun applyThreeRowShape(rowKeys: List<RosterSlotKey>) {
+        val visibleViews = rowKeys
+            .mapNotNull { key -> slotViews[key]?.root?.takeIf { it.visibility == View.VISIBLE } }
+
+        if (visibleViews.size != 3) return
+
+        // lower the right-most player only
+        visibleViews[2].translationY = 30f
     }
 }
