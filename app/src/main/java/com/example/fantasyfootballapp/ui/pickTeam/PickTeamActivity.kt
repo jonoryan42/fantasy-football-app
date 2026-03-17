@@ -37,6 +37,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.core.view.isVisible
+import com.example.fantasyfootballapp.ui.common.AppBottomNav
+import com.example.fantasyfootballapp.ui.common.SystemBars
+import com.example.fantasyfootballapp.ui.league.LeagueActivity
 
 class PickTeamActivity : AppCompatActivity() {
 
@@ -135,9 +138,19 @@ class PickTeamActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
 
+        SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
+
         teamName = intent.getStringExtra("teamName") ?: "My Team"
 
         pitchOverlay = findViewById(R.id.pitchOverlay)
+
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+
+        AppBottomNav.setup(
+            activity = this,
+            bottomNav = bottomNav,
+            selectedItemId = R.id.nav_fantasy
+        )
 
         lineupManager = LineupManager()
 

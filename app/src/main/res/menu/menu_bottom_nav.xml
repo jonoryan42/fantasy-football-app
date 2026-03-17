@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_pick_team"
-        android:icon="@drawable/outline_frame_person_24"
-        android:title="@string/pick_team" />
+        android:id="@+id/nav_home"
+        android:icon="@drawable/baseline_home_24"
+        android:title="@string/home" />
 
     <item
-        android:id="@+id/nav_fixtures"
-        android:icon="@drawable/outline_alarm_24"
-        android:title="@string/fixtures" />
+        android:id="@+id/nav_fantasy"
+        android:icon="@drawable/ic_jersey_24"
+        android:title="@string/fantasy" />
 
     <item
         android:id="@+id/nav_league"
@@ -17,8 +17,8 @@
         android:title="@string/league" />
 
     <item
-        android:id="@+id/nav_profile"
-        android:icon="@drawable/outline_android_cell_5_bar_24"
+        android:id="@+id/nav_leaderboard"
+        android:icon="@drawable/outline_leaderboard_24"
         android:title="@string/leaderboard" />
 
 </menu>

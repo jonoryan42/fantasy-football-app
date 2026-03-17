@@ -8,4 +8,5 @@
     <color name="wpl_navy">#0D3B66</color>
     <color name="wpl_on_navy">#FFFFFF</color>
     <color name="wpl_text_dark">#0B2D4D</color>
+    <color name="screen_light_bg">#F4EFF7</color>
 </resources>

@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,8 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.ui.common.AppBottomNav
+import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.main.MainActivity
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
 import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
@@ -38,13 +41,15 @@ class LeaderboardActivity : AppCompatActivity() {
         FantasyRepository(ApiClient.service, tokenStore)
     }
 
-
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_leaderboard)
 
-        txtHelloUser = findViewById(R.id.txtHelloUser)
+        //Setting the bottom theme to match the nav color
+        SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
+
+//        txtHelloUser = findViewById(R.id.txtHelloUser)
         btnLogout = findViewById(R.id.btnLogout)
         btnTransfers = findViewById(R.id.btnTransfers)
         btnPickTeam = findViewById(R.id.btnPickTeam)
@@ -71,7 +76,6 @@ class LeaderboardActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 // Clear auth token
                 repo.logout()
-                // OR tokenStore.clear() depending on your implementation
 
                 // Go back to MainActivity and clear back stack
                 val intent = Intent(this@LeaderboardActivity, MainActivity::class.java).apply {
@@ -111,6 +115,14 @@ class LeaderboardActivity : AppCompatActivity() {
             }
         }
 
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+
+        AppBottomNav.setup(
+            activity = this,
+            bottomNav = bottomNav,
+            selectedItemId = R.id.nav_leaderboard
+        )
+
         lifecycleScope.launch {
             try {
                 val leaderboard = repo.getLeaderboard()
@@ -121,21 +133,21 @@ class LeaderboardActivity : AppCompatActivity() {
         }
 
         //Show Hello [User]
-        lifecycleScope.launch {
-            try {
-                val user = repo.getCurrentUser()
-                Log.d("LEADERBOARD", "fname='${user.fname}' len=${user.fname.length}")
-
-                txtHelloUser.text = "Hello ${user.fname.ifBlank { "there" }}"
-                txtHelloUser.visibility = View.VISIBLE
-
-            } catch (e: Exception) {
-                Log.e("LEADERBOARD", "getCurrentUser failed", e)
-                txtHelloUser.visibility = View.GONE
-                // TEMP so you can see it during testing:
-                 Toast.makeText(this@LeaderboardActivity, "Not logged in (${e.message})", Toast.LENGTH_SHORT).show()
-            }
-        }
+//        lifecycleScope.launch {
+//            try {
+//                val user = repo.getCurrentUser()
+//                Log.d("LEADERBOARD", "fname='${user.fname}' len=${user.fname.length}")
+//
+//                txtHelloUser.text = "Hello ${user.fname.ifBlank { "there" }}"
+//                txtHelloUser.visibility = View.VISIBLE
+//
+//            } catch (e: Exception) {
+//                Log.e("LEADERBOARD", "getCurrentUser failed", e)
+//                txtHelloUser.visibility = View.GONE
+//                // TEMP so you can see it during testing:
+//                 Toast.makeText(this@LeaderboardActivity, "Not logged in (${e.message})", Toast.LENGTH_SHORT).show()
+//            }
+//        }
 
 
     }

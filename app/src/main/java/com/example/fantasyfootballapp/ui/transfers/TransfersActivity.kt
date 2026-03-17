@@ -21,7 +21,9 @@ import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.isUnauthorized
+import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
+import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.util.RepoResult
@@ -71,6 +73,8 @@ class TransfersActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_transfers)
+
+        SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
 
         teamName = intent.getStringExtra("teamName") ?: "My Team"
 
@@ -126,6 +130,14 @@ class TransfersActivity : AppCompatActivity() {
         loadPlayers()
         renderAll() // shows the + icons / "Tap to pick" initially
         updateHeader()
+
+        val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
+
+        AppBottomNav.setup(
+            activity = this,
+            bottomNav = bottomNav,
+            selectedItemId = R.id.nav_fantasy
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

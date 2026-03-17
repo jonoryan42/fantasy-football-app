@@ -62,6 +62,12 @@
     <string name="DEF">DEF</string>
     <string name="MID">MID</string>
     <string name="STR">STR</string>
+    <string name="league_table">League Table</string>
+    <string name="_1">1</string>
+    <string name="team">Team</string>
+    <string name="_0">0</string>
+    <string name="home">Home</string>
+    <string name="fantasy">Fantasy</string>
 
 
 </resources>
