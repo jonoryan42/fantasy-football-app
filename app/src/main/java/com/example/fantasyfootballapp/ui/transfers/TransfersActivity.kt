@@ -15,6 +15,7 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.model.Position
 import com.example.fantasyfootballapp.model.RegistrationDraft
 import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.navigation.NavKeys
@@ -294,18 +295,33 @@ class TransfersActivity : AppCompatActivity() {
         RosterSlotKey.entries.any { key -> selectedBySlot[key] != initialBySlot[key] }
 
     private fun populateUiWithSavedTeam(team: LeaderboardTeamDto) {
-        val ids = team.playerIds
-        if (ids.size != SLOT_ORDER.size) return
+        val rawIds = team.squadPlayerIds ?: team.playerIds ?: return
+        if (rawIds.size != RosterSlotKey.PITCH_ORDER.size) return
 
-        hasSavedTeam = true
+        val playersById = allPlayers.associateBy { it.id }
 
-        SLOT_ORDER.forEachIndexed { index, key ->
-            val id = ids[index]
-            selectedBySlot[key] = id
-            initialBySlot[key] = id
-            renderSlot(key)
+        val gks  = rawIds.filter { playersById[it]?.position == Position.GK }
+        val defs = rawIds.filter { playersById[it]?.position == Position.DEF }
+        val mids = rawIds.filter { playersById[it]?.position == Position.MID }
+        val strs = rawIds.filter { playersById[it]?.position == Position.STR }
+
+        if (gks.size != 2 || defs.size != 5 || mids.size != 5 || strs.size != 3) {
+            return
         }
 
+        val orderedIds = gks + defs + mids + strs
+
+        hasSavedTeam = true
+        selectedBySlot.clear()
+        initialBySlot.clear()
+
+        RosterSlotKey.PITCH_ORDER.forEachIndexed { index, key ->
+            val id = orderedIds[index]
+            selectedBySlot[key] = id
+            initialBySlot[key] = id
+        }
+
+        renderAll()
         updateHeader()
     }
 

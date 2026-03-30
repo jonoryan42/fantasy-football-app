@@ -57,7 +57,8 @@
             android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@id/bottomNav"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            android:visibility="gone">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTransfers"

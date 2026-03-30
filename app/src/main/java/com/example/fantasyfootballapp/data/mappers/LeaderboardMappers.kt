@@ -5,10 +5,10 @@ import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 
 fun LeaderboardTeamDto.toModel(): LeaderboardEntry =
     LeaderboardEntry(
-        _id = _id,
+        _id = id,
         userId = userId,
         teamName = teamName,
-        playerIds = playerIds,
+        playerIds = squadPlayerIds ?: playerIds ?: emptyList(),
         points = points,
         createdAt = createdAt
     )

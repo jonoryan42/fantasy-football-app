@@ -376,10 +376,49 @@ class LineupManager(
         return LineupState(newStarters, newBench)
     }
 
+    //Minimum starters in each row (1 Striker, 2 Mids, 3 Defs)
+    private fun keepsMinimumStarterCountsAfterSwap(
+        state: LineupState,
+        benchIndex: Int,
+        starterSlot: RosterSlotKey,
+        currentFormation: Formation,
+        playerById: Map<Int, Player>
+    ): Boolean {
+        val benchId = state.bench.getOrNull(benchIndex) ?: return false
+        val starterId = state.starters[starterSlot] ?: return false
+
+        // Simulate the swap
+        val startersAfter = state.starters.toMutableMap()
+        startersAfter[starterSlot] = benchId
+
+        var defCount = 0
+        var midCount = 0
+        var strCount = 0
+        var gkCount = 0
+
+        activeStarterKeys(currentFormation).forEach { slot ->
+            val id = startersAfter[slot] ?: return@forEach
+            val player = playerById[id] ?: return@forEach
+
+            when (player.position) {
+                Position.GK -> gkCount++
+                Position.DEF -> defCount++
+                Position.MID -> midCount++
+                Position.STR -> strCount++
+                Position.BENCH -> {}            }
+        }
+
+        return gkCount == 1 &&
+                defCount >= 3 &&
+                midCount >= 2 &&
+                strCount >= 1
+    }
+
     //Rules for substitutions
     fun validBenchIndexesForSub(
         state: LineupState,
         starterSlot: RosterSlotKey,
+        currentFormation: Formation,
         playerById: Map<Int, Player>
     ): Set<Int> {
 
@@ -389,17 +428,23 @@ class LineupManager(
         val valid = mutableSetOf<Int>()
 
         for (i in 0 until state.bench.size) {
-
             val benchId = state.bench[i] ?: continue
             val benchPlayer = playerById[benchId] ?: continue
 
             // Rule 1: GK can only swap with GK
             val starterIsGK = starter.position == Position.GK
             val benchIsGK = benchPlayer.position == Position.GK
-
             if (starterIsGK != benchIsGK) continue
 
-            // Rule 2: injury rule
+            // Rule 2: must still satisfy minimum row counts
+            if (!keepsMinimumStarterCountsAfterSwap(
+                    state = state,
+                    benchIndex = i,
+                    starterSlot = starterSlot,
+                    currentFormation = currentFormation,
+                    playerById = playerById
+                )
+            ) continue
 
             valid.add(i)
         }
@@ -428,6 +473,18 @@ class LineupManager(
 
             // GK only for GK, outfield only for outfield
             if (benchIsGK != starterIsGK) return@forEach
+
+            // New minimum-row rule
+            if (!keepsMinimumStarterCountsAfterSwap(
+                    state = state,
+                    benchIndex = benchIndex,
+                    starterSlot = starterSlot,
+                    currentFormation = currentFormation,
+                    playerById = playerById
+                )
+            ) {
+                return@forEach
+            }
 
             valid.add(starterSlot)
         }

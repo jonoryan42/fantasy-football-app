@@ -12,8 +12,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
@@ -32,14 +30,11 @@ import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.util.RepoResult
-import com.google.android.material.appbar.MaterialToolbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.core.view.isVisible
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.SystemBars
-import com.example.fantasyfootballapp.ui.league.LeagueActivity
 
 class PickTeamActivity : AppCompatActivity() {
 
@@ -304,17 +299,17 @@ class PickTeamActivity : AppCompatActivity() {
             }.toMap()
         }
 
-        private fun getSquadIds(team: LeaderboardTeamDto): List<Int> {
+        private fun getSquadIds(team: LeaderboardTeamDto): List<Int>? {
             return team.squadPlayerIds ?: team.playerIds
         }
 
-        private fun seedSelectedBySlotFromTransferOrder(squad: List<Int>) {
+        private fun seedSelectedBySlotFromTransferOrder(squad: List<Int>?) {
             // PITCH_ORDER must be the 15 transfer-style placeholders (GK1..STR3)
             val pitchOrder = RosterSlotKey.PITCH_ORDER
 
             selectedBySlot.clear()
             pitchOrder.forEachIndexed { i, key ->
-                selectedBySlot[key] = squad[i]
+                selectedBySlot[key] = squad?.get(i)
             }
 
             // bench keys start empty (formation will move extras into BENCH1..4)
@@ -338,8 +333,8 @@ class PickTeamActivity : AppCompatActivity() {
     }
 
     //For Loading the team after new user has selected their team
-        private fun loadFirstTimeFromSquad(squad: List<Int>) {
-            if (squad.size != 15) return
+        private fun loadFirstTimeFromSquad(squad: List<Int>?) {
+            if (squad?.size != 15) return
 
             seedSelectedBySlotFromTransferOrder(squad)
             applyDefault442() // seeds -> applyFormation -> renderLineup
@@ -462,12 +457,12 @@ class PickTeamActivity : AppCompatActivity() {
 
     private fun populateUiWithSavedTeam(team: LeaderboardTeamDto) {
         val ids = team.playerIds
-        if (ids.size != SLOT_ORDER.size) return
+        if (ids?.size != SLOT_ORDER.size) return
 
         hasSavedTeam = true
 
         SLOT_ORDER.forEachIndexed { index, key ->
-            val id = ids[index]
+            val id = ids.get(index)
             selectedBySlot[key] = id
             initialBySlot[key] = id
             renderSlot(key)
@@ -533,24 +528,26 @@ class PickTeamActivity : AppCompatActivity() {
         else -> null // bench
     }
 
-    private fun playerPos(id: Int): Position? =
+    private fun playerPos(id: Int?): Position? =
         allPlayers.firstOrNull { it.id == id }?.position  // adjust field name
 
     private fun reconcileSlotsWithSquadByPosition(
         slotMap: MutableMap<RosterSlotKey, Int?>,
-        newSquad: List<Int>
+        newSquad: List<Int?>?
     ) {
-        val squadSet = newSquad.toSet()
+        val squadSet = newSquad?.toSet()
 
         // 1) Remove transferred-out players
         for (k in RosterSlotKey.SLOT_ORDER) {
             val pid = slotMap[k]
-            if (pid != null && pid !in squadSet) slotMap[k] = null
+            if (pid != null && squadSet?.contains(pid) != true) slotMap[k] = null
         }
 
         // 2) Determine missing/new players not yet placed
         val used = slotMap.values.filterNotNull().toMutableSet()
-        val missing = newSquad.filter { it !in used }.toMutableList()
+        val missing = (newSquad ?: emptyList())
+            .filter { it !in used }
+            .toMutableList()
 
         // 3) Fill empty PITCH slots first by matching position group
         val pitchKeys = RosterSlotKey.PITCH_ORDER
@@ -562,7 +559,7 @@ class PickTeamActivity : AppCompatActivity() {
             if (idx != -1) {
                 slotMap[k] = missing.removeAt(idx)
             }
-        }
+            }
 
         // 4) Fill bench with whatever remains (or also position-sort if you want)
         val benchKeys = listOf(RosterSlotKey.BENCH1, RosterSlotKey.BENCH2, RosterSlotKey.BENCH3, RosterSlotKey.BENCH4)
@@ -787,6 +784,7 @@ class PickTeamActivity : AppCompatActivity() {
         validBenchIndexes = lineupManager.validBenchIndexesForSub(
             state = lineupState,
             starterSlot = starterSlot,
+            currentFormation = currentFormation,
             playerById = playerById
         )
 
