@@ -166,9 +166,21 @@ class MainActivity : AppCompatActivity() {
                     Intent(this@MainActivity, LeaderboardActivity::class.java)
                 )
                 finish()
-            } catch (e: Exception) {
-                Log.e("Login", "Login failed", e)
-
+                //Checks for Error Code 401
+            } catch (e: retrofit2.HttpException) {
+                if (e.code() == 401) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Invalid email or password",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Server error. Try again later.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             //Re-enables login
             finally {
