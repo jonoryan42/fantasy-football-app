@@ -14,6 +14,7 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.ui.home.HomeActivity
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.ui.resetPassword.ResetPasswordActivity
 import com.example.fantasyfootballapp.ui.signup.SignupActivity
@@ -49,20 +50,64 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         ApiClient.init(applicationContext)
-        setContentView(R.layout.activity_main)
 
-        loginContainer = findViewById<View>(R.id.loginContainer)
-        homeContainer = findViewById<View>(R.id.homeContainer)
+        //If there was a previous user logged in, redirect to Home
+//        val tokenStore = TokenStore(this)
+//        val token = tokenStore.getToken()
 
-        edtEmail = findViewById<EditText>(R.id.edtEmail)
-        edtPassword = findViewById<EditText>(R.id.edtPassword)
-        btnLogin = findViewById<Button>(R.id.btnLogin)
+        lifecycleScope.launch {
+            val user = try {
+                repo.getCurrentUser()
+            } catch (e: Exception) {
+                null
+            }
 
-        btnStartDemo = findViewById<Button>(R.id.btnStartDemo)
-        btnViewLeaderboard = findViewById<Button>(R.id.btnViewLeaderboard)
+            if (user != null) {
+                startActivity(Intent(this@MainActivity, HomeActivity::class.java))
+                finish()
+            } else {
+                setContentView(R.layout.activity_main)
+                setupUi() // move your existing code into a function
+            }
+        }
+
+//        loginContainer = findViewById<View>(R.id.loginContainer)
+//        homeContainer = findViewById<View>(R.id.homeContainer)
+//
+//        edtEmail = findViewById<EditText>(R.id.edtEmail)
+//        edtPassword = findViewById<EditText>(R.id.edtPassword)
+//        btnLogin = findViewById<Button>(R.id.btnLogin)
+//
+//        btnStartDemo = findViewById<Button>(R.id.btnStartDemo)
+//        btnViewLeaderboard = findViewById<Button>(R.id.btnViewLeaderboard)
+//        btnTransfers = findViewById(R.id.btnTransfers)
+//        joinNow = findViewById<TextView>(R.id.txtJoinNow)
+//        txtResetPassword = findViewById<TextView>(R.id.txtResetPassword)
+//
+//        joinNow.setOnClickListener {
+//            startActivity(Intent(this, SignupActivity::class.java))
+//        }
+//
+//        txtResetPassword.setOnClickListener {
+//            startActivity(Intent(this, ResetPasswordActivity::class.java))
+//        }
+
+    }
+
+    private fun setupUi() {
+        loginContainer = findViewById(R.id.loginContainer)
+        homeContainer = findViewById(R.id.homeContainer)
+
+        edtEmail = findViewById(R.id.edtEmail)
+        edtPassword = findViewById(R.id.edtPassword)
+        btnLogin = findViewById(R.id.btnLogin)
+
+        btnStartDemo = findViewById(R.id.btnStartDemo)
+        btnViewLeaderboard = findViewById(R.id.btnViewLeaderboard)
         btnTransfers = findViewById(R.id.btnTransfers)
-        joinNow = findViewById<TextView>(R.id.txtJoinNow)
-        txtResetPassword = findViewById<TextView>(R.id.txtResetPassword)
+
+        joinNow = findViewById(R.id.txtJoinNow)
+        txtResetPassword = findViewById(R.id.txtResetPassword)
 
         joinNow.setOnClickListener {
             startActivity(Intent(this, SignupActivity::class.java))
@@ -163,7 +208,7 @@ class MainActivity : AppCompatActivity() {
             try {
                 repo.login(email, password)
                 startActivity(
-                    Intent(this@MainActivity, LeaderboardActivity::class.java)
+                    Intent(this@MainActivity, HomeActivity::class.java)
                 )
                 finish()
                 //Checks for Error Code 401

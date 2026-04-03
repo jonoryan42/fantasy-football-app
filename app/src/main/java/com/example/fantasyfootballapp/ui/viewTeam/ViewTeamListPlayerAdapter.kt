@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.Player
 
-class ViewTeamPlayerAdapter(
+class ViewTeamListPlayerAdapter(
     private val players: List<Player>
-) : RecyclerView.Adapter<ViewTeamPlayerAdapter.VH>() {
+) : RecyclerView.Adapter<ViewTeamListPlayerAdapter.VH>() {
 
     inner class VH(view: View) : RecyclerView.ViewHolder(view) {
         val txtLine: TextView = view.findViewById(R.id.txtLine)

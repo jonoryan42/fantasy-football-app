@@ -1,6 +1,10 @@
+@file:Suppress("DEPRECATED_ANNOTATION")
+
 package com.example.fantasyfootballapp.network
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 data class RegisterRequest(
     val fname: String,
@@ -56,14 +60,15 @@ data class PlayerDto(
 //    val playerIds: List<Int>
 //)
 
+@Parcelize
 data class LeaderboardTeamDto(
-    val id: String,
+    val _id: String? = null,
     val userId: String,
     val teamName: String,
+    val playerIds: List<Int>? = null,
     val squadPlayerIds: List<Int>? = null,
     val slotPlayerIds: Map<String, Int?>? = null,
     val formationKey: String? = null,
-    val playerIds: List<Int>? = null,
-    val createdAt: String,
-    val points: Int
-)
+    val points: Int = 0,
+    val createdAt: String? = null
+) : Parcelable

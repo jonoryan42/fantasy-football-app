@@ -19,7 +19,8 @@ import retrofit2.http.Query
 //App Endpoints
 interface ApiService {
     @GET("api/leaderboard")
-    suspend fun getLeaderboard(): List<LeaderboardEntry>
+//    suspend fun getLeaderboard(): List<LeaderboardEntry>
+    suspend fun getLeaderboard(): List<LeaderboardTeamDto>
 
     @GET("api/players")
     suspend fun getPlayers(): List<Player>

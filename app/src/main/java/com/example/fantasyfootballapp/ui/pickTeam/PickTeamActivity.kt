@@ -60,8 +60,6 @@ class PickTeamActivity : AppCompatActivity() {
     private var playerById: Map<Int, Player> = emptyMap()
 
     private var validBenchIndexes: Set<Int> = emptySet()
-    private var highlightedBenchIndexes: Set<Int> = emptySet()
-
     private var currentFormation = Formation.F442
 
     //Sub state
@@ -93,8 +91,6 @@ class PickTeamActivity : AppCompatActivity() {
         RosterSlotKey.STR2,
         RosterSlotKey.STR3
     )
-
-    private val gkRow = listOf(RosterSlotKey.GK1)
 
     private val defFractions = mapOf(
         3 to listOf(0.24f, 0.42f, 0.60f),
@@ -303,7 +299,7 @@ class PickTeamActivity : AppCompatActivity() {
             return team.squadPlayerIds ?: team.playerIds
         }
 
-        private fun seedSelectedBySlotFromTransferOrder(squad: List<Int>?) {
+       private fun seedSelectedBySlotFromTransferOrder(squad: List<Int>?) {
             // PITCH_ORDER must be the 15 transfer-style placeholders (GK1..STR3)
             val pitchOrder = RosterSlotKey.PITCH_ORDER
 
@@ -501,35 +497,22 @@ class PickTeamActivity : AppCompatActivity() {
         view.clearButton?.visibility = View.VISIBLE
     }
 
-    private fun buildPitch15PlayerIds(): List<Int> {
-        val ids = RosterSlotKey.PITCH_ORDER.mapNotNull { selectedBySlot[it] }
-        if (ids.size != RosterSlotKey.PITCH_ORDER.size) {
-            Toast.makeText(this, "Team not complete yet.", Toast.LENGTH_SHORT).show()
-            return emptyList()
-        }
-        return ids
-    }
-
     private fun buildCurrentSquadIds(): List<Int> {
         return RosterSlotKey.SLOT_ORDER
             .mapNotNull { selectedBySlot[it] }
             .distinct()
     }
 
-    private fun buildSlot19PlayerIdsOrNull(): List<Int?> {
-        return RosterSlotKey.SLOT_ORDER.map { selectedBySlot[it] } // Int? list
-    }
-
     private fun slotGroup(key: RosterSlotKey): Position? = when {
         key.name.startsWith("GK") -> Position.GK
         key.name.startsWith("DEF") -> Position.DEF
         key.name.startsWith("MID") -> Position.MID
-        key.name.startsWith("STR") -> Position.STR   // or Position.STR if that's what you use
+        key.name.startsWith("STR") -> Position.STR
         else -> null // bench
     }
 
     private fun playerPos(id: Int?): Position? =
-        allPlayers.firstOrNull { it.id == id }?.position  // adjust field name
+        allPlayers.firstOrNull { it.id == id }?.position
 
     private fun reconcileSlotsWithSquadByPosition(
         slotMap: MutableMap<RosterSlotKey, Int?>,
@@ -597,9 +580,6 @@ class PickTeamActivity : AppCompatActivity() {
         formation: Formation
     ) {
         val activeKeys = lineupManager.activeStarterKeys(formation).toSet()
-
-        // 0) Clear to avoid stale hidden slots keeping old values
-//        selectedBySlot.clear()
 
         // 1) Show/hide pitch slots (bench always visible)
         slotViews.keys.forEach { key ->
@@ -727,14 +707,6 @@ class PickTeamActivity : AppCompatActivity() {
         val player = playerById[playerId] ?: return
 
         showPlayerDialog(slot, player)
-    }
-
-    private fun getPlayerIdForSlot(slot: RosterSlotKey): Int? {
-        return if (slot.isBench()) {
-            selectedBySlot[slot] // bench ids live in selectedBySlot already
-        } else {
-            lineupState.starters[slot]
-        }
     }
 
     private fun showPlayerDialog(slot: RosterSlotKey, player: Player) {
@@ -923,36 +895,6 @@ class PickTeamActivity : AppCompatActivity() {
 
     private fun isStarterSlot(key: RosterSlotKey): Boolean =
         !key.isBench() && (key in lineupManager.activeStarterKeys(currentFormation))
-
-    private fun getSwitchableTargets(from: RosterSlotKey): Set<RosterSlotKey> {
-        val activeStarters = lineupManager.activeStarterKeys(currentFormation).toSet()
-        val benchKeys = setOf(RosterSlotKey.BENCH1, RosterSlotKey.BENCH2, RosterSlotKey.BENCH3, RosterSlotKey.BENCH4)
-
-        return if (from in activeStarters) benchKeys else activeStarters
-    }
-
-    private fun swapSlots(a: RosterSlotKey, b: RosterSlotKey) {
-        val tmp = selectedBySlot[a]
-        selectedBySlot[a] = selectedBySlot[b]
-        selectedBySlot[b] = tmp
-    }
-
-    private fun setSlotHighlighted(slot: RosterSlotKey, on: Boolean) {
-        val v = slotViews[slot]?.root ?: return
-        v.isSelected = on
-    }
-
-    private fun clearAllHighlights() {
-        slotViews.keys.forEach { setSlotHighlighted(it, false) }
-    }
-
-    private fun changeFormation(to: Formation) {
-        if (to == currentFormation) return
-        seedStateFromSelectedSlotsInto(lineupState)
-        lineupState = lineupManager.applyFormation(lineupState, from = currentFormation, to = to)
-        currentFormation = to
-        renderLineup(lineupState, currentFormation)
-    }
 
     //Bench Position labels
     private fun renderBenchPosLabels() {

@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,13 +21,14 @@ import com.example.fantasyfootballapp.ui.main.MainActivity
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
 import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
 import com.example.fantasyfootballapp.ui.viewTeam.ViewTeamActivity
+import com.example.fantasyfootballapp.ui.viewTeam.ViewTeamListActivity
 import kotlinx.coroutines.launch
 
 class LeaderboardActivity : AppCompatActivity() {
 
     private val DEMO_MODE = true
 
-    private lateinit var txtHelloUser: TextView
+//    private lateinit var txtHelloUser: TextView
     private lateinit var btnTransfers: Button
     private lateinit var btnPickTeam: Button
     private lateinit var btnLogout: Button
@@ -60,12 +59,7 @@ class LeaderboardActivity : AppCompatActivity() {
 
         leaderboardAdapter = LeaderboardAdapter(mutableListOf()) { team ->
             val intent = Intent(this, ViewTeamActivity::class.java).apply {
-                putExtra(ViewTeamActivity.EXTRA_TEAM_NAME, team.teamName)
-                putExtra(ViewTeamActivity.EXTRA_TEAM_POINTS, team.points)
-                putIntegerArrayListExtra(
-                    ViewTeamActivity.EXTRA_PLAYER_IDS,
-                    ArrayList(team.playerIds)
-                )
+                putExtra(ViewTeamActivity.EXTRA_TEAM, team)
             }
             startActivity(intent)
         }

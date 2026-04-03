@@ -1,83 +1,727 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:fillViewport="true">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <!-- ✅ ONE child only: a vertical container -->
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
-        <!-- Header row: Team name (left) + Points (center-ish) -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarViewTeam"
             android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@android:color/white"
+            android:title=""
+            app:navigationIcon="@drawable/baseline_arrow_circle_left_24"
+            >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:id="@+id/toolbarTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/view_team"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    />
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="#FFFFFF"
+        >
+
+        <!-- Stats row -->
+        <LinearLayout
+            android:id="@+id/statsRow"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/pitchBoard">
 
-            <TextView
-                android:id="@+id/txtTeamNameHeader"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/team_name"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/txtTeamPoints"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintHorizontal_weight="1" />
+                <TextView
+                    android:id="@+id/txtGameweekLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gameweek 1"
+                    android:textSize="12sp"
+                    android:textColor="#666"/>
 
-            <TextView
-                android:id="@+id/txtTeamPoints"
+                <TextView
+                    android:id="@+id/txtGameweekPoints"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="48 pts"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#222"/>
+
+            <!-- Small gap -->
+            <Space
+                android:layout_width="1dp"
+                android:layout_height="8dp" />
+
+
+        </LinearLayout>
+
+        <!-- Pitch board -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/pitchBoard"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/statsRow"
+            app:layout_constraintBottom_toTopOf="@id/bottomNav"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            >
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/gBenchTop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/_0_pts"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorPrimary"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_percent="0.8"/>
+
+            <!-- Pitch background -->
+            <ImageView
+                android:id="@+id/imgPitch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:scaleX="2"
+                android:scaleY="1.6"
+                android:layout_marginStart="-40dp"
+                android:layout_marginEnd="20dp"
+                android:translationY="-30dp"
+                android:src="@drawable/pitch2_tilted"
+                android:elevation="0dp"
+                tools:ignore="ContentDescription"
+
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintHorizontal_bias="0.65" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                />
+
+            <!-- Overlay -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/pitchOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:elevation="0dp"
+                android:clickable="false"
+                android:focusable="false"
+                >
+
+                <!-- Row lines (top -> bottom, percent from TOP) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.05" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.2" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowGK"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.54" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowEndPitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.82" />
+
+                <!-- Central Centre back in back 5 -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF5_CCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.41" />
+
+                <!-- Back-4 defender rows (tighter / different slope) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_LB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.38"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_LCB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.395"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_RCB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.41"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowDEF4_RB"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.425"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <!-- Midfield-4 / 4-4-2 midfield rows (gentle left -> right slope) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_LM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.215" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_LCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.23" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_RCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.245" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID4_RM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.26" />
+
+                <!-- Mid 5 CCM -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowMID5_CM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.245" />
+
+                <!-- Striker 2 Rows -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST2_LS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.065" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST2_RS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.08" />
+
+                <!-- Striker 1 or 3 Row -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/rowST1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    app:layout_constraintGuide_percent="0.08" />
+
+
+                <!-- Vertical Regular Columns -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.11922141" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.28"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.50"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.72"/>
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.88"/>
+
+                <!-- ================= Formation-specific columns ================= -->
+
+                <!-- Back-4 defender columns (centered + evenly spaced) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_LB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.16" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_LCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.34" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_RCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.52" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colDEF4_RB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.7" />
+
+                <!-- Dedicated GK column -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colGK"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.2" />
+
+                <!-- Dedicated CCB column -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colCCB"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_begin="189dp" />
+
+                <!-- 4-midfield columns (centered + slightly narrower than DEF4) -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_LM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.22" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_LCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.4" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_RCM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.58" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colMID4_RM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.76" />
+
+                <!-- Mid 5 to hard-center a CCM  -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/col_MID5_CM"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.5" />
+
+                <!-- Strikers 2 -->
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colST2_LS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.56" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colST2_RS"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.74" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/colST"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_percent="0.675" />
+
+                <!-- Starting Slots -->
+                <!-- ================= GK (2) ================= -->
+                <include
+                    android:id="@+id/slotGK1"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowGK"
+                    app:layout_constraintStart_toStartOf="@id/colGK"
+                    app:layout_constraintEnd_toEndOf="@id/colGK"
+                    />
+
+                <include
+                    android:id="@+id/slotGK2"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="@id/rowGK"
+                    app:layout_constraintStart_toStartOf="@id/colGK"
+                    app:layout_constraintEnd_toEndOf="@id/colGK" />
+
+                <!-- ================= DEF (4) ================= -->
+                <include
+                    android:id="@+id/slotLB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_LB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_LB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_LB"
+                    />
+
+                <include
+                    android:id="@+id/slotLCB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_LCB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_LCB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_LCB"
+                    />
+
+                <include
+                    android:id="@+id/slotCCB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF5_CCB"
+                    app:layout_constraintStart_toStartOf="@id/colCCB"
+                    app:layout_constraintEnd_toEndOf="@id/colCCB"
+                    android:visibility="gone"
+                    />
+
+                <include
+                    android:id="@+id/slotRCB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_RCB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_RCB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_RCB"
+                    />
+
+                <include
+                    android:id="@+id/slotRB"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowDEF4_RB"
+                    app:layout_constraintStart_toStartOf="@id/colDEF4_RB"
+                    app:layout_constraintEnd_toEndOf="@id/colDEF4_RB"
+                    />
+
+                <!-- ================= MID (5) ================= -->
+                <include
+                    android:id="@+id/slotLM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_LM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_LM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_LM"
+                    />
+
+                <include
+                    android:id="@+id/slotLCM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_LCM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_LCM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_LCM"
+                    />
+
+                <include
+                    android:id="@+id/slotCM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID5_CM"
+                    app:layout_constraintStart_toStartOf="@id/col_MID5_CM"
+                    app:layout_constraintEnd_toEndOf="@id/col_MID5_CM"
+                    android:visibility="gone"
+                    />
+
+                <include
+                    android:id="@+id/slotRCM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_RCM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_RCM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_RCM"
+                    />
+
+                <include
+                    android:id="@+id/slotRM"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowMID4_RM"
+                    app:layout_constraintStart_toStartOf="@id/colMID4_RM"
+                    app:layout_constraintEnd_toEndOf="@id/colMID4_RM"
+                    />
+
+                <!-- ================= ST (3) ================= -->
+                <include
+                    android:id="@+id/slotLS"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST2_LS"
+                    app:layout_constraintStart_toStartOf="@id/colST2_LS"
+                    app:layout_constraintEnd_toEndOf="@id/colST2_LS"
+                    />
+
+                <include
+                    android:id="@+id/slotST"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST1"
+                    app:layout_constraintStart_toStartOf="@id/colST"
+                    app:layout_constraintEnd_toEndOf="@id/colST"
+                    android:visibility="gone"
+                    />
+
+                <include
+                    android:id="@+id/slotRS"
+                    layout="@layout/view_player_slot"
+                    android:layout_width="64dp"
+                    android:layout_height="82dp"
+                    app:layout_constraintTop_toTopOf="@id/rowST2_RS"
+                    app:layout_constraintStart_toStartOf="@id/colST2_RS"
+                    app:layout_constraintEnd_toEndOf="@id/colST2_RS"
+                    />
+
+                <androidx.constraintlayout.widget.Guideline android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Bench banner (bottom) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/benchBanner"
+                android:layout_width="0dp"
+                android:layout_height="135dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                app:layout_constraintTop_toTopOf="@id/gBenchTop"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/benchRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/benchRole1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/GK"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot1"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot1"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot1"/>
+
+                    <TextView
+                        android:id="@+id/benchRole2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/DEF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot2"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot2"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot2"/>
+
+                    <TextView
+                        android:id="@+id/benchRole3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/MID"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot3"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot3"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot3"/>
+
+                    <TextView
+                        android:id="@+id/benchRole4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/STR"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:textColor="@android:color/white"
+                        android:padding="4dp"
+                        app:layout_constraintBottom_toTopOf="@id/benchSlot4"
+                        app:layout_constraintStart_toStartOf="@id/benchSlot4"
+                        app:layout_constraintEnd_toEndOf="@id/benchSlot4"/>
+
+                    <include
+                        android:id="@+id/benchSlot1"
+                        layout="@layout/view_player_slot"
+                        android:layout_width="64dp"
+                        android:layout_height="82dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/benchSlot2"
+                        app:layout_constraintHorizontal_chainStyle="spread"
+                        />
+
+                    <include
+                        android:id="@+id/benchSlot2"
+                        layout="@layout/view_player_slot"
+                        android:layout_width="64dp"
+                        android:layout_height="82dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/benchSlot1"
+                        app:layout_constraintEnd_toStartOf="@id/benchSlot3"
+                        app:layout_constraintHorizontal_chainStyle="spread"
+                        />
+
+                    <include
+                        android:id="@+id/benchSlot3"
+                        layout="@layout/view_player_slot"
+                        android:layout_width="64dp"
+                        android:layout_height="82dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/benchSlot2"
+                        app:layout_constraintEnd_toStartOf="@id/benchSlot4"
+                        app:layout_constraintHorizontal_chainStyle="spread"
+                        />
+
+                    <include
+                        android:id="@+id/benchSlot4"
+                        layout="@layout/view_player_slot"
+                        android:layout_width="64dp"
+                        android:layout_height="82dp"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/benchSlot3"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_chainStyle="spread"
+                        />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-        <!-- Starting XI -->
-        <TextView
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gPitchBottomOuter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/starting_xi"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginBottom="6dp" />
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.89" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerStarters"
-            android:layout_width="match_parent"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
+            app:menu="@menu/menu_bottom_nav"
+            app:labelVisibilityMode="labeled"
+            app:itemIconSize="24dp"
+            app:itemTextAppearanceActive="@style/TextAppearance.MaterialComponents.Caption"
+            app:itemTextAppearanceInactive="@style/TextAppearance.MaterialComponents.Caption"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/gPitchBottomOuter"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <!-- Bench -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bench"
-            android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="6dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerBench"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
-
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

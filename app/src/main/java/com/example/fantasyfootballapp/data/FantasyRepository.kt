@@ -44,7 +44,8 @@ class FantasyRepository(
     }
 
     //Get list of teams for the Leaderboard sorted by points accrued
-    suspend fun getLeaderboard(): List<LeaderboardEntry> {
+    suspend fun getLeaderboard(): List<LeaderboardTeamDto> {
+//    suspend fun getLeaderboard(): List<LeaderboardEntry> {
         return api.getLeaderboard()
             .sortedByDescending { it.points }
     }
@@ -112,7 +113,7 @@ class FantasyRepository(
 
     suspend fun login(email: String, password: String): User {
         val res = api.login(LoginRequest(email, password))
-        tokenStore.saveToken(res.token)      // ✅ save it
+        tokenStore.saveToken(res.token)
         return res.user.toModel()
     }
 

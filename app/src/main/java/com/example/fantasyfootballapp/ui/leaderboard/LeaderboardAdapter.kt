@@ -8,10 +8,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.LeaderboardEntry
+import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 
 class LeaderboardAdapter(
-    private val entries: MutableList<LeaderboardEntry>,
-    private val onTeamClicked: (LeaderboardEntry) -> Unit
+//    private val entries: MutableList<LeaderboardEntry>,
+//    private val onTeamClicked: (LeaderboardEntry) -> Unit
+    private val entries: MutableList<LeaderboardTeamDto>,
+    private val onTeamClicked: (LeaderboardTeamDto) -> Unit
 ) : RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>() {
 
     inner class LeaderboardViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -34,7 +37,7 @@ class LeaderboardAdapter(
         holder.txtTeam.text = entry.teamName
         holder.txtPoints.text = "${entry.points} pts"
 
-        // ✅ Make whole row clickable
+        //Make whole row clickable
         holder.itemView.setOnClickListener {
             onTeamClicked(entry)
         }
@@ -43,7 +46,8 @@ class LeaderboardAdapter(
     override fun getItemCount(): Int = entries.size
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setData(newEntries: List<LeaderboardEntry>) {
+    fun setData(newEntries: List<LeaderboardTeamDto>) {
+//    fun setData(newEntries: List<LeaderboardEntry>) {
         entries.clear()
         entries.addAll(newEntries)
         notifyDataSetChanged()
