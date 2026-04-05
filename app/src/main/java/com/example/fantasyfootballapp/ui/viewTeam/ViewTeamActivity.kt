@@ -14,6 +14,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
+import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Formation
@@ -47,6 +48,10 @@ class ViewTeamActivity : AppCompatActivity() {
     private var viewedTeam: LeaderboardTeamDto? = null
 
     private var teamName: String = "My Team"
+
+    //For gameweek stats
+    val gw = GameweekConfig.CURRENT_GAMEWEEK
+    val season = GameweekConfig.CURRENT_SEASON
 
     private lateinit var pitchOverlay: View
 

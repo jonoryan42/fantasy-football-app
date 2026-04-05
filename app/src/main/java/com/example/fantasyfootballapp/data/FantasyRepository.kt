@@ -1,6 +1,7 @@
 package com.example.fantasyfootballapp.data
 
 import android.util.Log
+import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.mappers.toModel
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
@@ -89,11 +90,12 @@ class FantasyRepository(
         }
     }
 
-    suspend fun fetchGameweekStatsFromBackend(gw: Int, playerIds: List<Int>): List<GameweekStat> {
-        val idsParam = playerIds.joinToString(",")  // "1,2,3,4"
+    suspend fun fetchGameweekStatsFromBackend(playerIds: List<Int>): List<GameweekStat> {
+        val idsParam = playerIds.joinToString(",")
+
         return api.getGameweekStats(
-            gw = gw,
-            season = "2025",
+            gw = GameweekConfig.CURRENT_GAMEWEEK,
+            season = GameweekConfig.CURRENT_SEASON,
             playerIds = idsParam
         )
     }
