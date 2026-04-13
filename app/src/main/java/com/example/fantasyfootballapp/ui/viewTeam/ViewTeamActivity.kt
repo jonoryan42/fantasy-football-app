@@ -2,16 +2,11 @@ package com.example.fantasyfootballapp.ui.viewTeam
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.config.GameweekConfig
@@ -24,12 +19,13 @@ import com.example.fantasyfootballapp.model.LineupState
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.Position
 import com.example.fantasyfootballapp.model.RosterSlotKey
-import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
-import com.example.fantasyfootballapp.network.isUnauthorized
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
+import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
+import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper.loadCurrentGameweekStats
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +69,7 @@ class ViewTeamActivity : AppCompatActivity() {
 
     //For gameweek stats
     private var gwStatsByPlayerId: Map<Int, GameweekStat> = emptyMap()
+    private var upcomingFixturesByTeam: Map<String, List<Fixture>> = emptyMap()
 
     private var currentFormation = Formation.F442
 
@@ -204,6 +201,21 @@ class ViewTeamActivity : AppCompatActivity() {
 
                 loadViewedTeamFromIntent()
 
+                //Stats and fixtures use function from helper file
+                gwStatsByPlayerId = withContext(Dispatchers.IO) {
+                    PlayerStatsHelper.loadCurrentGameweekStats(
+                        repo = repo,
+                        players = playerById.values
+                    )
+                }
+
+                upcomingFixturesByTeam = withContext(Dispatchers.IO) {
+                    PlayerStatsHelper.loadUpcomingFixturesForTeams(
+                        repo = repo,
+                        players = playerById.values
+                    )
+                }
+
                 renderAll()
                 renderBenchPosLabels()
 
@@ -333,29 +345,6 @@ class ViewTeamActivity : AppCompatActivity() {
         view.clearButton?.visibility = View.VISIBLE
     }
 
-    private fun buildCurrentSquadIds(): List<Int> {
-        return RosterSlotKey.SLOT_ORDER
-            .mapNotNull { selectedBySlot[it] }
-            .distinct()
-    }
-
-    private fun slotGroup(key: RosterSlotKey): Position? = when {
-        key.name.startsWith("GK") -> Position.GK
-        key.name.startsWith("DEF") -> Position.DEF
-        key.name.startsWith("MID") -> Position.MID
-        key.name.startsWith("STR") -> Position.STR   // or Position.STR if that's what you use
-        else -> null // bench
-    }
-
-    private fun playerPos(id: Int?): Position? =
-        allPlayers.firstOrNull { it.id == id }?.position
-
-    private fun buildSlotMapPayload(): Map<String, Int?> {
-        return RosterSlotKey.SLOT_ORDER.associate { key ->
-            key.name to selectedBySlot[key]
-        }
-    }
-
     private fun renderAll() = slotViews.keys.forEach { renderSlot(it)
         renderBenchPosLabels()
     }
@@ -461,16 +450,22 @@ class ViewTeamActivity : AppCompatActivity() {
         showStatsDialog(player)
     }
 
-    private fun showStatsDialog(player: Player) {
-        val msg = buildString {
-            appendLine("Club: ${player.club}")
-            appendLine("Position: ${player.position}")
-            appendLine("Price: ${player.price}")
-            appendLine("Points: ${player.points}")
-            appendLine("Goals: ${player.goals}  Assists: ${player.assists}")
-            appendLine("Clean sheets: ${player.cleansheets}")
-            appendLine("Yellows: ${player.yellows}  Reds: ${player.reds}")
+    private suspend fun loadUpcomingFixturesForVisibleTeams() {
+        val teams = playerById.values
+            .map { it.club }
+            .distinct()
+
+        upcomingFixturesByTeam = teams.associateWith { teamName ->
+            repo.fetchUpcomingFixtures(teamName)
         }
+    }
+
+    private fun showStatsDialog(player: Player) {
+        val msg = PlayerStatsHelper.buildMessage(
+            player = player,
+            gwStat = gwStatsByPlayerId[player.id],
+            upcoming = upcomingFixturesByTeam[player.club].orEmpty()
+        )
 
         AlertDialog.Builder(this)
             .setTitle(player.name)
