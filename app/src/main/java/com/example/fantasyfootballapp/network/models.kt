@@ -72,3 +72,23 @@ data class LeaderboardTeamDto(
     val points: Int = 0,
     val createdAt: String? = null
 ) : Parcelable
+
+//Two models for Fixtures
+data class FixtureEvent(
+    val playerName: String? = null,
+    val team: String,
+    val minute: Int,
+    val type: String? = null
+)
+
+data class Fixture(
+    val season: String,
+    val gameweek: Int,
+    val homeTeam: String,
+    val awayTeam: String,
+    val played: Boolean,
+    val homeScore: Int? = null,
+    val awayScore: Int? = null,
+    val scorers: List<FixtureEvent> = emptyList(),
+    val cards: List<FixtureEvent> = emptyList()
+)

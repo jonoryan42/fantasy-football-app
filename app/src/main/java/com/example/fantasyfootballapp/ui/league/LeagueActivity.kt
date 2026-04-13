@@ -33,7 +33,7 @@ class LeagueActivity : AppCompatActivity() {
             LeagueRow(2, "Bohemians", 0,0,0,0,0),
             LeagueRow(3, "Dungarvan", 0,0,0,0,0),
             LeagueRow(4, "Ferrybank", 0,0,0,0,0),
-            LeagueRow(5, "Hibernians", 0,0,0,0,0),
+            LeagueRow(5, "Hibernian", 0,0,0,0,0),
             LeagueRow(6, "Portlaw", 0,0,0,0,0),
             LeagueRow(7, "Tramore", 0,0,0,0,0),
             LeagueRow(8, "Tycor", 0,0,0,0,0),

@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
+import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Formation
@@ -39,6 +40,10 @@ import com.example.fantasyfootballapp.ui.common.SystemBars
 class PickTeamActivity : AppCompatActivity() {
 
     private var teamName: String = "My Team"
+
+    //For gameweek stats
+    val gw = GameweekConfig.CURRENT_GAMEWEEK
+    val season = GameweekConfig.CURRENT_SEASON
 
     private lateinit var pitchOverlay: View
 

@@ -17,6 +17,7 @@ import com.example.fantasyfootballapp.network.LoginRequest
 import com.example.fantasyfootballapp.network.RegisterRequest
 import com.example.fantasyfootballapp.util.RepoResult
 import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
+import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import okhttp3.internal.format
 
@@ -97,6 +98,15 @@ class FantasyRepository(
             gw = GameweekConfig.CURRENT_GAMEWEEK,
             season = GameweekConfig.CURRENT_SEASON,
             playerIds = idsParam
+        )
+    }
+
+    suspend fun fetchUpcomingFixtures(team: String, limit: Int = 2): List<Fixture> {
+        return api.getUpcomingFixtures(
+            team = team,
+            season = GameweekConfig.CURRENT_SEASON,
+            fromGw = GameweekConfig.CURRENT_GAMEWEEK + 1,
+            limit = limit
         )
     }
 

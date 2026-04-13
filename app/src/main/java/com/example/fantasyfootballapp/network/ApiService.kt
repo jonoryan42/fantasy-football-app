@@ -1,5 +1,6 @@
 package com.example.fantasyfootballapp.network
 
+import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LeaderboardEntry
@@ -38,6 +39,14 @@ interface ApiService {
 
     @GET("/api/leaderboard/me")
     suspend fun getMyTeam(): LeaderboardTeamDto
+
+    @GET("api/fixtures/upcoming")
+    suspend fun getUpcomingFixtures(
+        @Query("team") team: String,
+        @Query("season") season: String = GameweekConfig.CURRENT_SEASON,
+        @Query("fromGw") fromGw: Int = GameweekConfig.CURRENT_GAMEWEEK + 1,
+        @Query("limit") limit: Int = 2
+    ): List<Fixture>
 
     //POSTS
     @POST("/api/leaderboard") // or whatever your endpoint is

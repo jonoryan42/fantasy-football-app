@@ -39,6 +39,8 @@ let leaderboardCollection;
 let playersCollection;
 let gameweekStatsCollection;
 let usersCollection;
+let teamsCollection;
+let fixturesCollection;
 
 const TEAM_SIZE = 15;
 
@@ -122,6 +124,8 @@ async function connectToMongo() {
   playersCollection = db.collection("players");
   gameweekStatsCollection = db.collection("player_gameweek_stats");
   usersCollection = db.collection("users");
+  teamsCollection = db.collection("teams");
+  fixturesCollection = db.collection("fixtures");
 
   // Unique Indexes for the users and leaderboard for users and their teams.
   await usersCollection.createIndex({ email: 1 }, { unique: true });
@@ -129,7 +133,7 @@ async function connectToMongo() {
 
   console.log(`Connected to MongoDB`);
   console.log(`   DB: ${DB_NAME}`);
-  console.log(`   Collections: leaderboard, users, players, player_gameweek_stats`);
+  console.log(`   Collections: leaderboard, users, players, player_gameweek_stats, teams, fixtures`);
 }
 
 // Health check (easy to verify server is running)
@@ -307,6 +311,86 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
   }
 });
 
+// GET teams
+app.get("/api/teams", async (req, res) => {
+  try {
+    //Sorted in the way of a league table
+    const teams = await teamsCollection
+      .find({})
+      .sort({
+        points: -1,
+        goalDifference: -1,
+        goalsFor: -1,
+        name: 1
+      })
+      .toArray();
+
+    res.json(teams);
+  } catch (err) {
+    console.error("GET /api/teams error:", err);
+    res.status(500).json({ message: "Failed to fetch teams" });
+  }
+});
+
+// GET fixtures for a specific gameweek
+app.get("/api/fixtures/gameweek/:gw", async (req, res) => {
+  try {
+    const gw = parseInt(req.params.gw, 10);
+    const season = req.query.season || "2025";
+
+    if (!Number.isInteger(gw)) {
+      return res.status(400).json({ message: "Invalid gameweek" });
+    }
+
+    const fixtures = await fixturesCollection
+      .find({ season, gameweek: gw })
+      .sort({ homeTeam: 1 })
+      .toArray();
+
+    res.json(fixtures);
+  } catch (err) {
+    console.error("GET /api/fixtures/gameweek/:gw error:", err);
+    res.status(500).json({ message: "Failed to fetch fixtures" });
+  }
+});
+
+// GET upcoming fixtures for a specific club - Two routes for fixtures is cleaner
+app.get("/api/fixtures/upcoming", async (req, res) => {
+  try {
+    const team = req.query.team;
+    const season = req.query.season || "2025";
+    //Stats for gameweek 2 onwards (Current Gameweek)
+    const fromGw = parseInt(req.query.fromGw || "2", 10);
+    //Next 2 fixtures
+    const limit = parseInt(req.query.limit || "2", 10);
+
+    if (!team || typeof team !== "string") {
+      return res.status(400).json({ message: "team is required" });
+    }
+
+    if (!Number.isInteger(fromGw) || !Number.isInteger(limit)) {
+      return res.status(400).json({ message: "fromGw and limit must be valid integers" });
+    }
+
+    const fixtures = await fixturesCollection
+      .find({
+        season,
+        gameweek: { $gte: fromGw },
+        $or: [
+          { homeTeam: team },
+          { awayTeam: team }
+        ]
+      })
+      .sort({ gameweek: 1 })
+      .limit(limit)
+      .toArray();
+
+    res.json(fixtures);
+  } catch (err) {
+    console.error("GET /api/fixtures/upcoming error:", err);
+    res.status(500).json({ message: "Failed to fetch upcoming fixtures" });
+  }
+});
 
 //POST new team (save from Confirm button)
 app.post("/api/leaderboard", requireAuth, async (req, res) => {

@@ -18,6 +18,7 @@ import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Formation
+import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LineupManager
 import com.example.fantasyfootballapp.model.LineupState
 import com.example.fantasyfootballapp.model.Player
@@ -69,6 +70,9 @@ class ViewTeamActivity : AppCompatActivity() {
     private var lineupState = LineupState()          // keep latest state
 
     private var playerById: Map<Int, Player> = emptyMap()
+
+    //For gameweek stats
+    private var gwStatsByPlayerId: Map<Int, GameweekStat> = emptyMap()
 
     private var currentFormation = Formation.F442
 

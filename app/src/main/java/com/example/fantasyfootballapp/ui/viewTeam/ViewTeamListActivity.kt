@@ -61,7 +61,7 @@ class ViewTeamListActivity : AppCompatActivity() {
 
                 val teamIds = (starterIds + benchIds)
                 val stats = withContext(Dispatchers.IO) {
-                    repo.fetchGameweekStatsFromBackend(gw = 1, playerIds = teamIds)
+                    repo.fetchGameweekStatsFromBackend(playerIds = teamIds)
                 }
 
                 val pointsMap = stats.associate { it.playerId to it.points }
