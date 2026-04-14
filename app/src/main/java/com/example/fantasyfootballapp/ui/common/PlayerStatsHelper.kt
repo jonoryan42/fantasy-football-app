@@ -33,7 +33,6 @@ object PlayerStatsHelper {
     fun buildMessage(
         player: Player,
         gwStat: GameweekStat?,
-        allStats: List<GameweekStat>,
         upcoming: List<Fixture>
     ): String {
         val gwPoints = gwStat?.points ?: 0
@@ -43,7 +42,8 @@ object PlayerStatsHelper {
         val gwCleanSheet = gwStat?.cleansheet ?: false
         val gwYellows = gwStat?.yellows ?: 0
         val gwReds = gwStat?.reds ?: 0
-        val totalPoints = allStats.sumOf { it.points }
+//        val totalPoints = allStats.sumOf { it.points }
+        val totalPoints = gwStat?.points ?: 0
 
         return buildString {
             appendLine("${player.club}")

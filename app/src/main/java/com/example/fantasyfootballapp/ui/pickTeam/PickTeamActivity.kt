@@ -17,6 +17,7 @@ import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.model.Formation
+import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.LineupManager
 import com.example.fantasyfootballapp.model.LineupState
 import com.example.fantasyfootballapp.model.Player
@@ -25,6 +26,7 @@ import com.example.fantasyfootballapp.model.RegistrationDraft
 import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.isUnauthorized
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
@@ -35,7 +37,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
+import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
+import kotlin.collections.orEmpty
 
 class PickTeamActivity : AppCompatActivity() {
 
@@ -63,6 +67,9 @@ class PickTeamActivity : AppCompatActivity() {
     private var lineupState = LineupState()          // keep latest state
 
     private var playerById: Map<Int, Player> = emptyMap()
+
+    private var gwStatsByPlayerId: Map<Int, GameweekStat> = emptyMap()
+    private var upcomingFixturesByTeam: Map<String, List<Fixture>> = emptyMap()
 
     private var validBenchIndexes: Set<Int> = emptySet()
     private var currentFormation = Formation.F442
@@ -221,6 +228,22 @@ class PickTeamActivity : AppCompatActivity() {
             try {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
                 playerById = allPlayers.associateBy { it.id }
+
+                //Stats and fixtures use function from helper file
+                gwStatsByPlayerId = withContext(Dispatchers.IO) {
+                    PlayerStatsHelper.loadCurrentGameweekStats(
+                        repo = repo,
+                        players = playerById.values
+                    )
+                }
+
+                upcomingFixturesByTeam = withContext(Dispatchers.IO) {
+                    PlayerStatsHelper.loadUpcomingFixturesForTeams(
+                        repo = repo,
+                        players = playerById.values
+                    )
+                }
+
             } catch (e: Exception) {
                 Toast.makeText(
                     this@PickTeamActivity,
@@ -711,44 +734,47 @@ class PickTeamActivity : AppCompatActivity() {
         val playerId = selectedBySlot[slot] ?: return
         val player = playerById[playerId] ?: return
 
-        showPlayerDialog(slot, player)
+        showStatsDialog(slot, player)
     }
 
-    private fun showPlayerDialog(slot: RosterSlotKey, player: Player) {
-        AlertDialog.Builder(this)
-            .setTitle(player.name)
-            .setItems(arrayOf("View Stats", "Substitution")) { _, which ->
-                when (which) {
-                    0 -> showStatsDialog(player)
-                    1 -> {
-                        if (slot.isBench()) {
-                            beginBenchSubstitution(slot)
-                        } else {
-                            beginStarterSubstitution(slot)
-                        }
-                    }
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
+//    private fun showPlayerDialog(slot: RosterSlotKey, player: Player) {
+//        AlertDialog.Builder(this)
+//            .setTitle(player.name)
+//            .setItems(arrayOf("View Stats", "Substitution")) { _, which ->
+//                when (which) {
+//                    0 -> showStatsDialog(player)
+//                    1 -> {
+//                        if (slot.isBench()) {
+//                            beginBenchSubstitution(slot)
+//                        } else {
+//                            beginStarterSubstitution(slot)
+//                        }
+//                    }
+//                }
+//            }
+//            .setNegativeButton("Cancel", null)
+//            .show()
+//    }
 
-    private fun showStatsDialog(player: Player) {
-        val msg = buildString {
-            appendLine("Club: ${player.club}")
-            appendLine("Position: ${player.position}")
-            appendLine("Price: ${player.price}")
-            appendLine("Points: ${player.points}")
-            appendLine("Goals: ${player.goals}  Assists: ${player.assists}")
-            appendLine("Clean sheets: ${player.cleansheets}")
-            appendLine("Yellows: ${player.yellows}  Reds: ${player.reds}")
-        }
+    private fun showStatsDialog(slot: RosterSlotKey, player: Player) {
+        val msg = PlayerStatsHelper.buildMessage(
+            player = player,
+            gwStat = gwStatsByPlayerId[player.id],
+            upcoming = upcomingFixturesByTeam[player.club].orEmpty()
+        )
 
-        AlertDialog.Builder(this)
+        val builder = AlertDialog.Builder(this)
             .setTitle(player.name)
             .setMessage(msg)
-            .setPositiveButton("OK", null)
-            .show()
+            .setNegativeButton("Substitute") { _, _ ->
+                if (slot.isBench()) {
+                    beginBenchSubstitution(slot)
+                } else {
+                    beginStarterSubstitution(slot)
+                }
+            }
+
+        builder.show()
     }
 
     //Making subs

@@ -14,16 +14,19 @@ import androidx.lifecycle.lifecycleScope
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.Position
 import com.example.fantasyfootballapp.model.RegistrationDraft
 import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.navigation.NavKeys
 import com.example.fantasyfootballapp.network.ApiClient
+import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.isUnauthorized
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
+import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
@@ -52,6 +55,12 @@ class TransfersActivity : AppCompatActivity() {
     private var freeTransfers = 15 // later this comes from backend per gameweek
 
     private var hasSavedTeam: Boolean = false
+
+    private var gwStatsByPlayerId: Map<Int, GameweekStat> = emptyMap()
+    private var upcomingFixturesByTeam: Map<String, List<Fixture>> = emptyMap()
+
+    private var playerById: Map<Int, Player> = emptyMap()
+
 
     private val SLOT_ORDER = RosterSlotKey.PITCH_ORDER
 
@@ -161,6 +170,22 @@ class TransfersActivity : AppCompatActivity() {
             // 1) Load all players (public endpoint) – if this fails, show a toast
             try {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
+
+                //Stats and fixtures use function from helper file
+                gwStatsByPlayerId = withContext(Dispatchers.IO) {
+                    PlayerStatsHelper.loadCurrentGameweekStats(
+                        repo = repo,
+                        players = playerById.values
+                    )
+                }
+
+                upcomingFixturesByTeam = withContext(Dispatchers.IO) {
+                    PlayerStatsHelper.loadUpcomingFixturesForTeams(
+                        repo = repo,
+                        players = playerById.values
+                    )
+                }
+
             } catch (e: Exception) {
                 Toast.makeText(
                     this@TransfersActivity,
@@ -212,7 +237,10 @@ class TransfersActivity : AppCompatActivity() {
         }
 
         val items = candidates
-            .map { "${it.name} • ${it.club} • €%.1fm • ${it.points} pts".format(it.price) }
+            .map { player ->
+                val points = gwStatsByPlayerId[player.id]?.points ?: 0
+                "${player.name} - ${player.club} - €%.1fm - $points pts".format(player.price)
+            }
             .toTypedArray()
 
         val currentIndex = currentId?.let { id -> candidates.indexOfFirst { it.id == id } } ?: -1

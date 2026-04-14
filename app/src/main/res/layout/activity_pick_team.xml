@@ -55,49 +55,72 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="#FFFFFF"
+
         >
 
         <!-- Stats row -->
         <LinearLayout
             android:id="@+id/statsRow"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingTop="12dp"
-            android:paddingBottom="8dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/pitchBoard">
-
-        <!-- Deadline chip (single, centered) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/chipDeadline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="10dp"
-            app:cardElevation="2dp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="12dp"
+            android:paddingBottom="8dp"
 
-            <TextView
-                android:id="@+id/txtDeadline"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Deadline chip -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chipDeadline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="6dp"
-                android:text="Tue 2 Dec Deadline"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:textAlignment="center"/>
-        </com.google.android.material.card.MaterialCardView>
+                app:cardCornerRadius="10dp"
+                app:cardElevation="2dp">
 
-        <!-- Small gap -->
-        <Space
-            android:layout_width="1dp"
-            android:layout_height="8dp" />
+                <TextView
+                    android:id="@+id/txtDeadline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="6dp"
+                    android:text="Tue 2 Dec Deadline"
+                    android:textStyle="bold"
+                    android:textSize="13sp" />
+            </com.google.android.material.card.MaterialCardView>
 
+            <!-- spacing -->
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="1dp" />
+
+            <!-- EXACT SAME layout as View Team -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/txtGameweekLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gameweek 1"
+                    android:textSize="12sp"
+                    android:textColor="#666" />
+
+                <TextView
+                    android:id="@+id/txtGameweekPoints"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="48 pts"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#222" />
+            </LinearLayout>
 
         </LinearLayout>
 

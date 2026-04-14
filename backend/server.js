@@ -194,31 +194,21 @@ function requireAuth(req, res, next) {
 //GET leaderboard with calculated points
 app.get("/api/leaderboard", async (req, res) => {
   try {
+    const season = req.query.season || "2025";
     const teams = await leaderboardCollection.find({}).toArray();
 
     const computed = await Promise.all(
       teams.map(async (team) => {
-        const playerIds = (team.squadPlayerIds || team.playerIds || []).map(Number);
-        const players = await playersCollection
-          .find({ id: { $in: playerIds } })
-          .toArray();
+        //Calculating points for the team based on the players in the starting XI and their stats so far for the season
+    const starterIds = Object.entries(team.slotPlayerIds || {})
+      .filter(([slot, playerId]) => !slot.startsWith("BENCH") && playerId != null)
+      .map(([_, playerId]) => Number(playerId));
+            const stats = await gameweekStatsCollection
+              .find({ season, playerId: { $in: starterIds } })
+              .toArray();
 
-        const points = players.reduce((sum, p) => {
-          const cleanSheetPts =
-            (p.position === "GK" || p.position === "DEF")
-              ? (p.cleansheets || 0) * 4
-              : 0;
-
-          return (
-            sum +
-            (p.goals || 0) * 5 +
-            (p.assists || 0) * 3 +
-            cleanSheetPts -
-            (p.yellows || 0) * 1 -
-            (p.reds || 0) * 3 -
-            (p.owngoals || 0) * 2
-          );
-        }, 0);
+          //Adding up total points for the team based on the players in the team and their stats so far for the season
+        const points = stats.reduce((sum, s) => sum + (s.points || 0), 0);
 
         return {
           ...team,
@@ -291,6 +281,31 @@ app.get("/api/gameweeks/:gw", async (req, res) => {
   } catch (err) {
     console.error("GET /api/gameweeks/:gw error:", err);
     res.status(500).json({ message: "Failed to fetch gameweek stats" });
+  }
+});
+
+//Route to get all gameweek stats for a player across the season (for stats page)
+app.get("/api/gameweeks", async (req, res) => {
+  try {
+    const season = req.query.season || "2025";
+
+    const playerIds = (req.query.playerIds || "")
+      .split(",")
+      .map((x) => parseInt(x, 10))
+      .filter((n) => Number.isInteger(n));
+
+    if (playerIds.length === 0) {
+      return res.status(400).json({ message: "playerIds are required" });
+    }
+
+    const stats = await gameweekStatsCollection
+      .find({ season, playerId: { $in: playerIds } })
+      .toArray();
+
+    res.json(stats);
+  } catch (err) {
+    console.error("GET /api/gameweeks error:", err);
+    res.status(500).json({ message: "Failed to fetch all gameweek stats" });
   }
 });
 
@@ -597,7 +612,7 @@ app.post("/api/auth/register-with-team", async (req, res) => {
       formationKey: formationKey ?? "F442",
       createdAt: new Date(),
       updatedAt: new Date(),
-      points: 0,
+      // points: 0,
     };
 
       const teamInsert = await leaderboardCollection.insertOne(teamDoc, { session });

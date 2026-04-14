@@ -66,8 +66,8 @@ class ViewTeamListActivity : AppCompatActivity() {
 
                 val pointsMap = stats.associate { it.playerId to it.points }
 
-                starters.forEach { p -> p.gwPoints = pointsMap[p.id] ?: 0 }
-                bench.forEach { p -> p.gwPoints = pointsMap[p.id] ?: 0 }
+//                starters.forEach { p -> p.gwPoints = pointsMap[p.id] ?: 0 }
+//                bench.forEach { p -> p.gwPoints = pointsMap[p.id] ?: 0 }
 
                 recyclerStarters.adapter = ViewTeamListPlayerAdapter(starters)
                 recyclerBench.adapter = ViewTeamListPlayerAdapter(bench)

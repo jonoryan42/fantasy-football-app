@@ -42,7 +42,7 @@ class PlayerAdapter(
 
         holder.txtName.text = player.name
         holder.txtDetails.text =
-            "${player.position} \u2022 ${player.club} \u2022 €%.1fm \u2022 ${player.points} pts"
+            "${player.position} \u2022 ${player.club} \u2022 €%.1fm \u2022"
                 .format(player.price)
 
         // avoid old listeners firing when we change checked state
