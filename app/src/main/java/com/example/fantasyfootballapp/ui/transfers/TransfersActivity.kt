@@ -62,7 +62,7 @@ class TransfersActivity : AppCompatActivity() {
     private var playerById: Map<Int, Player> = emptyMap()
 
 
-    private val SLOT_ORDER = RosterSlotKey.PITCH_ORDER
+//    private val SLOT_ORDER = RosterSlotKey.PITCH_ORDER
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
@@ -70,7 +70,6 @@ class TransfersActivity : AppCompatActivity() {
     }
 
     //For collecting user data and saving after team selection
-
     private val onboardingDraft: RegistrationDraft? by lazy {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(NavKeys.REG_DRAFT, RegistrationDraft::class.java)
@@ -170,19 +169,19 @@ class TransfersActivity : AppCompatActivity() {
             // 1) Load all players (public endpoint) – if this fails, show a toast
             try {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
+                playerById = allPlayers.associateBy { it.id }
 
-                //Stats and fixtures use function from helper file
                 gwStatsByPlayerId = withContext(Dispatchers.IO) {
                     PlayerStatsHelper.loadCurrentGameweekStats(
                         repo = repo,
-                        players = playerById.values
+                        players = allPlayers
                     )
                 }
 
                 upcomingFixturesByTeam = withContext(Dispatchers.IO) {
                     PlayerStatsHelper.loadUpcomingFixturesForTeams(
                         repo = repo,
-                        players = playerById.values
+                        players = allPlayers
                     )
                 }
 
@@ -230,6 +229,7 @@ class TransfersActivity : AppCompatActivity() {
         val candidates = allPlayers
             .filter { it.position == requiredPos }
             .filter { it.id !in alreadyPicked || it.id == currentId }
+            .sortedByDescending { it.price }
 
         if (candidates.isEmpty()) {
             Toast.makeText(this, "No available $requiredPos players", Toast.LENGTH_SHORT).show()
