@@ -11,11 +11,22 @@ import com.example.fantasyfootballapp.ui.transfers.TransfersActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import android.widget.TextView
+import androidx.lifecycle.lifecycleScope
+import com.example.fantasyfootballapp.config.GameweekConfig
+import com.example.fantasyfootballapp.data.FantasyRepository
+import com.example.fantasyfootballapp.data.TokenStore
+import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.main.MainActivity
+import kotlinx.coroutines.launch
 
 class FantasyActivity : AppCompatActivity() {
+
+    private val repo by lazy {
+        val tokenStore = TokenStore(applicationContext)
+        FantasyRepository(ApiClient.service, tokenStore)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +34,7 @@ class FantasyActivity : AppCompatActivity() {
 
         SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
 
+        val tvGameweekLabel = findViewById<TextView>(R.id.tvGameweekLabel)
         val tvGameweekPoints = findViewById<TextView>(R.id.tvGameweekPoints)
         val tvTotalPoints = findViewById<TextView>(R.id.tvTotalPoints)
         val tvDeadline = findViewById<TextView>(R.id.tvDeadline)
@@ -30,10 +42,7 @@ class FantasyActivity : AppCompatActivity() {
         val btnTransfers = findViewById<MaterialButton>(R.id.btnTransfers)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        // Temporary placeholder values
-        tvGameweekPoints.text = "52"
-        tvTotalPoints.text = "418"
-        tvDeadline.text = "Tue 2 Dec, 18:00"
+        loadFantasySummary(tvGameweekLabel, tvGameweekPoints, tvTotalPoints, tvDeadline)
 
         btnPickTeam.setOnClickListener {
             startActivity(Intent(this, PickTeamActivity::class.java))
@@ -49,5 +58,28 @@ class FantasyActivity : AppCompatActivity() {
             bottomNav = bottomNav,
             selectedItemId = R.id.nav_fantasy
         )
+    }
+
+    private fun loadFantasySummary(
+        tvGameweekLabel: TextView,
+        tvGameweekPoints: TextView,
+        tvTotalPoints: TextView,
+        tvDeadline: TextView
+    ) {
+        lifecycleScope.launch {
+
+            val score = repo.fetchMyGameweekScore(
+                gameweek = GameweekConfig.CURRENT_GAMEWEEK,
+                season = GameweekConfig.CURRENT_SEASON
+            )
+
+            val points = score?.points ?: 0
+            val gameweek = score?.gameweek ?: 0
+
+            tvGameweekLabel.text = "Gameweek " + gameweek.toString()
+            tvGameweekPoints.text = points.toString()
+            tvTotalPoints.text = points.toString()
+            tvDeadline.text = "Tue 2 June, 18:00"
+        }
     }
 }

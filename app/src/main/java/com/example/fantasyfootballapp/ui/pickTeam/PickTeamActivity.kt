@@ -66,6 +66,9 @@ class PickTeamActivity : AppCompatActivity() {
     private lateinit var lineupManager: LineupManager
     private var lineupState = LineupState()          // keep latest state
 
+    //Previous Gameweek points total
+    private lateinit var txtGameweekPoints: TextView
+
     private var playerById: Map<Int, Player> = emptyMap()
 
     private var gwStatsByPlayerId: Map<Int, GameweekStat> = emptyMap()
@@ -140,6 +143,9 @@ class PickTeamActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pick_team)
+
+        txtGameweekPoints = findViewById(R.id.txtGameweekPoints)
+        loadGameweekPoints()
 
         SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
 
@@ -218,6 +224,17 @@ class PickTeamActivity : AppCompatActivity() {
             }
 
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun loadGameweekPoints() {
+        lifecycleScope.launch {
+            val score = repo.fetchMyGameweekScore(
+                gameweek = GameweekConfig.CURRENT_GAMEWEEK,
+                season = GameweekConfig.CURRENT_SEASON
+            )
+
+            txtGameweekPoints.text = "${score?.points ?: 0} pts"
         }
     }
 

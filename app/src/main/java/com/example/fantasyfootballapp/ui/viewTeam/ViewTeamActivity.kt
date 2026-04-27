@@ -42,13 +42,10 @@ class ViewTeamActivity : AppCompatActivity() {
     //for other User Teams
 
     companion object {
-//        const val EXTRA_TEAM = "extra_team"
         const val EXTRA_USER_ID = "extra_user_id"
         const val EXTRA_TEAM_NAME = "extra_team_name"
         const val EXTRA_GAMEWEEK = "extra_gameweek"
     }
-
-    private var viewedTeam: LeaderboardTeamDto? = null
 
     private var viewedUserId: String = ""
     private var viewedGameweek: Int = -1
@@ -211,8 +208,6 @@ class ViewTeamActivity : AppCompatActivity() {
             try {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
                 playerById = allPlayers.associateBy { it.id }
-
-//                loadViewedTeamFromIntent()
 
                 loadViewedTeam(viewedUserId, viewedGameweek)
 

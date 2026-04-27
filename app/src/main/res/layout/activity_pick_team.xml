@@ -87,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="6dp"
-                    android:text="Tue 2 Dec Deadline"
+                    android:text="Tue 2 June Deadline"
                     android:textStyle="bold"
                     android:textSize="13sp" />
             </com.google.android.material.card.MaterialCardView>
