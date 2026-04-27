@@ -48,6 +48,19 @@ interface ApiService {
         @Query("limit") limit: Int = 2
     ): List<Fixture>
 
+    @GET("/api/gameweeks/{gameweek}/me")
+    suspend fun getMyGameweekScore(
+        @Path("gameweek") gameweek: Int,
+        @Query("season") season: String = "2025"
+    ): UserGameweekScoreDto?
+
+    @GET("/api/gameweeks/{gameweek}/user/{userId}")
+    suspend fun getUserGameweekScore(
+        @Path("gameweek") gameweek: Int,
+        @Path("userId") userId: String,
+        @Query("season") season: String = "2025"
+    ): UserGameweekScoreDto?
+
     //POSTS
     @POST("/api/leaderboard") // or whatever your endpoint is
     suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardTeamDto>

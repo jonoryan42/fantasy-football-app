@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
+import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.FantasyRepository
 import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
@@ -57,9 +58,18 @@ class LeaderboardActivity : AppCompatActivity() {
         val recyclerLeaderboard = findViewById<RecyclerView>(R.id.recyclerLeaderboard)
         recyclerLeaderboard.layoutManager = LinearLayoutManager(this)
 
+        val previousGameweek = (GameweekConfig.CURRENT_GAMEWEEK - 1).coerceAtLeast(1)
+
         leaderboardAdapter = LeaderboardAdapter(mutableListOf()) { team ->
+            //If team wasn't initialised for gameweek 1, you can't view their team
+            if (team.points <= 0) return@LeaderboardAdapter
+
             val intent = Intent(this, ViewTeamActivity::class.java).apply {
-                putExtra(ViewTeamActivity.EXTRA_TEAM, team)
+//                putExtra(ViewTeamActivity.EXTRA_TEAM, team)
+                putExtra(ViewTeamActivity.EXTRA_USER_ID, team.userId)
+                putExtra(ViewTeamActivity.EXTRA_TEAM_NAME, team.teamName)
+                putExtra(ViewTeamActivity.EXTRA_GAMEWEEK, previousGameweek)
+
             }
             startActivity(intent)
         }

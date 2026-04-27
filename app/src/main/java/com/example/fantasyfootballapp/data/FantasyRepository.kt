@@ -19,6 +19,7 @@ import com.example.fantasyfootballapp.util.RepoResult
 import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
 import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
+import com.example.fantasyfootballapp.network.UserGameweekScoreDto
 import okhttp3.internal.format
 
 class FantasyRepository(
@@ -110,6 +111,31 @@ class FantasyRepository(
         )
     }
 
+    suspend fun fetchMyGameweekScore(
+        gameweek: Int,
+        season: String = "2025"
+    ): UserGameweekScoreDto? {
+        return try {
+            api.getMyGameweekScore(gameweek, season)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun fetchUserGameweekScore(
+        gameweek: Int,
+        userId: String,
+        season: String = "2025"
+    ): UserGameweekScoreDto? {
+        return try {
+            api.getUserGameweekScore(gameweek, userId, season)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     suspend fun getCurrentUser(): User {
         val me = api.getMe()          // MeResponse
         return me.toModel()
@@ -149,20 +175,6 @@ class FantasyRepository(
         tokenStore.saveToken(response.token)
 
         return response
-    }
-
-    suspend fun registerSafe(
-        fname: String,
-        lname: String,
-        email: String,
-        password: String
-    ): RepoResult<AuthResponse> {
-        return try {
-            val res = register(fname, lname, email, password)
-            RepoResult.Success(res)
-        } catch (e: Exception) {
-            RepoResult.Error(e.message ?: "Registration failed")
-        }
     }
 
     suspend fun registerWithTeam(

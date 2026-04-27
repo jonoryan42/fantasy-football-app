@@ -92,3 +92,14 @@ data class Fixture(
     val scorers: List<FixtureEvent> = emptyList(),
     val cards: List<FixtureEvent> = emptyList()
 )
+
+data class UserGameweekScoreDto(
+    val userId: String,
+    val teamName: String,
+    val season: String,
+    val gameweek: Int,
+    val points: Int,
+    val squadPlayerIds: List<Int> = emptyList(),
+    val slotPlayerIds: Map<String, Int?> = emptyMap(),
+    val formationKey: String? = null
+)

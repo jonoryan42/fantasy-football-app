@@ -2,6 +2,7 @@ package com.example.fantasyfootballapp.ui.viewTeam
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -22,6 +23,7 @@ import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
+import com.example.fantasyfootballapp.network.UserGameweekScoreDto
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
@@ -38,11 +40,18 @@ import kotlin.collections.component2
 class ViewTeamActivity : AppCompatActivity() {
 
     //for other User Teams
+
     companion object {
-        const val EXTRA_TEAM = "extra_team"
+//        const val EXTRA_TEAM = "extra_team"
+        const val EXTRA_USER_ID = "extra_user_id"
+        const val EXTRA_TEAM_NAME = "extra_team_name"
+        const val EXTRA_GAMEWEEK = "extra_gameweek"
     }
 
     private var viewedTeam: LeaderboardTeamDto? = null
+
+    private var viewedUserId: String = ""
+    private var viewedGameweek: Int = -1
 
     private var teamName: String = "My Team"
 
@@ -121,9 +130,13 @@ class ViewTeamActivity : AppCompatActivity() {
 
         SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
 
-        viewedTeam = intent.getParcelableExtra(EXTRA_TEAM)
+//        viewedTeam = intent.getParcelableExtra(EXTRA_TEAM)
+//
+//        teamName = viewedTeam?.teamName ?: "My Team"
 
-        teamName = viewedTeam?.teamName ?: "My Team"
+        viewedUserId = intent.getStringExtra(EXTRA_USER_ID).orEmpty()
+        teamName = intent.getStringExtra(EXTRA_TEAM_NAME) ?: "My Team"
+        viewedGameweek = intent.getIntExtra(EXTRA_GAMEWEEK, -1)
 
         val toolbarTitle = findViewById<TextView>(R.id.toolbarTitle)
         toolbarTitle.text = teamName
@@ -199,7 +212,9 @@ class ViewTeamActivity : AppCompatActivity() {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
                 playerById = allPlayers.associateBy { it.id }
 
-                loadViewedTeamFromIntent()
+//                loadViewedTeamFromIntent()
+
+                loadViewedTeam(viewedUserId, viewedGameweek)
 
                 //Stats and fixtures use function from helper file
                 gwStatsByPlayerId = withContext(Dispatchers.IO) {
@@ -230,53 +245,68 @@ class ViewTeamActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadViewedTeamFromIntent() {
-        val team = viewedTeam
-
+    @SuppressLint("SetTextI18n")
+    private fun renderViewedSnapshot(snapshot: UserGameweekScoreDto) {
         selectedBySlot.clear()
 
-        if (team == null) {
-            currentFormation = Formation.F442
-            RosterSlotKey.entries.forEach { key ->
-                selectedBySlot[key] = null
-            }
-            renderAll()
-            renderBenchPosLabels()
+        val slotMap = decodeSlotMap(snapshot)
+
+        currentFormation =
+            Formation.fromKey(snapshot.formationKey)
+
+        RosterSlotKey.entries.forEach { slot ->
+            selectedBySlot[slot] = slotMap[slot]
+        }
+
+        Log.d("ViewTeamDebug", "Snapshot raw slots: ${snapshot.slotPlayerIds}")
+        Log.d("ViewTeamDebug", "Decoded slotMap: $slotMap")
+        Log.d("ViewTeamDebug", "Formation from snapshot: $currentFormation")
+
+        findViewById<TextView>(R.id.txtGameweekLabel)?.text =
+            "Gameweek ${snapshot.gameweek}"
+
+        findViewById<TextView>(R.id.txtGameweekPoints)?.text =
+            "${snapshot.points} pts"
+    }
+
+    private suspend fun loadViewedTeam(userId: String, gameweek: Int) {
+        val snapshot = withContext(Dispatchers.IO) {
+            repo.fetchUserGameweekScore(
+                gameweek = gameweek,
+                userId = userId,
+                season = GameweekConfig.CURRENT_SEASON
+            )
+        }
+
+        if (snapshot == null) {
+            Toast.makeText(
+                this@ViewTeamActivity,
+                "Failed to load viewed team snapshot",
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
 
-        val slotMap = decodeSlotMap(team)
-        val squadIds = getSquadIds(team).orEmpty()
-        val hasAnySlots = slotMap.values.any { it != null }
+        teamName = snapshot.teamName
+        findViewById<TextView>(R.id.toolbarTitle).text = teamName
 
-        when {
-            hasAnySlots -> {
-                loadFromSavedSlots(team, slotMap)
-            }
+        renderViewedSnapshot(snapshot)
 
-            squadIds.size == 15 -> {
-                currentFormation = Formation.F442
-                seedSelectedBySlotFromTransferOrder(squadIds)
-                force442AndFillBenchFromExtras()
-            }
+        Log.d("ViewTeamDebug", "----- View Team Slots -----")
+        Log.d("ViewTeamDebug", "UserId=$userId GW=$gameweek Formation=$currentFormation")
 
-            else -> {
-                currentFormation = Formation.F442
-                RosterSlotKey.entries.forEach { key ->
-                    selectedBySlot[key] = null
-                }
-                renderAll()
-                renderBenchPosLabels()
-            }
+        selectedBySlot.toSortedMap(compareBy { it.name }).forEach { (slot, playerId) ->
+            val playerName = playerById[playerId]?.name ?: "UNKNOWN"
+            Log.d("ViewTeamDebug", "$slot -> $playerId -> $playerName")
         }
     }
 
-    private fun decodeSlotMap(team: LeaderboardTeamDto): Map<RosterSlotKey, Int?> {
-        val raw = team.slotPlayerIds ?: return emptyMap()
-
-        return raw.mapNotNull { (k, v) ->
-            val key = runCatching { RosterSlotKey.valueOf(k) }.getOrNull()
-            key?.let { it to v }
+    private fun decodeSlotMap(snapshot: UserGameweekScoreDto): Map<RosterSlotKey, Int?> {
+        val raw = snapshot.slotPlayerIds
+        return raw.mapNotNull { (key, value) ->
+            runCatching { RosterSlotKey.valueOf(key) }.getOrNull()?.let { slotKey ->
+                slotKey to value
+            }
         }.toMap()
     }
 
@@ -300,14 +330,16 @@ class ViewTeamActivity : AppCompatActivity() {
         selectedBySlot[RosterSlotKey.BENCH4] = null
     }
 
-    private fun loadFromSavedSlots(team: LeaderboardTeamDto, slotMap: Map<RosterSlotKey, Int?>) {
+    private fun loadFromSavedSlots(
+        slotMap: Map<RosterSlotKey, Int?>,
+        formationKey: String?
+    ) {
         lineupState = LineupState.fromSlotMap(slotMap)
 
-        currentFormation = Formation.fromKey(team.formationKey)
+        currentFormation = Formation.fromKey(formationKey)
 
         renderLineup(lineupState, currentFormation)
 
-        // hasChanges() is false on entry
         initialBySlot.clear()
         initialBySlot.putAll(selectedBySlot)
         hasSavedTeam = true
@@ -342,11 +374,25 @@ class ViewTeamActivity : AppCompatActivity() {
         view.name.text = lastName(p.name)
         view.meta.text = "${p.club} (A)"
 
-        view.clearButton?.visibility = View.VISIBLE
+        view.clearButton?.visibility = View.GONE
     }
 
-    private fun renderAll() = slotViews.keys.forEach { renderSlot(it)
+    private fun renderAll() {
+        val activeKeys = lineupManager.activeStarterKeys(currentFormation).toSet()
+
+        slotViews.keys.forEach { slot ->
+            val isVisible = slot in activeKeys || slot.isBench()
+
+            slotViews[slot]?.root?.visibility =
+                if (isVisible) View.VISIBLE else View.GONE
+
+            if (isVisible) {
+                renderSlot(slot)
+            }
+        }
+
         renderBenchPosLabels()
+        applyPitchSpacing()
     }
 
     private fun renderLineup(

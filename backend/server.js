@@ -41,6 +41,7 @@ let gameweekStatsCollection;
 let usersCollection;
 let teamsCollection;
 let fixturesCollection;
+let userGameweekScoresCollection;
 
 const TEAM_SIZE = 15;
 
@@ -54,7 +55,7 @@ const SLOT_KEYS = [
 ];
 
 const FORMATION_KEYS = [
-  "F442", "F433", "F451", "F532", "F523", "F541", "F343", "F352"
+  "442", "433", "451", "532", "523", "541", "343", "352"
 ];
 
 
@@ -111,8 +112,40 @@ function mergeSquadAndSlots(squadPlayerIds, slotPlayerIds) {
 
 function normalizeFormationKey(v) {
   if (v == null) return null;
-  const s = String(v).trim().toUpperCase();
+
+  let s = String(v).trim().toUpperCase();
+
+  if (s.startsWith("F")) {
+    s = s.slice(1);
+  }
+
   return FORMATION_KEYS.includes(s) ? s : null;
+}
+
+function detectFormationFromSlotMap(slotMap) {
+  if (!slotMap || typeof slotMap !== "object") return null;
+
+  let gk = 0;
+  let def = 0;
+  let mid = 0;
+  let str = 0;
+
+  for (const k of SLOT_KEYS) {
+    if (k.startsWith("BENCH")) continue;
+
+    const playerId = slotMap[k];
+    if (playerId == null) continue;
+
+    if (k.startsWith("GK")) gk++;
+    else if (k.startsWith("DEF")) def++;
+    else if (k.startsWith("MID")) mid++;
+    else if (k.startsWith("STR")) str++;
+  }
+
+  if (gk !== 1) return null;
+
+  const derived = `${def}${mid}${str}`;
+  return FORMATION_KEYS.includes(derived) ? derived : null;
 }
 
 async function connectToMongo() {
@@ -126,6 +159,7 @@ async function connectToMongo() {
   usersCollection = db.collection("users");
   teamsCollection = db.collection("teams");
   fixturesCollection = db.collection("fixtures");
+  userGameweekScoresCollection = db.collection("user_gameweek_scores");
 
   // Unique Indexes for the users and leaderboard for users and their teams.
   await usersCollection.createIndex({ email: 1 }, { unique: true });
@@ -133,28 +167,28 @@ async function connectToMongo() {
 
   console.log(`Connected to MongoDB`);
   console.log(`   DB: ${DB_NAME}`);
-  console.log(`   Collections: leaderboard, users, players, player_gameweek_stats, teams, fixtures`);
+  console.log(`   Collections: leaderboard, users, players, player_gameweek_stats, teams, fixtures, user_gameweek_scores`);
 }
-
-// Health check (easy to verify server is running)
-app.get("/health", (req, res) => {
-  res.json({ ok: true, service: "fantasy-football-backend" });
-});
 
 //Calculating total points for a player
 function calculatePlayerPoints(p) {
+  const minutesPts =
+    (p.minutes || 0) >= 60 ? 2 :
+    (p.minutes || 0) > 0 ? 1 : 0;
+
   const cleanSheetPts =
     (p.position === "GK" || p.position === "DEF")
-      ? (p.cleansheets || 0) * 4
+      ? (p.cleansheets ? 4 : 0)
       : 0;
 
   return (
+    minutesPts +
     (p.goals || 0) * 5 +
     (p.assists || 0) * 3 +
     cleanSheetPts -
     (p.yellows || 0) * 1 -
     (p.reds || 0) * 3 -
-    (p.owngoals || 0) * 2
+    (p.ownGoals || 0) * 2
   );
 }
 
@@ -185,40 +219,160 @@ function requireAuth(req, res, next) {
   }
 }
 
+async function saveUserGameweekScore({ userTeam, season, gameweek }) {
+  const squadPlayerIds = userTeam.squadPlayerIds || userTeam.playerIds || [];
+
+  const rawSlotPlayerIds = normalizeSlotMap(userTeam.slotPlayerIds) || {};
+  const mergedSlotPlayerIds = mergeSquadAndSlots(squadPlayerIds, rawSlotPlayerIds);
+
+  const formationKey =
+    normalizeFormationKey(userTeam.formationKey) ||
+    detectFormationFromSlotMap(mergedSlotPlayerIds) ||
+    "442";
+
+  const STARTER_SLOTS = new Set([
+    "GK1",
+    "DEF1", "DEF2", "DEF3", "DEF4", "DEF5",
+    "MID1", "MID2", "MID3", "MID4", "MID5",
+    "STR1", "STR2", "STR3"
+  ]);
+
+  // Get starting XI 
+  const starterPlayerIds = Object.entries(mergedSlotPlayerIds)
+    .filter(([slotKey, playerId]) =>
+      STARTER_SLOTS.has(slotKey) && playerId != null
+    )
+    .map(([_, playerId]) => Number(playerId));
+
+  const idsToScore = starterPlayerIds.length > 0 ? starterPlayerIds : squadPlayerIds;
+
+  // Fetch stats/players
+  const stats = await gameweekStatsCollection.find({
+    season,
+    gameweek,
+    playerId: { $in: idsToScore }
+  }).toArray();
+
+  const players = await playersCollection.find({
+    id: { $in: idsToScore }
+  }).toArray();
+
+  const statsByPlayerId = new Map(stats.map(s => [s.playerId, s]));
+  const positionByPlayerId = new Map(players.map(p => [p.id, p.position]));
+  const nameByPlayerId = new Map(players.map(p => [p.id, p.name]));
+
+  //Calculate points 
+  let points = 0;
+
+  console.log("------ TEAM DEBUG START ------");
+  console.log("Team:", userTeam.teamName);
+  console.log("Starter IDs:", starterPlayerIds, "count:", starterPlayerIds.length);
+
+  for (const playerId of idsToScore) {
+    const s = statsByPlayerId.get(playerId);
+    if (!s) {
+      console.log("Missing stats for:", playerId);
+      continue;
+    }
+
+    const statForCalc = {
+      position: positionByPlayerId.get(playerId) || null,
+      minutes: s.minutes || 0,
+      goals: s.goals || 0,
+      assists: s.assists || 0,
+      cleansheets: !!s.cleansheet,
+      yellows: s.yellows || 0,
+      reds: s.reds || 0,
+      ownGoals: s.ownGoals || 0
+    };
+
+    const playerPoints = calculatePlayerPoints(statForCalc);
+    const playerName = nameByPlayerId.get(playerId) || "UNKNOWN";
+
+    console.log(
+      `${playerName.padEnd(20)} | ${statForCalc.position} | ${playerPoints} pts`,
+      statForCalc
+    );
+
+    points += playerPoints;
+  }
+
+  console.log("TOTAL CALCULATED:", points);
+  console.log("Formation:", formationKey);
+  console.log("------ TEAM DEBUG END ------");
+
+  const now = new Date();
+
+  await userGameweekScoresCollection.updateOne(
+    {
+      userId: userTeam.userId,
+      season,
+      gameweek
+    },
+    {
+      $set: {
+        teamName: userTeam.teamName,
+        points,
+        squadPlayerIds,
+        slotPlayerIds: mergedSlotPlayerIds,
+        formationKey,
+        updatedAt: now
+      },
+      $setOnInsert: {
+        createdAt: now
+      }
+    },
+    { upsert: true }
+  );
+
+  return points;
+}
+
 //Res.statuses
 //200 = Ok request succeeded
 //201 = New resource created
 //400 = Bad Request
 //500 = Internal Server Error
 
+// --- Routes ---
+// GETTERS
+
+// Health check (easy to verify server is running)
+app.get("/health", (req, res) => {
+  res.json({ ok: true, service: "fantasy-football-backend" });
+});
+
 //GET leaderboard with calculated points
 app.get("/api/leaderboard", async (req, res) => {
   try {
-    const season = req.query.season || "2025";
+    const season = String(req.query.season || "2025");
+    const gameweek = Number(req.query.gameweek || 1);
+
+    //Get ALL teams
     const teams = await leaderboardCollection.find({}).toArray();
 
-    const computed = await Promise.all(
-      teams.map(async (team) => {
-        //Calculating points for the team based on the players in the starting XI and their stats so far for the season
-    const starterIds = Object.entries(team.slotPlayerIds || {})
-      .filter(([slot, playerId]) => !slot.startsWith("BENCH") && playerId != null)
-      .map(([_, playerId]) => Number(playerId));
-            const stats = await gameweekStatsCollection
-              .find({ season, playerId: { $in: starterIds } })
-              .toArray();
+    //Get scores for that GW
+    const scores = await userGameweekScoresCollection
+      .find({ season, gameweek })
+      .toArray();
 
-          //Adding up total points for the team based on the players in the team and their stats so far for the season
-        const points = stats.reduce((sum, s) => sum + (s.points || 0), 0);
-
-        return {
-          ...team,
-          points,
-        };
-      })
+    //Build a map: userId -> points
+    const scoreMap = new Map(
+      scores.map(s => [String(s.userId), s.points])
     );
 
-    computed.sort((a, b) => b.points - a.points);
-    res.json(computed);
+    //Merge (default to 0 if missing)
+    const leaderboard = teams.map(team => ({
+      userId: team.userId,
+      teamName: team.teamName,
+      points: scoreMap.get(String(team.userId)) ?? 0,
+      gameweek,
+      season
+    }))
+    .sort((a, b) => b.points - a.points);
+
+    res.json(leaderboard);
+
   } catch (err) {
     console.error("GET /api/leaderboard error:", err);
     res.status(500).json({ message: "Failed to fetch leaderboard" });
@@ -306,6 +460,73 @@ app.get("/api/gameweeks", async (req, res) => {
   } catch (err) {
     console.error("GET /api/gameweeks error:", err);
     res.status(500).json({ message: "Failed to fetch all gameweek stats" });
+  }
+});
+
+//Getting all of the user gameweek scores for a specific gameweek and season (for leaderboard and stats reference)
+app.get("/api/gameweeks/:gameweek/scores", async (req, res) => {
+  try {
+    const gameweek = Number(req.params.gameweek);
+    const season = String(req.query.season || "2025");
+
+    const scores = await userGameweekScoresCollection.find({
+      gameweek,
+      season
+    }).toArray();
+
+    res.json(scores.map(s => ({
+    userId: s.userId,
+    teamName: s.teamName,
+    points: s.points,
+    squadPlayerIds: s.squadPlayerIds,
+    slotPlayerIds: s.slotPlayerIds,
+    formationKey: s.formationKey,
+    gameweek: s.gameweek,
+    season: s.season
+  })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch GW scores" });
+  }
+});
+
+//Getting the current user's gameweek score for a specific gameweek and season
+app.get("/api/gameweeks/:gameweek/me", requireAuth, async (req, res) => {
+  try {
+    const gameweek = Number(req.params.gameweek);
+    const season = String(req.query.season || "2025");
+    const userId = new ObjectId(req.auth.userId);
+
+    const doc = await userGameweekScoresCollection.findOne({
+      userId,
+      gameweek,
+      season
+    });
+
+    res.json(doc || null);
+  } catch (err) {
+    console.error("GET /api/gameweeks/:gameweek/me error:", err);
+    res.status(500).json({ message: "Failed to fetch user gameweek score" });
+  }
+});
+
+//Getting another user's gameweek score for a specific gameweek and season (for stats page reference when viewing other teams)
+app.get("/api/gameweeks/:gameweek/user/:userId", async (req, res) => {
+  try {
+    const gameweek = Number(req.params.gameweek);
+    const season = String(req.query.season || "2025");
+    const userId = new ObjectId(req.params.userId);
+
+    const doc = await userGameweekScoresCollection.findOne({
+      userId,
+      gameweek,
+      season
+    });
+
+    res.json(doc || null);
+  } catch (err) {
+    console.error("GET /api/gameweeks/:gameweek/user/:userId error:", err);
+    res.status(500).json({ message: "Failed to fetch viewed user gameweek score" });
   }
 });
 
@@ -486,6 +707,30 @@ app.post("/api/leaderboard", requireAuth, async (req, res) => {
 
     console.error("POST /api/leaderboard error:", err);
     res.status(500).json({ message: "Failed to save team" });
+  }
+});
+
+//Saves past user gameweek scores for reference
+app.post("/api/admin/gameweeks/:gameweek/snapshot", async (req, res) => {
+  try {
+    const gameweek = Number(req.params.gameweek);
+    const season = String(req.body.season || "2025");
+
+    const teams = await leaderboardCollection.find({}).toArray();
+
+    for (const team of teams) {
+      await saveUserGameweekScore({userTeam: team, season, gameweek});
+    }
+
+    res.json({
+      ok: true,
+      season,
+      gameweek,
+      count: teams.length
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to snapshot" });
   }
 });
 

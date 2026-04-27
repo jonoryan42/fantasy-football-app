@@ -18,20 +18,25 @@ data class Formation(val def: Int, val mid: Int, val fwd: Int) {
         val F352 = Formation(3,5,2)
 
         val all = mapOf(
-            "F442" to F442,
-            "F433" to F433,
-            "F451" to F451,
-            "F532" to F532,
-            "F523" to F523,
-            "F541" to F541,
-            "F343" to F343,
-            "F352" to F352
+            "442" to F442,
+            "433" to F433,
+            "451" to F451,
+            "532" to F532,
+            "523" to F523,
+            "541" to F541,
+            "343" to F343,
+            "352" to F352
         )
 
-        fun fromKey(key: String?): Formation =
-            all[key] ?: F442
+        fun fromKey(key: String?): Formation {
+            val normalized = key
+                ?.trim()
+                ?.uppercase()
+                ?.removePrefix("F")
+            return all[normalized] ?: F442
+        }
 
         fun keyOf(formation: Formation): String =
-            all.entries.firstOrNull { it.value == formation }?.key ?: "F442"
+            all.entries.firstOrNull { it.value == formation }?.key ?: "442"
     }
 }
