@@ -34,6 +34,7 @@ class FantasyActivity : AppCompatActivity() {
 
         SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
 
+        val tvTeamName = findViewById<TextView>(R.id.tvTeamName)
         val tvGameweekLabel = findViewById<TextView>(R.id.tvGameweekLabel)
         val tvGameweekPoints = findViewById<TextView>(R.id.tvGameweekPoints)
         val tvTotalPoints = findViewById<TextView>(R.id.tvTotalPoints)
@@ -42,7 +43,7 @@ class FantasyActivity : AppCompatActivity() {
         val btnTransfers = findViewById<MaterialButton>(R.id.btnTransfers)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
-        loadFantasySummary(tvGameweekLabel, tvGameweekPoints, tvTotalPoints, tvDeadline)
+        loadFantasySummary(tvTeamName, tvGameweekLabel, tvGameweekPoints, tvTotalPoints, tvDeadline)
 
         btnPickTeam.setOnClickListener {
             startActivity(Intent(this, PickTeamActivity::class.java))
@@ -61,6 +62,7 @@ class FantasyActivity : AppCompatActivity() {
     }
 
     private fun loadFantasySummary(
+        tvTeamName: TextView,
         tvGameweekLabel: TextView,
         tvGameweekPoints: TextView,
         tvTotalPoints: TextView,
@@ -76,7 +78,11 @@ class FantasyActivity : AppCompatActivity() {
             val points = score?.points ?: 0
             val gameweek = score?.gameweek ?: 0
 
-            tvGameweekLabel.text = "Gameweek " + gameweek.toString()
+            val team = repo.getMyTeam()
+
+
+            tvTeamName.text = team?.teamName
+            tvGameweekLabel.text = "Gameweek $gameweek"
             tvGameweekPoints.text = points.toString()
             tvTotalPoints.text = points.toString()
             tvDeadline.text = "Tue 2 June, 18:00"

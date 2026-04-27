@@ -30,6 +30,7 @@ import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper.loadCurrentGameweekStats
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
+import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -365,7 +366,8 @@ class ViewTeamActivity : AppCompatActivity() {
         view.imgAdd.visibility = View.GONE
         view.filledGroup.visibility = View.VISIBLE
 
-        view.imgJersey.setImageResource(R.drawable.bg_jersey_placeholder)
+        view.imgJersey.visibility = View.VISIBLE
+        view.imgJersey.setImageResource(jerseyDrawableForClub(p.club))
         view.name.text = lastName(p.name)
         view.meta.text = "${p.club} (A)"
 

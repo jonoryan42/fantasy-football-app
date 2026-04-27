@@ -33,6 +33,16 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <TextView
+                android:id="@+id/tvTeamName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Team Name"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="24dp" />
+
+            <TextView
                 android:id="@+id/tvGameweekLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

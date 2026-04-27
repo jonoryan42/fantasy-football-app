@@ -29,6 +29,7 @@ import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
+import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
 import com.example.fantasyfootballapp.util.RepoResult
@@ -395,7 +396,8 @@ class TransfersActivity : AppCompatActivity() {
         view.imgAdd.visibility = View.GONE
         view.filledGroup.visibility = View.VISIBLE
 
-        view.imgJersey.setImageResource(R.drawable.bg_jersey_placeholder)
+        view.imgJersey.visibility = View.VISIBLE
+        view.imgJersey.setImageResource(jerseyDrawableForClub(p.club))
         view.name.text = lastName(p.name)
         view.meta.text = "${p.club} (A)"
 

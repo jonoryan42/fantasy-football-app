@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
+import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
 import com.example.fantasyfootballapp.ui.fantasy.FantasyActivity
 import kotlin.collections.orEmpty
 
@@ -498,25 +499,6 @@ class PickTeamActivity : AppCompatActivity() {
         finish()
     }
 
-    private fun hasChanges(): Boolean =
-        RosterSlotKey.SLOT_ORDER.any { key ->
-            selectedBySlot[key] != initialBySlot[key]
-        }
-
-    private fun populateUiWithSavedTeam(team: LeaderboardTeamDto) {
-        val ids = team.playerIds
-        if (ids?.size != SLOT_ORDER.size) return
-
-        hasSavedTeam = true
-
-        SLOT_ORDER.forEachIndexed { index, key ->
-            val id = ids.get(index)
-            selectedBySlot[key] = id
-            initialBySlot[key] = id
-            renderSlot(key)
-        }
-    }
-
     //Just show players last name
     private fun lastName(fullName: String): String {
         val parts = fullName.trim().split(Regex("\\s+"))
@@ -531,7 +513,7 @@ class PickTeamActivity : AppCompatActivity() {
         if (id == null) {
             view.imgAdd.visibility = View.VISIBLE
             view.filledGroup.visibility = View.GONE
-            view.name.text = "Tap to pick" // optional
+            view.name.text = "Tap to pick"
             view.meta.text = ""
             view.clearButton?.visibility = View.GONE
             return
@@ -542,9 +524,10 @@ class PickTeamActivity : AppCompatActivity() {
         view.imgAdd.visibility = View.GONE
         view.filledGroup.visibility = View.VISIBLE
 
-        view.imgJersey.setImageResource(R.drawable.bg_jersey_placeholder)
+        view.imgJersey.visibility = View.VISIBLE
+        view.imgJersey.setImageResource(jerseyDrawableForClub(p.club))
         view.name.text = lastName(p.name)
-        view.meta.text = "${p.club} (A)"
+        view.meta.text = p.club
 
         view.clearButton?.visibility = View.VISIBLE
     }
@@ -572,13 +555,13 @@ class PickTeamActivity : AppCompatActivity() {
     ) {
         val squadSet = newSquad?.toSet()
 
-        // 1) Remove transferred-out players
+        //Remove transferred-out players
         for (k in RosterSlotKey.SLOT_ORDER) {
             val pid = slotMap[k]
             if (pid != null && squadSet?.contains(pid) != true) slotMap[k] = null
         }
 
-        // 2) Determine missing/new players not yet placed
+        //Determine missing/new players not yet placed
         val used = slotMap.values.filterNotNull().toMutableSet()
         val missing = (newSquad ?: emptyList())
             .filter { it !in used }
@@ -596,14 +579,14 @@ class PickTeamActivity : AppCompatActivity() {
             }
             }
 
-        // 4) Fill bench with whatever remains (or also position-sort if you want)
+        //Fill bench with whatever remains (also position-sort)
         val benchKeys = listOf(RosterSlotKey.BENCH1, RosterSlotKey.BENCH2, RosterSlotKey.BENCH3, RosterSlotKey.BENCH4)
         for (k in benchKeys) {
             if (missing.isEmpty()) break
             if (slotMap[k] == null) slotMap[k] = missing.removeAt(0)
         }
 
-        // 5) Any leftovers (shouldn't happen) can fill remaining null pitch slots
+        // Any leftovers can fill remaining null pitch slots
         for (k in pitchKeys) {
             if (missing.isEmpty()) break
             if (slotMap[k] == null) slotMap[k] = missing.removeAt(0)
@@ -771,7 +754,7 @@ class PickTeamActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(this)
             .setTitle(player.name)
             .setMessage(msg)
-            .setNegativeButton("Substitute") { _, _ ->
+            .setNegativeButton("Sub") { _, _ ->
                 if (slot.isBench()) {
                     beginBenchSubstitution(slot)
                 } else {

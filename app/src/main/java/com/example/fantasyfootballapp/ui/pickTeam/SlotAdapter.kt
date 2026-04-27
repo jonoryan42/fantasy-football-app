@@ -40,7 +40,7 @@ class SlotAdapter(
 
         //Reset (recycling-safe)
         holder.imgAdd.visibility = View.VISIBLE
-        holder.imgJersey.visibility = View.GONE
+        holder.imgJersey.visibility = View.VISIBLE
         holder.txtPlayerName.visibility = View.GONE
         holder.txtPlayerMeta.visibility = View.GONE
 
@@ -62,7 +62,9 @@ class SlotAdapter(
             holder.txtPlayerMeta.text = "${player.club} (A)" //replace with real opponent
 
             //uses func for showing jersey from PlayerSlotBinder
-            holder.imgJersey.setImageResource(jerseyDrawableForClub(player.club))
+            holder.imgJersey.setImageResource(R.drawable.bohemiansjersey)
+            holder.imgJersey.visibility = View.VISIBLE
+            holder.imgJersey.bringToFront()
         }
 
         holder.itemView.setOnClickListener { onSlotClicked(slot) }
