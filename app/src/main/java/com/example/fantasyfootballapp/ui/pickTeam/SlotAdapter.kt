@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.Player
+import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
 
 class SlotAdapter(
     private val slots: List<PlayerSlot>,
@@ -37,7 +38,7 @@ class SlotAdapter(
         val slot = slots[position]
         val player = slot.playerId?.let(getPlayerById)
 
-        // Reset (recycling-safe)
+        //Reset (recycling-safe)
         holder.imgAdd.visibility = View.VISIBLE
         holder.imgJersey.visibility = View.GONE
         holder.txtPlayerName.visibility = View.GONE
@@ -58,11 +59,10 @@ class SlotAdapter(
             holder.txtPlayerMeta.visibility = View.VISIBLE
 
             holder.txtPlayerName.text = player.name
-            holder.txtPlayerMeta.text = "${player.club} (A)" // replace with real opponent when you have it
+            holder.txtPlayerMeta.text = "${player.club} (A)" //replace with real opponent
 
-            // Show placeholder (or jersey)
-            holder.imgJersey.setImageResource(R.drawable.bg_jersey_placeholder)
-            // later: holder.imgJersey.setImageResource(teamJerseyRes)
+            //uses func for showing jersey from PlayerSlotBinder
+            holder.imgJersey.setImageResource(jerseyDrawableForClub(player.club))
         }
 
         holder.itemView.setOnClickListener { onSlotClicked(slot) }

@@ -30,6 +30,7 @@ import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
+import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
 import com.example.fantasyfootballapp.util.RepoResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -279,24 +280,33 @@ class TransfersActivity : AppCompatActivity() {
     }
 
     private fun goToPickTeam(playerIds: List<Int>) {
-        val intent = Intent(this, com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity::class.java)
+        val intent = Intent(this, PickTeamActivity::class.java)
 
-        // pass the chosen squad to Pick Team
-        intent.putIntegerArrayListExtra(NavKeys.PLAYER_IDS, ArrayList(playerIds))
+        // existing 15-player list
+        intent.putIntegerArrayListExtra(
+            NavKeys.PLAYER_IDS,
+            ArrayList(playerIds)
+        )
 
-        // pass onboarding draft if present (so PickTeam can register+save there)
-        onboardingDraft?.let { draft ->
-            intent.putExtra(NavKeys.REG_DRAFT, draft)
+        // NEW: pass exact transfer slots too
+        val transferSlotMap = HashMap<String, Int>()
 
-            //Force default 4-4-2 in Pick Team
-            intent.putExtra(NavKeys.EXTRA_FIRST_TEAM_CREATE, true)
+        selectedBySlot.forEach { (slot, playerId) ->
+            if (playerId != null) {
+                transferSlotMap[slot.name] = playerId
+            }
         }
 
-        // optional
+        intent.putExtra(NavKeys.TRANSFER_SLOT_MAP, transferSlotMap)
+
+        onboardingDraft?.let { draft ->
+            intent.putExtra(NavKeys.REG_DRAFT, draft)
+            intent.putExtra(NavKeys.EXTRA_FIRST_TEAM_CREATE, !hasSavedTeam)
+        }
+
         intent.putExtra("teamName", teamName)
 
         startActivity(intent)
-//        finish() // so back doesn't return to Transfers
     }
 
     private fun confirmAndSave() {

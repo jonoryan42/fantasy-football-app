@@ -18,3 +18,10 @@ fun Activity.bindPlayerSlot(@IdRes includeId: Int): PlayerSlotView {
 //        clearButton = root.findViewById<View?>(R.id.btnClear) // only if it exists
     )
 }
+
+fun jerseyDrawableForClub(club: String?): Int {
+    return when (club?.trim()?.lowercase()) {
+        "ballinroad fc" -> R.drawable.ballinroadjersey
+        else -> R.drawable.bg_jersey_placeholder
+    }
+}

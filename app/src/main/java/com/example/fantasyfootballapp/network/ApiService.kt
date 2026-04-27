@@ -3,12 +3,10 @@ package com.example.fantasyfootballapp.network
 import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
-import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
-import com.example.fantasyfootballapp.model.UpdateLeaderboardTeamRequest
+import com.example.fantasyfootballapp.model.UpdateUserTeamRequest
 import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
-import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Body
@@ -80,6 +78,6 @@ interface ApiService {
 
     @PATCH("/api/leaderboard/me")
     suspend fun patchMyTeam(
-        @Body body: UpdateLeaderboardTeamRequest
+        @Body body: UpdateUserTeamRequest
     ): Response<LeaderboardTeamDto>
 }

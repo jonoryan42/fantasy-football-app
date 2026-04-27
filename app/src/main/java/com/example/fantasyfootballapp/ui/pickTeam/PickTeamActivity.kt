@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
+import com.example.fantasyfootballapp.ui.fantasy.FantasyActivity
 import kotlin.collections.orEmpty
 
 class PickTeamActivity : AppCompatActivity() {
@@ -239,14 +240,21 @@ class PickTeamActivity : AppCompatActivity() {
     }
 
     private fun loadPlayers() {
-        lifecycleScope.launch {
 
-            // 1) Load all players (public endpoint)
+        @Suppress("UNCHECKED_CAST")
+        val incomingTransferSlots =
+            intent.getSerializableExtra(
+                NavKeys.TRANSFER_SLOT_MAP,
+                HashMap::class.java
+            ) as? HashMap<String, Int>
+
+        lifecycleScope.launch {
             try {
-                allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
+                allPlayers = withContext(Dispatchers.IO) {
+                    repo.fetchPlayersFromBackend()
+                }
                 playerById = allPlayers.associateBy { it.id }
 
-                //Stats and fixtures use function from helper file
                 gwStatsByPlayerId = withContext(Dispatchers.IO) {
                     PlayerStatsHelper.loadCurrentGameweekStats(
                         repo = repo,
@@ -260,7 +268,6 @@ class PickTeamActivity : AppCompatActivity() {
                         players = playerById.values
                     )
                 }
-
             } catch (e: Exception) {
                 Toast.makeText(
                     this@PickTeamActivity,
@@ -270,51 +277,49 @@ class PickTeamActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // 1.5) Transfers sends a 15-player squad
-            val incomingSquad = intent.getIntegerArrayListExtra(NavKeys.PLAYER_IDS)?.toList()
-            val hasIncomingSquad = !incomingSquad.isNullOrEmpty() && incomingSquad.size == 15
-
-            if (hasIncomingSquad && isFirstTeamCreate) {
-                seedSelectedBySlotFromTransferOrder(incomingSquad)
-                hasSavedTeam = false
-
-                //convert Transfer-style 15 into PickTeam 4-4-2 + bench
-                force442AndFillBenchFromExtras()
-                return@launch
-            }
-
-
-            // 2) load saved team if exists
             val isOnboarding = onboardingDraft != null
             val token = repo.getTokenOrNull()
 
+            // 1) Coming from Transfers: force valid 4-4-2 layout
+            if (incomingTransferSlots != null) {
+                selectedBySlot.clear()
+
+                incomingTransferSlots.forEach { (slotName, playerId) ->
+                    val key = runCatching {
+                        RosterSlotKey.valueOf(slotName)
+                    }.getOrNull()
+
+                    if (key != null) {
+                        selectedBySlot[key] = playerId
+                    }
+                }
+
+                currentFormation = Formation.F442
+                force442AndFillBenchFromExtras()
+                hasSavedTeam = true
+                return@launch
+            }
+
+            // 2) Normal existing saved team load
             if (!isOnboarding && !token.isNullOrBlank()) {
                 try {
-                    val team = withContext(Dispatchers.IO) { repo.getMyTeam() }
+                    val team = withContext(Dispatchers.IO) {
+                        repo.getMyTeam()
+                    }
 
                     if (team != null) {
-                        val slotMap = decodeSlotMap(team) // Map<RosterSlotKey, Int?>
+                        val slotMap = decodeSlotMap(team)
                         val hasAnySlots = slotMap.values.any { it != null }
 
-                        Log.d("PickTeam", "team = $team")
-                        Log.d("PickTeam", "decoded slotMap = $slotMap")
-                        Log.d("PickTeam", "hasAnySlots = $hasAnySlots")
-
                         if (hasAnySlots) {
-                            val savedSlots = decodeSlotMap(team).toMutableMap()
-                            val squad = incomingSquad ?: getSquadIds(team)
-
-                            reconcileSlotsWithSquadByPosition(savedSlots, squad)
-
-                            loadFromSavedSlots(team, savedSlots)   // ✅ use reconciled
+                            loadFromSavedSlots(team, slotMap)
                         } else {
                             val squad = getSquadIds(team)
                             loadFirstTimeFromSquad(squad)
                         }
 
-                        return@launch // important: avoid renderAll() overriding your lineup render
+                        return@launch
                     }
-
                 } catch (e: Exception) {
                     if (!isUnauthorized(e)) {
                         Toast.makeText(
@@ -326,7 +331,7 @@ class PickTeamActivity : AppCompatActivity() {
                 }
             }
 
-            // 3) Render UI regardless (empty state)
+            // 3) Fallback empty/default render
             renderAll()
             renderBenchPosLabels()
         }
@@ -414,7 +419,7 @@ class PickTeamActivity : AppCompatActivity() {
             when (result) {
                 is RepoResult.Success -> {
                     Toast.makeText(this@PickTeamActivity, "Team saved!", Toast.LENGTH_SHORT).show()
-                    goToLeaderboard() // or Home
+                    goToFantasy() // or Home
                 }
 
                 is RepoResult.Error -> {
@@ -439,10 +444,12 @@ class PickTeamActivity : AppCompatActivity() {
                     )
                 } else {
                     repo.updateMyTeamSlots(
-                        slotMap,
-                        formationKey = Formation.keyOf(currentFormation)) // implement in repo to call backend route
+                        squadPlayerIds = buildCurrentSquadIds(),
+                        slotPlayerIds = slotMap,
+                        formationKey = Formation.keyOf(currentFormation)
+                    )
                     onSavedSuccessfully()
-                    goToLeaderboard()
+                    goToFantasy()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@PickTeamActivity, e.message ?: "Save failed", Toast.LENGTH_LONG).show()
@@ -483,8 +490,8 @@ class PickTeamActivity : AppCompatActivity() {
         initialBySlot.putAll(selectedBySlot)
         hasSavedTeam = true
     }
-    private fun goToLeaderboard() {
-        val intent = Intent(this, LeaderboardActivity::class.java)
+    private fun goToFantasy() {
+        val intent = Intent(this, FantasyActivity::class.java)
         //prevents coming back to Transfers with back button
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
@@ -753,25 +760,6 @@ class PickTeamActivity : AppCompatActivity() {
 
         showStatsDialog(slot, player)
     }
-
-//    private fun showPlayerDialog(slot: RosterSlotKey, player: Player) {
-//        AlertDialog.Builder(this)
-//            .setTitle(player.name)
-//            .setItems(arrayOf("View Stats", "Substitution")) { _, which ->
-//                when (which) {
-//                    0 -> showStatsDialog(player)
-//                    1 -> {
-//                        if (slot.isBench()) {
-//                            beginBenchSubstitution(slot)
-//                        } else {
-//                            beginStarterSubstitution(slot)
-//                        }
-//                    }
-//                }
-//            }
-//            .setNegativeButton("Cancel", null)
-//            .show()
-//    }
 
     private fun showStatsDialog(slot: RosterSlotKey, player: Player) {
         val msg = PlayerStatsHelper.buildMessage(

@@ -5,10 +5,9 @@ import com.example.fantasyfootballapp.config.GameweekConfig
 import com.example.fantasyfootballapp.data.mappers.toModel
 import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
-import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
-import com.example.fantasyfootballapp.model.UpdateLeaderboardTeamRequest
+import com.example.fantasyfootballapp.model.UpdateUserTeamRequest
 import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiService
@@ -16,11 +15,9 @@ import com.example.fantasyfootballapp.network.AuthResponse
 import com.example.fantasyfootballapp.network.LoginRequest
 import com.example.fantasyfootballapp.network.RegisterRequest
 import com.example.fantasyfootballapp.util.RepoResult
-import com.example.fantasyfootballapp.model.UpdateTeamPlayersRequest
 import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.UserGameweekScoreDto
-import okhttp3.internal.format
 
 class FantasyRepository(
     private val api: ApiService,
@@ -80,12 +77,18 @@ class FantasyRepository(
 //    }
 
     suspend fun updateMyTeamSlots(
+        squadPlayerIds: List<Int>,
         slotPlayerIds: Map<String, Int?>,
-        formationKey: String?) {
-        val res = api.patchMyTeam(UpdateLeaderboardTeamRequest(
-            slotPlayerIds = slotPlayerIds,
-            formationKey = formationKey
-        ))
+        formationKey: String?
+    ) {
+        val res = api.patchMyTeam(
+            UpdateUserTeamRequest(
+                squadPlayerIds = squadPlayerIds,
+                slotPlayerIds = slotPlayerIds,
+                formationKey = formationKey
+            )
+        )
+
         if (!res.isSuccessful) {
             val err = res.errorBody()?.string()
             throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
