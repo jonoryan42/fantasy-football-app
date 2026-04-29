@@ -141,7 +141,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="6dp"
-                    android:paddingHorizontal="10dp"                    android:text="@string/_0_pts"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/_0_pts"
                     android:textAlignment="center"
                     android:textStyle="bold"
                     android:textSize="13sp"
@@ -162,7 +163,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingVertical="6dp"
-                    android:paddingHorizontal="10dp"                    android:text="@string/transfers"
+                    android:paddingHorizontal="10dp"
+                    android:text="@string/transfers"
                     android:textAlignment="center"
                     android:textStyle="bold"
                     android:textSize="13sp"
@@ -255,7 +257,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    app:layout_constraintGuide_end="362dp" />
+                    app:layout_constraintGuide_percent="0.12" />
+                />
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/col2"

@@ -16,11 +16,11 @@ fun Activity.bindPlayerSlot(@IdRes includeId: Int): PlayerSlotView {
         imgJersey = root.findViewById(R.id.imgJersey),
         name = root.findViewById(R.id.txtPlayerName),
         meta = root.findViewById(R.id.txtPlayerMeta),
-//        clearButton = root.findViewById<View?>(R.id.btnClear) // only if it exists
+//        clearButton = root.findViewById<View?>(R.id.btnClear)
     )
 }
 
-//func for assigning jerseys to players in the activities
+//func for assigning jerseys to players in the activities, depending on their current club
 fun jerseyDrawableForClub(club: String?): Int {
     val c = club?.trim()?.lowercase() ?: return R.drawable.bg_jersey_placeholder
 

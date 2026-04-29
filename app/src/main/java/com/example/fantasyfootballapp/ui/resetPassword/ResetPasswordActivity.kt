@@ -16,12 +16,6 @@ import com.example.fantasyfootballapp.data.TokenStore
 import com.example.fantasyfootballapp.network.ApiClient
 
 class ResetPasswordActivity : AppCompatActivity() {
-
-    private val repo by lazy {
-        val tokenStore = TokenStore(applicationContext)
-        FantasyRepository(ApiClient.service, tokenStore)
-    }
-
     private lateinit var form: LinearLayout
     private lateinit var sent: LinearLayout
     private lateinit var edtEmail: EditText
@@ -35,10 +29,10 @@ class ResetPasswordActivity : AppCompatActivity() {
         val btnBack = findViewById<Button>(R.id.btnBackToSignIn)
         val txtResend = findViewById<TextView>(R.id.txtResend)
 
-        edtEmail = findViewById(R.id.edtResetEmail) // use your actual id
+        edtEmail = findViewById(R.id.edtResetEmail)
 
-        form = findViewById(R.id.resetFormContainer)  // your actual id
-        sent = findViewById(R.id.sentContainer)  // your actual id
+        form = findViewById(R.id.resetFormContainer)
+        sent = findViewById(R.id.sentContainer)
 
         btnCancel.setOnClickListener { finish() }
         btnBack.setOnClickListener { finish() }
@@ -52,9 +46,6 @@ class ResetPasswordActivity : AppCompatActivity() {
                 edtEmail.requestFocus()
                 return@setOnClickListener
             }
-
-            // Normalised email (safe to send to backend later)
-            val email = rawEmail.trim().lowercase()
 
             showSentState()
         }

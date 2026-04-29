@@ -4,6 +4,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 
+//Everything shown in the slots for each player
 data class PlayerSlotView(
     val root: View,
     val imgAdd: ImageView,

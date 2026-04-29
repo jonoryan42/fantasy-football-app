@@ -1,6 +1,7 @@
 package com.example.fantasyfootballapp.model
 
 data class Formation(val def: Int, val mid: Int, val fwd: Int) {
+    //For logs
     init {
         require(fwd in 1..3) { "This UI supports 1..3 forwards, got $fwd" }
         require(def in 3..5) { "Defenders must be 3..5, got $def" }
@@ -28,6 +29,7 @@ data class Formation(val def: Int, val mid: Int, val fwd: Int) {
             "352" to F352
         )
 
+        //for loading from backend
         fun fromKey(key: String?): Formation {
             val normalized = key
                 ?.trim()
@@ -36,6 +38,7 @@ data class Formation(val def: Int, val mid: Int, val fwd: Int) {
             return all[normalized] ?: F442
         }
 
+        //for storing formation in the backend
         fun keyOf(formation: Formation): String =
             all.entries.firstOrNull { it.value == formation }?.key ?: "442"
     }

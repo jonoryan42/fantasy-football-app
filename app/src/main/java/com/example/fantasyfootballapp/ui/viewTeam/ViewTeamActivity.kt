@@ -22,12 +22,10 @@ import com.example.fantasyfootballapp.model.Position
 import com.example.fantasyfootballapp.model.RosterSlotKey
 import com.example.fantasyfootballapp.network.ApiClient
 import com.example.fantasyfootballapp.network.Fixture
-import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.UserGameweekScoreDto
 import com.example.fantasyfootballapp.ui.common.AppBottomNav
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
-import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper.loadCurrentGameweekStats
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
@@ -53,10 +51,6 @@ class ViewTeamActivity : AppCompatActivity() {
 
     private var teamName: String = "My Team"
 
-    //For gameweek stats
-    val gw = GameweekConfig.CURRENT_GAMEWEEK
-    val season = GameweekConfig.CURRENT_SEASON
-
     private lateinit var pitchOverlay: View
 
     private lateinit var slotViews: Map<RosterSlotKey, PlayerSlotView>
@@ -66,8 +60,6 @@ class ViewTeamActivity : AppCompatActivity() {
     private val initialBySlot = mutableMapOf<RosterSlotKey, Int?>()
 
     private var allPlayers: List<Player> = emptyList()
-
-    private var hasSavedTeam: Boolean = false
 
     private lateinit var lineupManager: LineupManager
     private var lineupState = LineupState()          // keep latest state
@@ -127,10 +119,6 @@ class ViewTeamActivity : AppCompatActivity() {
         setContentView(R.layout.activity_view_team)
 
         SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
-
-//        viewedTeam = intent.getParcelableExtra(EXTRA_TEAM)
-//
-//        teamName = viewedTeam?.teamName ?: "My Team"
 
         viewedUserId = intent.getStringExtra(EXTRA_USER_ID).orEmpty()
         teamName = intent.getStringExtra(EXTRA_TEAM_NAME) ?: "My Team"
@@ -198,11 +186,6 @@ class ViewTeamActivity : AppCompatActivity() {
         renderAll()
         renderBenchPosLabels()
     }
-
-//    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-//        menuInflater.inflate(R.menu.menu_pick_team, menu)
-//        return true
-//    }
 
     private fun loadPlayers() {
         lifecycleScope.launch {
@@ -306,41 +289,6 @@ class ViewTeamActivity : AppCompatActivity() {
         }.toMap()
     }
 
-    private fun getSquadIds(team: LeaderboardTeamDto): List<Int>? {
-        return team.squadPlayerIds ?: team.playerIds
-    }
-
-    private fun seedSelectedBySlotFromTransferOrder(squad: List<Int>?) {
-        // PITCH_ORDER must be the 15 transfer-style placeholders (GK1..STR3)
-        val pitchOrder = RosterSlotKey.PITCH_ORDER
-
-        selectedBySlot.clear()
-        pitchOrder.forEachIndexed { i, key ->
-            selectedBySlot[key] = squad?.get(i)
-        }
-
-        // bench keys start empty (formation will move extras into BENCH1..4)
-        selectedBySlot[RosterSlotKey.BENCH1] = null
-        selectedBySlot[RosterSlotKey.BENCH2] = null
-        selectedBySlot[RosterSlotKey.BENCH3] = null
-        selectedBySlot[RosterSlotKey.BENCH4] = null
-    }
-
-    private fun loadFromSavedSlots(
-        slotMap: Map<RosterSlotKey, Int?>,
-        formationKey: String?
-    ) {
-        lineupState = LineupState.fromSlotMap(slotMap)
-
-        currentFormation = Formation.fromKey(formationKey)
-
-        renderLineup(lineupState, currentFormation)
-
-        initialBySlot.clear()
-        initialBySlot.putAll(selectedBySlot)
-        hasSavedTeam = true
-    }
-
     //Just show players last name
     private fun lastName(fullName: String): String {
         val parts = fullName.trim().split(Regex("\\s+"))
@@ -355,7 +303,7 @@ class ViewTeamActivity : AppCompatActivity() {
         if (id == null) {
             view.imgAdd.visibility = View.VISIBLE
             view.filledGroup.visibility = View.GONE
-            view.name.text = "Tap to pick" // optional
+            view.name.text = "Tap to pick"
             view.meta.text = ""
             view.clearButton?.visibility = View.GONE
             return
@@ -369,7 +317,7 @@ class ViewTeamActivity : AppCompatActivity() {
         view.imgJersey.visibility = View.VISIBLE
         view.imgJersey.setImageResource(jerseyDrawableForClub(p.club))
         view.name.text = lastName(p.name)
-        view.meta.text = "${p.club} (A)"
+        view.meta.text = p.club
 
         view.clearButton?.visibility = View.GONE
     }
@@ -398,18 +346,18 @@ class ViewTeamActivity : AppCompatActivity() {
     ) {
         val activeKeys = lineupManager.activeStarterKeys(formation).toSet()
 
-        // 1) Show/hide pitch slots (bench always visible)
+        //Show/hide pitch slots (bench always visible)
         slotViews.keys.forEach { key ->
             slotViews[key]?.root?.visibility =
                 if (key in activeKeys || key.isBench()) View.VISIBLE else View.GONE
         }
 
-        // 2) Update selectedBySlot for starters (includes extras too, but that's ok)
+        //Update selectedBySlot for starters (includes extras too, but that's ok)
         state.starters.forEach { (key, playerId) ->
             selectedBySlot[key] = playerId
         }
 
-        // 3) Update bench slots
+        //Update bench slots
         val benchKeys = listOf(
             RosterSlotKey.BENCH1, RosterSlotKey.BENCH2,
             RosterSlotKey.BENCH3, RosterSlotKey.BENCH4
@@ -418,63 +366,10 @@ class ViewTeamActivity : AppCompatActivity() {
             selectedBySlot[benchKey] = state.bench.getOrNull(index)
         }
 
-        // 4) Re-render everything
+        //Re-render everything and apply spacing
         renderAll()
         renderBenchPosLabels()
         applyPitchSpacing()
-    }
-
-    private fun force442AndFillBenchFromExtras() {
-        currentFormation = Formation.F442
-
-        //1. Capture the players currently in the "right side" + extra GK ----
-        val capturedBenchIds = listOf(
-            selectedBySlot[RosterSlotKey.GK2],
-            selectedBySlot[RosterSlotKey.DEF5],
-            selectedBySlot[RosterSlotKey.MID5],
-            selectedBySlot[RosterSlotKey.STR3]
-        )
-
-        val benchIds = lineupManager.sortBenchIds(capturedBenchIds, playerById)
-
-        // 2. Shift central -> right (and right -> further right) ----
-        // DEF shift: CCB -> RCB, RCB -> RB
-        val ccb = selectedBySlot[RosterSlotKey.DEF3]
-        val rcb = selectedBySlot[RosterSlotKey.DEF4]
-        selectedBySlot[RosterSlotKey.DEF4] = ccb
-        selectedBySlot[RosterSlotKey.DEF5] = rcb
-
-        // MID shift: CM -> RCM, RCM -> RM
-        val cm = selectedBySlot[RosterSlotKey.MID3]
-        val rcm = selectedBySlot[RosterSlotKey.MID4]
-        selectedBySlot[RosterSlotKey.MID4] = cm
-        selectedBySlot[RosterSlotKey.MID5] = rcm
-
-        // STR shift: ST -> RS
-        val st = selectedBySlot[RosterSlotKey.STR2]
-        selectedBySlot[RosterSlotKey.STR3] = st
-
-        // ---- 3) Clear hidden/unused pitch slots for 4-4-2 ----
-        selectedBySlot[RosterSlotKey.GK2] = null
-        selectedBySlot[RosterSlotKey.DEF3] = null
-        selectedBySlot[RosterSlotKey.MID3] = null
-        selectedBySlot[RosterSlotKey.STR2] = null
-
-        // ---- 4) Put captured right-side players onto bench ----
-        val benchKeys = listOf(
-            RosterSlotKey.BENCH1,
-            RosterSlotKey.BENCH2,
-            RosterSlotKey.BENCH3,
-            RosterSlotKey.BENCH4
-        )
-        benchKeys.forEachIndexed { i, k -> selectedBySlot[k] = benchIds.getOrNull(i) }
-
-        // ---- 5) Render + baseline ----
-        lineupState = LineupState.fromSlotMap(selectedBySlot)
-        renderLineup(lineupState, currentFormation)
-
-        initialBySlot.clear()
-        initialBySlot.putAll(selectedBySlot)
     }
 
     //Clicking on Players
@@ -493,6 +388,7 @@ class ViewTeamActivity : AppCompatActivity() {
         showStatsDialog(player)
     }
 
+    //Needs more work
     private suspend fun loadUpcomingFixturesForVisibleTeams() {
         val teams = playerById.values
             .map { it.club }

@@ -2,8 +2,8 @@ package com.example.fantasyfootballapp.ui.pickTeam
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -31,7 +31,6 @@ import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 import com.example.fantasyfootballapp.network.isUnauthorized
 import com.example.fantasyfootballapp.ui.common.PlayerSlotView
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
-import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.util.RepoResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,10 +46,6 @@ class PickTeamActivity : AppCompatActivity() {
 
     private var teamName: String = "My Team"
 
-    //For gameweek stats
-    val gw = GameweekConfig.CURRENT_GAMEWEEK
-    val season = GameweekConfig.CURRENT_SEASON
-
     private lateinit var pitchOverlay: View
 
     private lateinit var slotViews: Map<RosterSlotKey, PlayerSlotView>
@@ -62,8 +57,6 @@ class PickTeamActivity : AppCompatActivity() {
     private var allPlayers: List<Player> = emptyList()
 
     private var hasSavedTeam: Boolean = false
-
-    private val SLOT_ORDER = RosterSlotKey.SLOT_ORDER
 
     private lateinit var lineupManager: LineupManager
     private var lineupState = LineupState()          // keep latest state
@@ -135,10 +128,6 @@ class PickTeamActivity : AppCompatActivity() {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra(NavKeys.REG_DRAFT)
         }
-    }
-
-    private val isFirstTeamCreate by lazy {
-        intent.getBooleanExtra("EXTRA_FIRST_TEAM_CREATE", false)
     }
 
 
@@ -214,7 +203,7 @@ class PickTeamActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_pick_team, menu) // your existing file
+        menuInflater.inflate(R.menu.menu_pick_team, menu)
         return true
     }
 
@@ -242,12 +231,17 @@ class PickTeamActivity : AppCompatActivity() {
 
     private fun loadPlayers() {
 
-        @Suppress("UNCHECKED_CAST")
+        @Suppress("DEPRECATION", "UNCHECKED_CAST")
         val incomingTransferSlots =
-            intent.getSerializableExtra(
-                NavKeys.TRANSFER_SLOT_MAP,
-                HashMap::class.java
-            ) as? HashMap<String, Int>
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getSerializableExtra(
+                    NavKeys.TRANSFER_SLOT_MAP,
+                    HashMap::class.java
+                ) as? HashMap<String, Int>
+            } else {
+                intent.getSerializableExtra(NavKeys.TRANSFER_SLOT_MAP)
+                        as? HashMap<String, Int>
+            }
 
         lifecycleScope.launch {
             try {
@@ -281,7 +275,7 @@ class PickTeamActivity : AppCompatActivity() {
             val isOnboarding = onboardingDraft != null
             val token = repo.getTokenOrNull()
 
-            // 1) Coming from Transfers: force valid 4-4-2 layout
+            //Coming from Transfers: force valid 4-4-2 layout
             if (incomingTransferSlots != null) {
                 selectedBySlot.clear()
 
@@ -301,7 +295,7 @@ class PickTeamActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // 2) Normal existing saved team load
+            //Normal existing saved team load
             if (!isOnboarding && !token.isNullOrBlank()) {
                 try {
                     val team = withContext(Dispatchers.IO) {
@@ -332,7 +326,7 @@ class PickTeamActivity : AppCompatActivity() {
                 }
             }
 
-            // 3) Fallback empty/default render
+            //Fallback empty/default render
             renderAll()
             renderBenchPosLabels()
         }
@@ -341,6 +335,7 @@ class PickTeamActivity : AppCompatActivity() {
             val raw = team.slotPlayerIds ?: return emptyMap()
 
             return raw.mapNotNull { (k, v) ->
+                //Try catch
                 val key = runCatching { RosterSlotKey.valueOf(k) }.getOrNull()
                 key?.let { it to v }
             }.toMap()
@@ -373,13 +368,12 @@ class PickTeamActivity : AppCompatActivity() {
 
         renderLineup(lineupState, currentFormation)
 
-        // hasChanges() is false on entry
         initialBySlot.clear()
         initialBySlot.putAll(selectedBySlot)
         hasSavedTeam = true
     }
 
-    //For Loading the team after new user has selected their team
+    //For Loading the team after new user has selected their team in Transfers
         private fun loadFirstTimeFromSquad(squad: List<Int>?) {
             if (squad?.size != 15) return
 
@@ -398,6 +392,7 @@ class PickTeamActivity : AppCompatActivity() {
             return
         }
 
+        //Just safety
         val teamName = draft.teamName?.trim().orEmpty()
         if (teamName.isBlank()) {
             Toast.makeText(this, "Missing team name. Please go back.", Toast.LENGTH_LONG).show()
@@ -420,7 +415,7 @@ class PickTeamActivity : AppCompatActivity() {
             when (result) {
                 is RepoResult.Success -> {
                     Toast.makeText(this@PickTeamActivity, "Team saved!", Toast.LENGTH_SHORT).show()
-                    goToFantasy() // or Home
+                    goToFantasy()
                 }
 
                 is RepoResult.Error -> {
@@ -435,9 +430,6 @@ class PickTeamActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 if (onboardingDraft != null) {
-                    // If onboarding needs to register + save, do that here or keep your existing flow.
-                    // For now, you probably want to call your existing finalizeRegistrationAndSaveTeam
-                    // BUT that expects a List<Int> (15). See note below.
                     finalizeRegistrationAndSaveTeam(
                         playerIds = buildCurrentSquadIds(),
                         slotMap = slotMap,
@@ -462,7 +454,7 @@ class PickTeamActivity : AppCompatActivity() {
         val payload = buildSlotMapPayload()
         val squadIds = buildCurrentSquadIds()
 
-        //Just a safety check
+        //Just safety
         if (squadIds.size != 15) {
             Toast.makeText(this, "Team not complete", Toast.LENGTH_LONG).show()
             return
@@ -487,6 +479,7 @@ class PickTeamActivity : AppCompatActivity() {
     }
 
     private fun onSavedSuccessfully() {
+        //Replacing with the new team (changes)
         initialBySlot.clear()
         initialBySlot.putAll(selectedBySlot)
         hasSavedTeam = true
@@ -538,61 +531,6 @@ class PickTeamActivity : AppCompatActivity() {
             .distinct()
     }
 
-    private fun slotGroup(key: RosterSlotKey): Position? = when {
-        key.name.startsWith("GK") -> Position.GK
-        key.name.startsWith("DEF") -> Position.DEF
-        key.name.startsWith("MID") -> Position.MID
-        key.name.startsWith("STR") -> Position.STR
-        else -> null // bench
-    }
-
-    private fun playerPos(id: Int?): Position? =
-        allPlayers.firstOrNull { it.id == id }?.position
-
-    private fun reconcileSlotsWithSquadByPosition(
-        slotMap: MutableMap<RosterSlotKey, Int?>,
-        newSquad: List<Int?>?
-    ) {
-        val squadSet = newSquad?.toSet()
-
-        //Remove transferred-out players
-        for (k in RosterSlotKey.SLOT_ORDER) {
-            val pid = slotMap[k]
-            if (pid != null && squadSet?.contains(pid) != true) slotMap[k] = null
-        }
-
-        //Determine missing/new players not yet placed
-        val used = slotMap.values.filterNotNull().toMutableSet()
-        val missing = (newSquad ?: emptyList())
-            .filter { it !in used }
-            .toMutableList()
-
-        // 3) Fill empty PITCH slots first by matching position group
-        val pitchKeys = RosterSlotKey.PITCH_ORDER
-        for (k in pitchKeys) {
-            if (slotMap[k] != null) continue
-            val need = slotGroup(k)
-
-            val idx = missing.indexOfFirst { id -> playerPos(id) == need }
-            if (idx != -1) {
-                slotMap[k] = missing.removeAt(idx)
-            }
-            }
-
-        //Fill bench with whatever remains (also position-sort)
-        val benchKeys = listOf(RosterSlotKey.BENCH1, RosterSlotKey.BENCH2, RosterSlotKey.BENCH3, RosterSlotKey.BENCH4)
-        for (k in benchKeys) {
-            if (missing.isEmpty()) break
-            if (slotMap[k] == null) slotMap[k] = missing.removeAt(0)
-        }
-
-        // Any leftovers can fill remaining null pitch slots
-        for (k in pitchKeys) {
-            if (missing.isEmpty()) break
-            if (slotMap[k] == null) slotMap[k] = missing.removeAt(0)
-        }
-    }
-
     private fun buildSlotMapPayload(): Map<String, Int?> {
         return RosterSlotKey.SLOT_ORDER.associate { key ->
             key.name to selectedBySlot[key]
@@ -616,18 +554,18 @@ class PickTeamActivity : AppCompatActivity() {
     ) {
         val activeKeys = lineupManager.activeStarterKeys(formation).toSet()
 
-        // 1) Show/hide pitch slots (bench always visible)
+        //Show/hide pitch slots (bench always visible)
         slotViews.keys.forEach { key ->
             slotViews[key]?.root?.visibility =
                 if (key in activeKeys || key.isBench()) View.VISIBLE else View.GONE
         }
 
-        // 2) Update selectedBySlot for starters (includes extras too, but that's ok)
+        //Update selectedBySlot for starters (includes extras too, but that's ok)
         state.starters.forEach { (key, playerId) ->
             selectedBySlot[key] = playerId
         }
 
-        // 3) Update bench slots
+        //Update bench slots
         val benchKeys = listOf(
             RosterSlotKey.BENCH1, RosterSlotKey.BENCH2,
             RosterSlotKey.BENCH3, RosterSlotKey.BENCH4
@@ -636,7 +574,7 @@ class PickTeamActivity : AppCompatActivity() {
             selectedBySlot[benchKey] = state.bench.getOrNull(index)
         }
 
-        // 4) Re-render everything
+        //Re-render everything and apply spacing
         renderAll()
         renderBenchPosLabels()
         applyPitchSpacing()
@@ -673,7 +611,7 @@ class PickTeamActivity : AppCompatActivity() {
     private fun force442AndFillBenchFromExtras() {
         currentFormation = Formation.F442
 
-        //1. Capture the players currently in the "right side" + extra GK ----
+        //Capture the players currently in the "right side" + extra GK
         val capturedBenchIds = listOf(
             selectedBySlot[RosterSlotKey.GK2],
             selectedBySlot[RosterSlotKey.DEF5],
@@ -683,7 +621,7 @@ class PickTeamActivity : AppCompatActivity() {
 
         val benchIds = lineupManager.sortBenchIds(capturedBenchIds, playerById)
 
-        // 2. Shift central -> right (and right -> further right) ----
+        // Shift central -> right (and right -> further right)
         // DEF shift: CCB -> RCB, RCB -> RB
         val ccb = selectedBySlot[RosterSlotKey.DEF3]
         val rcb = selectedBySlot[RosterSlotKey.DEF4]
@@ -700,13 +638,13 @@ class PickTeamActivity : AppCompatActivity() {
         val st = selectedBySlot[RosterSlotKey.STR2]
         selectedBySlot[RosterSlotKey.STR3] = st
 
-        // ---- 3) Clear hidden/unused pitch slots for 4-4-2 ----
+        // Clear hidden/unused pitch slots for 4-4-2
         selectedBySlot[RosterSlotKey.GK2] = null
         selectedBySlot[RosterSlotKey.DEF3] = null
         selectedBySlot[RosterSlotKey.MID3] = null
         selectedBySlot[RosterSlotKey.STR2] = null
 
-        // ---- 4) Put captured right-side players onto bench ----
+        //Put captured right-side players onto bench
         val benchKeys = listOf(
             RosterSlotKey.BENCH1,
             RosterSlotKey.BENCH2,
@@ -715,7 +653,7 @@ class PickTeamActivity : AppCompatActivity() {
         )
         benchKeys.forEachIndexed { i, k -> selectedBySlot[k] = benchIds.getOrNull(i) }
 
-        // ---- 5) Render + baseline ----
+        //Render + baseline
         lineupState = LineupState.fromSlotMap(selectedBySlot)
         renderLineup(lineupState, currentFormation)
 
@@ -726,8 +664,6 @@ class PickTeamActivity : AppCompatActivity() {
     //Clicking on Players
     private fun wireSlotClicks() {
         slotViews.forEach { (slotKey, slotView) ->
-            // Use whichever is your actual clickable view.
-            // From your renderLineup screenshot, you have slotViews[key]?.root
             slotView.root.setOnClickListener { onSlotClicked(slotKey) }
         }
     }
@@ -744,6 +680,7 @@ class PickTeamActivity : AppCompatActivity() {
         showStatsDialog(slot, player)
     }
 
+    //Stats for players popup
     private fun showStatsDialog(slot: RosterSlotKey, player: Player) {
         val msg = PlayerStatsHelper.buildMessage(
             player = player,
@@ -888,7 +825,7 @@ class PickTeamActivity : AppCompatActivity() {
             return
         }
 
-        // Case 2: bench selected first, now waiting for starter target
+        //bench selected first, now waiting for starter target
         val benchSource = subSourceBenchIndex
         if (benchSource != null) {
             if (clickedSlot !in validStarterSlots) {
@@ -948,7 +885,7 @@ class PickTeamActivity : AppCompatActivity() {
         }
     }
 
-    //Positional Rows logic
+    //Positional Rows logic (Spacing)
     @SuppressLint("UseKtx")
     private fun applyRowSpacing(
         rowKeys: List<RosterSlotKey>,

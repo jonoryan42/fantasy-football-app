@@ -13,12 +13,15 @@ const { ObjectId } = require("mongodb");
 //   { expiresIn: "7d" }
 // );
 
+//.env
 dotenv.config();
 
+//uses express and cors
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+//Port and Database
 const PORT = process.env.PORT || 8080;
 const DB_NAME = process.env.DB_NAME || "fantasy_football";
 
@@ -77,6 +80,7 @@ function normalizeSlotMap(slotMap) {
   return out;
 }
 
+//Merging the squad and slots with constraints (must be in squad and no duplicates in slots) - ensures data integrity if frontend sends bad data or user tampers with request
 function mergeSquadAndSlots(squadPlayerIds, slotPlayerIds) {
   const squadSet = new Set(squadPlayerIds);
 
@@ -122,6 +126,7 @@ function normalizeFormationKey(v) {
   return FORMATION_KEYS.includes(s) ? s : null;
 }
 
+//Used in frontend and backend
 function detectFormationFromSlotMap(slotMap) {
   if (!slotMap || typeof slotMap !== "object") return null;
 
@@ -219,6 +224,7 @@ function requireAuth(req, res, next) {
   }
 }
 
+//used to calculate and save user points for a specific gameweek and season (called from admin route after each gameweek)
 async function saveUserGameweekScore({ userTeam, season, gameweek }) {
   const squadPlayerIds = userTeam.squadPlayerIds || userTeam.playerIds || [];
 
@@ -286,6 +292,7 @@ async function saveUserGameweekScore({ userTeam, season, gameweek }) {
       ownGoals: s.ownGoals || 0
     };
 
+    //Points calculation
     const playerPoints = calculatePlayerPoints(statForCalc);
     const playerName = nameByPlayerId.get(playerId) || "UNKNOWN";
 
@@ -379,7 +386,7 @@ app.get("/api/leaderboard", async (req, res) => {
   }
 });
 
-//Get user team
+//Get current user team
 app.get("/api/leaderboard/me", requireAuth, async (req, res) => {
   try {
     const userId = new ObjectId(req.auth.userId);
@@ -530,7 +537,7 @@ app.get("/api/gameweeks/:gameweek/user/:userId", async (req, res) => {
   }
 });
 
-//GET current user
+//GET current user (requires auth, used in frontend to verify token and get user info on app load)
 app.get("/api/auth/me", requireAuth, async (req, res) => {
   try {
     const userId = new ObjectId(req.auth.userId);
@@ -547,7 +554,7 @@ app.get("/api/auth/me", requireAuth, async (req, res) => {
   }
 });
 
-// GET teams
+// GET teams (Real life clubs)
 app.get("/api/teams", async (req, res) => {
   try {
     //Sorted in the way of a league table
@@ -590,6 +597,7 @@ app.get("/api/fixtures/gameweek/:gw", async (req, res) => {
   }
 });
 
+//Needs Work
 // GET upcoming fixtures for a specific club - Two routes for fixtures is cleaner
 app.get("/api/fixtures/upcoming", async (req, res) => {
   try {
@@ -628,88 +636,6 @@ app.get("/api/fixtures/upcoming", async (req, res) => {
   }
 });
 
-//POST new team (save from Confirm button)
-app.post("/api/leaderboard", requireAuth, async (req, res) => {
-  console.log("Content-Type:", req.headers["content-type"]);
-  console.log("Body:", req.body);
-  console.log("playerIds type:", typeof req.body.playerIds);
-  console.log("playerIds isArray:", Array.isArray(req.body.playerIds));
-
-  try {
-    let { teamName, playerIds } = req.body;
-    const userId = new ObjectId(req.auth.userId);
-
-    // --- Validate team name ---
-    if (!teamName || typeof teamName !== "string" || !teamName.trim()) {
-      return res.status(400).json({ message: "Team Name is required" });
-    }
-
-    // --- Validate playerIds ---
-    if (!Array.isArray(playerIds) || playerIds.length !== TEAM_SIZE) {
-      return res
-        .status(400)
-        .json({ message: `playerIds must be an array of ${TEAM_SIZE} items` });
-    }
-
-    // Force numeric IDs (handles ["1","2"] etc.)
-    playerIds = playerIds.map((x) => Number(x));
-
-    // Validate numeric + integers
-    if (playerIds.some((x) => !Number.isInteger(x))) {
-      return res.status(400).json({ message: "playerIds must be integers" });
-    }
-
-    // Validate no duplicates
-    if (new Set(playerIds).size !== playerIds.length) {
-      return res.status(400).json({ message: "playerIds must be unique" });
-    }
-
-    // Optional: friendly check (unique index still protects you)
-    const existing = await leaderboardCollection.findOne({ userId });
-    if (existing) {
-      return res.status(409).json({ message: "User already has a team" });
-    }
-
-    //For managing bench and starter players
-    const squadPlayerIds = playerIds; // for now reuse your existing variable name
-    let slots = Object.fromEntries(SLOT_KEYS.map((k) => [k, null]));
-    if (req.body.slotPlayerIds !== undefined) {
-      const normalized = normalizeSlotMap(req.body.slotPlayerIds);
-      if (normalized === null) {
-        return res.status(400).json({ message: "slotPlayerIds invalid" });
-      }
-      slots = normalized;
-    }
-    slots = mergeSquadAndSlots(squadPlayerIds, slots);
-
-    //For the formation for Pick Team
-    let formationKey = normalizeFormationKey(req.body.formationKey) || "F442";
-
-    const doc = {
-      userId,
-      teamName: teamName.trim(),
-      squadPlayerIds,
-      slotPlayerIds: slots,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      points: 0,
-      formationKey,
-    };
-
-    const result = await leaderboardCollection.insertOne(doc);
-
-    res.status(201).json({ ...doc, _id: result.insertedId });
-  } catch (err) {
-    // Duplicate key (e.g. unique index on userId)
-    if (err?.code === 11000) {
-      return res.status(409).json({ message: "User already has a team" });
-    }
-
-    console.error("POST /api/leaderboard error:", err);
-    res.status(500).json({ message: "Failed to save team" });
-  }
-});
-
 //Saves past user gameweek scores for reference
 app.post("/api/admin/gameweeks/:gameweek/snapshot", async (req, res) => {
   try {
@@ -734,48 +660,7 @@ app.post("/api/admin/gameweeks/:gameweek/snapshot", async (req, res) => {
   }
 });
 
-//Signup
-app.post("/api/auth/register", async (req, res) => {
-  try {
-    let { fname, lname, email, password } = req.body;
-
-    if (!fname || !lname || !email || !password) {
-      return res.status(400).json({ message: "fname, lname, email, password are required" });
-    }
-
-    email = email.trim().toLowerCase();
-
-    if (!email.includes("@") || password.length < 6) {
-      return res.status(400).json({ message: "Invalid email or password too short" });
-    }
-
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    const doc = {
-      fname: fname.trim(),
-      lname: lname.trim(),
-      email,
-      passwordHash,
-      createdAt: new Date(),
-    };
-
-    const result = await usersCollection.insertOne(doc);
-
-    const user = { _id: result.insertedId, fname: doc.fname, lname: doc.lname, email: doc.email };
-    const token = signToken(user);
-
-    res.status(201).json({ token, user });
-  } catch (err) {
-    // duplicate email error
-    if (err?.code === 11000) {
-      return res.status(409).json({ message: "Email already registered" });
-    }
-    console.error("POST /api/auth/register error:", err);
-    res.status(500).json({ message: "Failed to register" });
-  }
-});
-
-// Register + create team in one go (final step)
+// Register + create team in one go
 app.post("/api/auth/register-with-team", async (req, res) => {
   const session = client.startSession();
 
@@ -788,18 +673,18 @@ app.post("/api/auth/register-with-team", async (req, res) => {
       });
     }
 
-    // --- Validate email/password ---
+    //Validate email/password
     email = String(email).trim().toLowerCase();
     if (!email.includes("@") || String(password).length < 6) {
       return res.status(400).json({ message: "Invalid email or password too short" });
     }
 
-    // --- Validate teamName ---
+    //Validate teamName
     if (typeof teamName !== "string" || !teamName.trim()) {
       return res.status(400).json({ message: "Team Name is required" });
     }
 
-    // --- Validate playerIds ---
+    //Validate playerIds
     if (!Array.isArray(playerIds) || playerIds.length !== TEAM_SIZE) {
       return res
         .status(400)
@@ -814,11 +699,9 @@ app.post("/api/auth/register-with-team", async (req, res) => {
       return res.status(400).json({ message: "playerIds must be unique" });
     }
 
-    // --- Transaction (best practice) ---
-    // Note: transactions require a replica set (Atlas supports this).
-
     let initialSlots = null;
 
+    //Putting chosen players in the correct slots on the backend
     if (slotPlayerIds !== undefined) {
       const normalized = normalizeSlotMap(slotPlayerIds);
       if (normalized === null) {
@@ -830,20 +713,20 @@ app.post("/api/auth/register-with-team", async (req, res) => {
     const result = await session.withTransaction(async () => {
     const passwordHash = await bcrypt.hash(password, 10);
 
-      // 1) Create user
+      //Create user
       const userDoc = {
         fname: fname.trim(),
         lname: lname.trim(),
         email,
         passwordHash,
-        teamName: teamName.trim(), // optional but useful
+        teamName: teamName.trim(),
         createdAt: new Date(),
       };
 
       const userInsert = await usersCollection.insertOne(userDoc, { session });
       const userId = userInsert.insertedId;
 
-     // 2) Create leaderboard team
+     //Create leaderboard team
      let slots = initialSlots ?? Object.fromEntries(SLOT_KEYS.map((k) => [k, null]));
 
      // Merge constraints (in squad + no duplicates)
@@ -862,7 +745,7 @@ app.post("/api/auth/register-with-team", async (req, res) => {
 
       const teamInsert = await leaderboardCollection.insertOne(teamDoc, { session });
 
-      // 3) Create auth response
+      //Create auth response
       const userForToken = { _id: userId, email };
       const token = signToken(userForToken);
 

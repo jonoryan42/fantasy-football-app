@@ -5,7 +5,7 @@ package com.example.fantasyfootballapp.model
  * - starters placed into active slots for a formation
  * - remaining players placed onto the bench (4 spots)
  *
- * Player IDs are Ints (your DB/player table IDs).
+ * Player IDs are Ints (DB/player table IDs).
  */
 class LineupManager(
     private val defKeys: List<RosterSlotKey> = listOf(RosterSlotKey.DEF1, RosterSlotKey.DEF2, RosterSlotKey.DEF3, RosterSlotKey.DEF4, RosterSlotKey.DEF5),
@@ -16,7 +16,7 @@ class LineupManager(
     private val gk1 = RosterSlotKey.GK1
     private val gk2 = RosterSlotKey.GK2
 
-    /** Slots that are active on the pitch for a given formation. */
+    // Slots that are active on the pitch for a given formation.
     fun activeStarterKeys(formation: Formation): List<RosterSlotKey> {
         return when (formation) {
             Formation.F442 -> listOf(
@@ -138,18 +138,6 @@ class LineupManager(
         }
     }
 
-    /** Slots that are NOT used on the pitch for a given formation (extras). */
-    fun inactivePitchKeys(formation: Formation): List<RosterSlotKey> {
-        val active = activeStarterKeys(formation).toSet()
-
-        val allPitch = buildList {
-            add(gk1); add(gk2)
-            addAll(defKeys); addAll(midKeys); addAll(fwdKeys)
-        }
-
-        return allPitch.filter { it !in active }
-    }
-
     data class FormationCounts(val def: Int, val mid: Int, val fwd: Int)
 
     private fun countOutfieldPositions(
@@ -168,20 +156,21 @@ class LineupManager(
                 Position.DEF -> def++
                 Position.MID -> mid++
                 Position.STR -> fwd++
-                else -> {} // ignore BENCH (shouldn't happen for XI anyway)
+                else -> {}
             }
         }
 
         return gk to FormationCounts(def, mid, fwd)
     }
 
+    //Deciding the formation by the number of players in each row
     fun detectFormationFromStarters(
         state: LineupState,
         currentFormation: Formation,
         playerById: Map<Int, Player>
     ): Formation? {
 
-        // The XI are whatever is currently in the active starter slots
+        //The XI are whatever is currently in the active starter slots
         val starterSlots = activeStarterKeys(currentFormation)
         val starterIds = starterSlots.mapNotNull { state.starters[it] }
 
@@ -193,7 +182,7 @@ class LineupManager(
 
         if (gk != 1) return null
 
-        // Match to one of your supported formations
+        //Match to one of the supported formations
         return Formation.all.values.firstOrNull {
             it.def == counts.def && it.mid == counts.mid && it.fwd == counts.fwd
         }
@@ -204,8 +193,10 @@ class LineupManager(
      * - Fill active starters first (keeping players that already sit in an active slot when possible)
      * - Put remaining players onto bench (4 spots)
      *
-     * Important: GK2 is treated as a "bench candidate" in your rules (default 442).
+     * GK2 is always treated as a bench candidate (default 442).
      */
+
+    //Basic Apply Formation
     fun applyFormation(
         state: LineupState,
         from: Formation,
@@ -215,7 +206,7 @@ class LineupManager(
         val oldActive = activeStarterKeys(from)
         val newActive = activeStarterKeys(to)
 
-        // Canonical pitch order (15 pitch placeholders)
+        //Canonical pitch order (15 pitch placeholders)
         val allPitchKeys = buildList {
             add(gk1); add(gk2)
             addAll(defKeys)
@@ -223,28 +214,28 @@ class LineupManager(
             addAll(fwdKeys)
         }
 
-        // 1) Preserve current STARTING XI (11) from old active keys in a stable order
+        //Preserve current STARTING XI (11) from old active keys in a stable order
         val starterIds = oldActive.mapNotNull { key -> state.starters[key] }
 
-        // Safety: if something is missing, top up from the remaining pitch ids (shouldn’t happen normally)
+        //if something is missing, top up from the remaining pitch ids (shouldn’t happen)
         val used = starterIds.toMutableSet()
         val remainingPitchIds = allPitchKeys
             .mapNotNull { state.starters[it] }
-            .filter { used.add(it) } // adds + filters uniques
+            .filter { used.add(it) }
 
         val starters11 = (starterIds + remainingPitchIds).take(11)
 
-        // 2) Bench stays exactly the same 4 (don’t “promote” bench players on formation change)
+        //Bench stays exactly the same 4
         val bench4 = state.bench.take(4).toMutableList().apply {
             while (size < 4) add(null)
         }
 
-        // 3) Build final starters map (all pitch keys exist, inactive forced null)
+        //Build final starters map (all pitch keys exist, inactive forced null)
         val finalStarters = mutableMapOf<RosterSlotKey, Int?>().apply {
             allPitchKeys.forEach { this[it] = null }
         }
 
-        // 4) Assign the 11 starters into the NEW active slots (stable order)
+        //Assign the 11 starters into the NEW active slots
         newActive.forEachIndexed { index, key ->
             finalStarters[key] = starters11.getOrNull(index)
         }
@@ -255,6 +246,7 @@ class LineupManager(
         )
     }
 
+    //More position-aware version, can fallback to original applyFormation
     fun applyFormationByPosition(
         state: LineupState,
         from: Formation,
@@ -265,7 +257,7 @@ class LineupManager(
         val oldActive = activeStarterKeys(from)
         val newActive = activeStarterKeys(to)
 
-        // Canonical pitch order (15 pitch placeholders)
+        //Canonical pitch order (15 pitch placeholders)
         val allPitchKeys = buildList {
             add(gk1); add(gk2)
             addAll(defKeys)
@@ -273,11 +265,11 @@ class LineupManager(
             addAll(fwdKeys)
         }
 
-        // Take current XI (from old active keys)
+        //Take current XI (from old active keys)
         val xiIds = oldActive.mapNotNull { state.starters[it] }
         if (xiIds.size != 11) return applyFormation(state, from, to) // fallback
 
-        // Split XI by actual player position
+        //Split XI by actual player position
         val gks = mutableListOf<Int>()
         val defs = mutableListOf<Int>()
         val mids = mutableListOf<Int>()
@@ -295,26 +287,26 @@ class LineupManager(
             }
         }
 
-        // If GK logic is weird, fall back
+        //If GK logic is weird, fall back
         if (gks.size != 1) return applyFormation(state, from, to)
 
-        // Bench stays exactly the same
+        //Bench stays exactly the same
         val bench4 = sortBenchIds(state.bench.take(4), playerById)
 
-        // Prepare final starters map (all pitch keys exist; inactive forced null)
+        //Prepare final starters map
         val finalStarters = mutableMapOf<RosterSlotKey, Int?>().apply {
             allPitchKeys.forEach { this[it] = null }
         }
 
-        // Figure out which keys are DEF/MID/FWD in the new formation
+        //Figure out which keys are DEF/MID/FWD in the new formation
         val newDefKeys = newActive.filter { it in defKeys }
         val newMidKeys = newActive.filter { it in midKeys }
         val newFwdKeys = newActive.filter { it in fwdKeys }
 
-        // Put players into their "rightful" groups first
+        // Put players into their rightful groups first
         finalStarters[gk1] = gks.firstOrNull()
 
-        // Helper to fill a list of keys from a list of ids, returning leftovers
+        //Helper to fill a list of keys from a list of ids, returning leftovers
         fun fill(keys: List<RosterSlotKey>, ids: MutableList<Int>): MutableList<Int> {
             keys.forEachIndexed { idx, key ->
                 finalStarters[key] = ids.getOrNull(idx)
@@ -326,7 +318,7 @@ class LineupManager(
         var leftoverMids = fill(newMidKeys, mids)
         var leftoverFwds = fill(newFwdKeys, fwds)
 
-        // Any extras (or unknown) can be used to fill gaps in a stable order
+        // Any extras (or unknown) can be used to fill gaps
         val leftovers = mutableListOf<Int>().apply {
             addAll(leftoverDefs)
             addAll(leftoverMids)
@@ -334,7 +326,7 @@ class LineupManager(
             addAll(unknown)
         }
 
-        // Fill any still-null *active* slots (rare, but safe)
+        // Fill any still-null active slots
         newActive.forEach { key ->
             if (finalStarters[key] == null) {
                 finalStarters[key] = leftovers.removeFirstOrNull()
@@ -347,13 +339,12 @@ class LineupManager(
         )
     }
 
+
+    //Remove player at index 0 or return null
     private fun <T> MutableList<T>.removeFirstOrNull(): T? =
         if (isEmpty()) null else removeAt(0)
 
-    /**
-     * Swap a bench player into a starter slot, and the starter goes to that bench spot.
-     * This DOES NOT change formation by itself (we can add auto-formation later).
-     */
+    //Swap a bench player into a starter slot, and the starter goes to that bench spot. This does not change formation by itself
     fun swapBenchWithStarter(
         state: LineupState,
         benchIndex: Int,
@@ -376,7 +367,7 @@ class LineupManager(
         return LineupState(newStarters, newBench)
     }
 
-    //Minimum starters in each row (1 Striker, 2 Mids, 3 Defs)
+    //rule for keeping minimum starters in each row (1 Striker, 2 Mids, 3 Defs)
     private fun keepsMinimumStarterCountsAfterSwap(
         state: LineupState,
         benchIndex: Int,
@@ -387,7 +378,7 @@ class LineupManager(
         val benchId = state.bench.getOrNull(benchIndex) ?: return false
         val starterId = state.starters[starterSlot] ?: return false
 
-        // Simulate the swap
+        //Simulate the swap
         val startersAfter = state.starters.toMutableMap()
         startersAfter[starterSlot] = benchId
 
@@ -431,12 +422,12 @@ class LineupManager(
             val benchId = state.bench[i] ?: continue
             val benchPlayer = playerById[benchId] ?: continue
 
-            // Rule 1: GK can only swap with GK
+            //GK can only swap with GK
             val starterIsGK = starter.position == Position.GK
             val benchIsGK = benchPlayer.position == Position.GK
             if (starterIsGK != benchIsGK) continue
 
-            // Rule 2: must still satisfy minimum row counts
+            //must still satisfy minimum row counts
             if (!keepsMinimumStarterCountsAfterSwap(
                     state = state,
                     benchIndex = i,
@@ -452,6 +443,7 @@ class LineupManager(
         return valid
     }
 
+    //decides starters that may be subbed out for bench players
     fun validStarterSlotsForBenchSub(
         state: LineupState,
         benchIndex: Int,
@@ -471,10 +463,10 @@ class LineupManager(
 
             val starterIsGK = starterPlayer.position == Position.GK
 
-            // GK only for GK, outfield only for outfield
+            //GK only for GK, outfield only for outfield
             if (benchIsGK != starterIsGK) return@forEach
 
-            // New minimum-row rule
+            //New minimum-row rule
             if (!keepsMinimumStarterCountsAfterSwap(
                     state = state,
                     benchIndex = benchIndex,
@@ -497,6 +489,7 @@ class LineupManager(
         val formation: Formation
     )
 
+    //Used for changing the formation, depending on the starters in each row
     fun swapBenchWithStarterAutoFormation(
         state: LineupState,
         benchIndex: Int,

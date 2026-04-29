@@ -10,6 +10,7 @@ import com.example.fantasyfootballapp.ui.league.LeagueActivity
 import com.example.fantasyfootballapp.ui.main.MainActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
+//For the bottom nav (used in most activities for navigation)
 object AppBottomNav {
 
     fun setup(

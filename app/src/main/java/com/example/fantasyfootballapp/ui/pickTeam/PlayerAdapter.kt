@@ -85,10 +85,8 @@ class PlayerAdapter(
 
     // Small helper to re-attach a no-op listener after reverting state
     private fun onCheckedChangedStub(button: CompoundButton?, isChecked: Boolean) {
-        // no-op – needed just to restore type of listener after reverting
     }
 
     override fun getItemCount(): Int = players.size
 
-    fun getSelectedPlayerIds(): Set<Int> = selectedPlayerIds
 }

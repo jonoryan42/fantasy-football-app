@@ -7,12 +7,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
-import com.example.fantasyfootballapp.model.LeaderboardEntry
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto
 
 class LeaderboardAdapter(
-//    private val entries: MutableList<LeaderboardEntry>,
-//    private val onTeamClicked: (LeaderboardEntry) -> Unit
     private val entries: MutableList<LeaderboardTeamDto>,
     private val onTeamClicked: (LeaderboardTeamDto) -> Unit
 ) : RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder>() {

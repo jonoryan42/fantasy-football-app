@@ -29,7 +29,6 @@ class LeaderboardActivity : AppCompatActivity() {
 
     private val DEMO_MODE = true
 
-//    private lateinit var txtHelloUser: TextView
     private lateinit var btnTransfers: Button
     private lateinit var btnPickTeam: Button
     private lateinit var btnLogout: Button
@@ -49,7 +48,6 @@ class LeaderboardActivity : AppCompatActivity() {
         //Setting the bottom theme to match the nav color
         SystemBars.apply(this, R.color.screen_light_bg, lightIcons = true)
 
-//        txtHelloUser = findViewById(R.id.txtHelloUser)
         btnLogout = findViewById(R.id.btnLogout)
         btnTransfers = findViewById(R.id.btnTransfers)
         btnPickTeam = findViewById(R.id.btnPickTeam)
@@ -65,7 +63,6 @@ class LeaderboardActivity : AppCompatActivity() {
             if (team.points <= 0) return@LeaderboardAdapter
 
             val intent = Intent(this, ViewTeamActivity::class.java).apply {
-//                putExtra(ViewTeamActivity.EXTRA_TEAM, team)
                 putExtra(ViewTeamActivity.EXTRA_USER_ID, team.userId)
                 putExtra(ViewTeamActivity.EXTRA_TEAM_NAME, team.teamName)
                 putExtra(ViewTeamActivity.EXTRA_GAMEWEEK, previousGameweek)
@@ -135,24 +132,5 @@ class LeaderboardActivity : AppCompatActivity() {
                 Log.e("LEADERBOARD", "Failed to load leaderboard", e)
             }
         }
-
-        //Show Hello [User]
-//        lifecycleScope.launch {
-//            try {
-//                val user = repo.getCurrentUser()
-//                Log.d("LEADERBOARD", "fname='${user.fname}' len=${user.fname.length}")
-//
-//                txtHelloUser.text = "Hello ${user.fname.ifBlank { "there" }}"
-//                txtHelloUser.visibility = View.VISIBLE
-//
-//            } catch (e: Exception) {
-//                Log.e("LEADERBOARD", "getCurrentUser failed", e)
-//                txtHelloUser.visibility = View.GONE
-//                // TEMP so you can see it during testing:
-//                 Toast.makeText(this@LeaderboardActivity, "Not logged in (${e.message})", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-
-
     }
 }

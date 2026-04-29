@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.Player
 
+//Not currently using
 class ViewTeamListPlayerAdapter(
     private val players: List<Player>
 ) : RecyclerView.Adapter<ViewTeamListPlayerAdapter.VH>() {

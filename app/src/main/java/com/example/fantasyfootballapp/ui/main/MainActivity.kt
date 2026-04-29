@@ -51,10 +51,6 @@ class MainActivity : AppCompatActivity() {
 
         ApiClient.init(applicationContext)
 
-        //If there was a previous user logged in, redirect to Home
-//        val tokenStore = TokenStore(this)
-//        val token = tokenStore.getToken()
-
         lifecycleScope.launch {
             val user = try {
                 repo.getCurrentUser()
@@ -67,30 +63,9 @@ class MainActivity : AppCompatActivity() {
                 finish()
             } else {
                 setContentView(R.layout.activity_main)
-                setupUi() // move your existing code into a function
+                setupUi()
             }
         }
-
-//        loginContainer = findViewById<View>(R.id.loginContainer)
-//        homeContainer = findViewById<View>(R.id.homeContainer)
-//
-//        edtEmail = findViewById<EditText>(R.id.edtEmail)
-//        edtPassword = findViewById<EditText>(R.id.edtPassword)
-//        btnLogin = findViewById<Button>(R.id.btnLogin)
-//
-//        btnStartDemo = findViewById<Button>(R.id.btnStartDemo)
-//        btnViewLeaderboard = findViewById<Button>(R.id.btnViewLeaderboard)
-//        btnTransfers = findViewById(R.id.btnTransfers)
-//        joinNow = findViewById<TextView>(R.id.txtJoinNow)
-//        txtResetPassword = findViewById<TextView>(R.id.txtResetPassword)
-//
-//        joinNow.setOnClickListener {
-//            startActivity(Intent(this, SignupActivity::class.java))
-//        }
-//
-//        txtResetPassword.setOnClickListener {
-//            startActivity(Intent(this, ResetPasswordActivity::class.java))
-//        }
 
     }
 

@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+//Old code, used in early stages (List recycler view of player slots)
 class ViewTeamListActivity : AppCompatActivity() {
 
     private val repo by lazy {

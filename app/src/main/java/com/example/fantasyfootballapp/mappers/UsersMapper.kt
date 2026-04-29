@@ -1,4 +1,4 @@
-package com.example.fantasyfootballapp.data.mappers
+package com.example.fantasyfootballapp.mappers
 
 import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.MeResponse

@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 
 class CreateTeamActivity : AppCompatActivity() {
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_team)
@@ -31,11 +30,10 @@ class CreateTeamActivity : AppCompatActivity() {
         val edtTeamName = findViewById<EditText>(R.id.edtTeamName)
         val btnContinue = findViewById<Button>(R.id.btnContinueToPickTeam)
 
-        val draft = intent.getParcelableExtra(NavKeys.REG_DRAFT, RegistrationDraft::class.java)
-            ?: run {
-                finish()
-                return
-            }
+        val draft = getRegistrationDraft() ?: run {
+            finish()
+            return
+        }
 
         btnContinue.setOnClickListener {
             val newName = edtTeamName.text.toString().trim()
@@ -54,4 +52,14 @@ class CreateTeamActivity : AppCompatActivity() {
             finish()
         }
         }
+
+    //Can't use Tiramisu on my phone
+    @Suppress("DEPRECATION")
+    private fun getRegistrationDraft(): RegistrationDraft? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(NavKeys.REG_DRAFT, RegistrationDraft::class.java)
+        } else {
+            intent.getParcelableExtra(NavKeys.REG_DRAFT)
+        }
+    }
     }

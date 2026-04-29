@@ -1,14 +1,11 @@
 package com.example.fantasyfootballapp.data
 
-import android.util.Log
 import com.example.fantasyfootballapp.config.GameweekConfig
-import com.example.fantasyfootballapp.data.mappers.toModel
-import com.example.fantasyfootballapp.model.CreateTeamRequest
+import com.example.fantasyfootballapp.mappers.toModel
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
 import com.example.fantasyfootballapp.model.UpdateUserTeamRequest
-import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiService
 import com.example.fantasyfootballapp.network.AuthResponse
@@ -26,22 +23,22 @@ class FantasyRepository(
     //Suspend functions may pause in the background
 
     //Add new team to the backend
-    suspend fun submitTeamToBackend(teamName: String, playerIds: List<Int>) {
-        val request = CreateTeamRequest(
-            teamName = teamName,
-            playerIds = playerIds
-        )
-        val json = com.google.gson.Gson().toJson(request)
-        Log.d("FantasyRepository", "CreateTeamRequest JSON: $json")
-
-        val res = api.createTeam(request)
-
-        if (!res.isSuccessful) {
-            val err = res.errorBody()?.string()
-            Log.e("FantasyRepository", "Save failed ${res.code()} body=$err")
-            throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
-        }
-    }
+//    suspend fun submitTeamToBackend(teamName: String, playerIds: List<Int>) {
+//        val request = CreateTeamRequest(
+//            teamName = teamName,
+//            playerIds = playerIds
+//        )
+//        val json = com.google.gson.Gson().toJson(request)
+//        Log.d("FantasyRepository", "CreateTeamRequest JSON: $json")
+//
+//        val res = api.createTeam(request)
+//
+//        if (!res.isSuccessful) {
+//            val err = res.errorBody()?.string()
+//            Log.e("FantasyRepository", "Save failed ${res.code()} body=$err")
+//            throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
+//        }
+//    }
 
     //Get list of teams for the Leaderboard sorted by points accrued
     suspend fun getLeaderboard(): List<LeaderboardTeamDto> {
@@ -55,6 +52,7 @@ class FantasyRepository(
         return api.getPlayers()
     }
 
+    //Get user (me) team
     suspend fun getMyTeam(): LeaderboardTeamDto? {
         return try {
             api.getMyTeam()
@@ -67,15 +65,7 @@ class FantasyRepository(
         }
     }
 
-//    suspend fun updateMyTeamPlayers(playerIds: List<Int>) {
-//        val res = api.updateMyTeamPlayers(UpdateTeamPlayersRequest(playerIds))
-//        if (!res.isSuccessful) {
-//            val err = res.errorBody()?.string()
-//            Log.e("FantasyRepository", "UpdateTeam failed ${res.code()} body=$err")
-//            throw Exception("HTTP ${res.code()}: ${err ?: "Bad Request"}")
-//        }
-//    }
-
+    //For making changes to team in Pick Team
     suspend fun updateMyTeamSlots(
         squadPlayerIds: List<Int>,
         slotPlayerIds: Map<String, Int?>,
@@ -95,6 +85,7 @@ class FantasyRepository(
         }
     }
 
+    //Used for fetching players most recent gameweek stats
     suspend fun fetchGameweekStatsFromBackend(playerIds: List<Int>): List<GameweekStat> {
         val idsParam = playerIds.joinToString(",")
 
@@ -105,6 +96,7 @@ class FantasyRepository(
         )
     }
 
+    //Getting upcoming fixtures
     suspend fun fetchUpcomingFixtures(team: String, limit: Int = 2): List<Fixture> {
         return api.getUpcomingFixtures(
             team = team,
@@ -114,6 +106,7 @@ class FantasyRepository(
         )
     }
 
+    //Getting the users gameweek score
     suspend fun fetchMyGameweekScore(
         gameweek: Int,
         season: String = "2025"
@@ -126,6 +119,7 @@ class FantasyRepository(
         }
     }
 
+    //Getting anpther users gameweek score
     suspend fun fetchUserGameweekScore(
         gameweek: Int,
         userId: String,
@@ -139,17 +133,18 @@ class FantasyRepository(
         }
     }
 
+    //Getting the current user (me)
     suspend fun getCurrentUser(): User {
         val me = api.getMe()          // MeResponse
         return me.toModel()
     }
 
-    suspend fun updateCurrentUserTeamName(newTeamName: String) {
-        val res = api.updateMyTeamName(UpdateTeamNameRequest(newTeamName))
-        if (!res.isSuccessful) {
-            throw Exception("Failed to update team name: HTTP ${res.code()}")
-        }
-    }
+//    suspend fun updateCurrentUserTeamName(newTeamName: String) {
+//        val res = api.updateMyTeamName(UpdateTeamNameRequest(newTeamName))
+//        if (!res.isSuccessful) {
+//            throw Exception("Failed to update team name: HTTP ${res.code()}")
+//        }
+//    }
 
 
     suspend fun login(email: String, password: String): User {
@@ -163,22 +158,6 @@ class FantasyRepository(
     }
 
     fun getTokenOrNull(): String? = tokenStore.getToken()
-
-    suspend fun register(fname: String, lname: String, email: String, password: String): AuthResponse {
-        val body = RegisterRequest(
-            fname = fname.trim(),
-            lname = lname.trim(),
-            email = email.trim(),
-            password = password
-        )
-
-        val response = api.register(body)
-
-        // store token for future authenticated calls
-        tokenStore.saveToken(response.token)
-
-        return response
-    }
 
     suspend fun registerWithTeam(
         fname: String,

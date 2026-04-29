@@ -30,9 +30,7 @@ import com.example.fantasyfootballapp.ui.common.PlayerStatsHelper
 import com.example.fantasyfootballapp.ui.common.SystemBars
 import com.example.fantasyfootballapp.ui.common.bindPlayerSlot
 import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
-import com.example.fantasyfootballapp.ui.leaderboard.LeaderboardActivity
 import com.example.fantasyfootballapp.ui.pickTeam.PickTeamActivity
-import com.example.fantasyfootballapp.util.RepoResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -62,9 +60,6 @@ class TransfersActivity : AppCompatActivity() {
     private var upcomingFixturesByTeam: Map<String, List<Fixture>> = emptyMap()
 
     private var playerById: Map<Int, Player> = emptyMap()
-
-
-//    private val SLOT_ORDER = RosterSlotKey.PITCH_ORDER
 
     private val repo by lazy {
         val tokenStore = TokenStore(applicationContext)
@@ -139,7 +134,7 @@ class TransfersActivity : AppCompatActivity() {
         }
 
         loadPlayers()
-        renderAll() // shows the + icons / "Tap to pick" initially
+        renderAll()
         updateHeader()
 
         val bottomNav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNav)
@@ -152,7 +147,7 @@ class TransfersActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_pick_team, menu) // your existing file
+        menuInflater.inflate(R.menu.menu_pick_team, menu)
         return true
     }
 
@@ -168,7 +163,7 @@ class TransfersActivity : AppCompatActivity() {
 
     private fun loadPlayers() {
         lifecycleScope.launch {
-            // 1) Load all players (public endpoint) – if this fails, show a toast
+            //Load all players (public endpoint) – if this fails, show a toast
             try {
                 allPlayers = withContext(Dispatchers.IO) { repo.fetchPlayersFromBackend() }
                 playerById = allPlayers.associateBy { it.id }
@@ -196,7 +191,7 @@ class TransfersActivity : AppCompatActivity() {
                 return@launch
             }
 
-            // 2) Optionally load saved team (auth endpoint) – do NOT toast 401
+            //Optionally load saved team (auth endpoint)
             val isOnboarding = onboardingDraft != null
             val token = repo.getTokenOrNull()
 
@@ -205,7 +200,7 @@ class TransfersActivity : AppCompatActivity() {
                     val team = withContext(Dispatchers.IO) { repo.getMyTeam() }
                     if (team != null) populateUiWithSavedTeam(team)
                 } catch (e: Exception) {
-                    // If token is invalid/expired, ignore (your interceptor can clear it)
+                    // If token is invalid/expired, ignore
                     if (!isUnauthorized(e)) {
                         Toast.makeText(
                             this@TransfersActivity,
@@ -216,7 +211,7 @@ class TransfersActivity : AppCompatActivity() {
                 }
             }
 
-            // 3) Render UI regardless
+            //Render UI regardless
             renderAll()
             updateHeader()
         }
@@ -246,7 +241,6 @@ class TransfersActivity : AppCompatActivity() {
             .toTypedArray()
 
         val currentIndex = currentId?.let { id -> candidates.indexOfFirst { it.id == id } } ?: -1
-        val previousId = currentId
 
         val builder = AlertDialog.Builder(this)
             .setTitle("Pick $requiredPos")
@@ -255,7 +249,7 @@ class TransfersActivity : AppCompatActivity() {
                 selectedBySlot[slot] = chosen.id
 
                 if (spentNow() > totalBudget) {
-                    selectedBySlot[slot] = previousId
+                    selectedBySlot[slot] = currentId
                     Toast.makeText(this, "Over budget. Pick a cheaper $requiredPos.", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
                     renderSlot(slot)
@@ -289,7 +283,7 @@ class TransfersActivity : AppCompatActivity() {
             ArrayList(playerIds)
         )
 
-        // NEW: pass exact transfer slots too
+        //pass exact transfer slots too
         val transferSlotMap = HashMap<String, Int>()
 
         selectedBySlot.forEach { (slot, playerId) ->
@@ -314,7 +308,7 @@ class TransfersActivity : AppCompatActivity() {
         //stop immediately if not complete
         val playerIds = build15PlayerIdsOrNull()
 
-        // Optional: if nothing changed, don't prompt
+        //if nothing changed, don't prompt
         if (hasSavedTeam && !hasChanges()) {
             Toast.makeText(this, "No changes pending.", Toast.LENGTH_SHORT).show()
             return
@@ -415,7 +409,7 @@ class TransfersActivity : AppCompatActivity() {
         chipTransfers.text = "$left Free Transfers"
 
         // keep your static deadline for now
-        chipDeadline.text = "Gameweek Deadline: Tue 2 Dec"
+        chipDeadline.text = "Gameweek Deadline: Tue 2 Jun"
     }
 
     //Just show players last name

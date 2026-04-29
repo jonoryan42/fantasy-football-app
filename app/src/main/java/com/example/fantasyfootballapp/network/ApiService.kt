@@ -1,12 +1,10 @@
 package com.example.fantasyfootballapp.network
 
 import com.example.fantasyfootballapp.config.GameweekConfig
-import com.example.fantasyfootballapp.model.CreateTeamRequest
 import com.example.fantasyfootballapp.model.GameweekStat
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.model.RegisterWithTeamRequest
 import com.example.fantasyfootballapp.model.UpdateUserTeamRequest
-import com.example.fantasyfootballapp.model.UpdateTeamNameRequest
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Body
@@ -18,7 +16,6 @@ import retrofit2.http.Query
 //App Endpoints
 interface ApiService {
     @GET("api/leaderboard")
-//    suspend fun getLeaderboard(): List<LeaderboardEntry>
     suspend fun getLeaderboard(): List<LeaderboardTeamDto>
 
     @GET("api/players")
@@ -35,6 +32,7 @@ interface ApiService {
     @GET("/api/auth/me")
     suspend fun getMe(): MeResponse
 
+    //Get user team
     @GET("/api/leaderboard/me")
     suspend fun getMyTeam(): LeaderboardTeamDto
 
@@ -46,12 +44,14 @@ interface ApiService {
         @Query("limit") limit: Int = 2
     ): List<Fixture>
 
+    //Get user(my) gameweek score
     @GET("/api/gameweeks/{gameweek}/me")
     suspend fun getMyGameweekScore(
         @Path("gameweek") gameweek: Int,
         @Query("season") season: String = "2025"
     ): UserGameweekScoreDto?
 
+    //Get another users gameweek score
     @GET("/api/gameweeks/{gameweek}/user/{userId}")
     suspend fun getUserGameweekScore(
         @Path("gameweek") gameweek: Int,
@@ -60,12 +60,6 @@ interface ApiService {
     ): UserGameweekScoreDto?
 
     //POSTS
-    @POST("/api/leaderboard") // or whatever your endpoint is
-    suspend fun createTeam(@Body request: CreateTeamRequest): Response<LeaderboardTeamDto>
-
-
-    @POST("/api/auth/register")
-    suspend fun register(@Body body: RegisterRequest): AuthResponse
 
     @POST("/api/auth/register-with-team")
     suspend fun registerWithTeam(@Body body: RegisterWithTeamRequest): AuthResponse
@@ -73,8 +67,8 @@ interface ApiService {
     @POST("/api/auth/login")
     suspend fun login(@Body body: LoginRequest): AuthResponse
 
-    @PATCH("/api/users/me/teamname")
-    suspend fun updateMyTeamName(@Body req: UpdateTeamNameRequest): retrofit2.Response<Unit>
+//    @PATCH("/api/users/me/teamname")
+//    suspend fun updateMyTeamName(@Body req: UpdateTeamNameRequest): retrofit2.Response<Unit>
 
     @PATCH("/api/leaderboard/me")
     suspend fun patchMyTeam(

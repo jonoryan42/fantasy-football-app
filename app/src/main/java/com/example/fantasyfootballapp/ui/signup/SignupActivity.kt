@@ -22,11 +22,6 @@ import kotlinx.coroutines.launch
 
 class SignupActivity : AppCompatActivity() {
 
-    private val repo by lazy {
-        val tokenStore = TokenStore(applicationContext)
-        FantasyRepository(ApiClient.service, tokenStore)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signup)
@@ -43,7 +38,7 @@ class SignupActivity : AppCompatActivity() {
         btn.setOnClickListener {
             val emailText = email.text?.toString()?.trim().orEmpty()
 
-            // STEP 1: reveal extra fields after valid email
+            // reveal extra fields after valid email
             if (details.visibility != View.VISIBLE) {
                 if (!isValidEmail(emailText)) {
                     email.error = "Enter a valid Email"
@@ -55,7 +50,7 @@ class SignupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // STEP 2: validate all fields
+            //validate all fields
             val passText = password.text?.toString().orEmpty()
             val fnText = firstName.text?.toString()?.trim().orEmpty()
             val lnText = lastName.text?.toString()?.trim().orEmpty()

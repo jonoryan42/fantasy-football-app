@@ -5,6 +5,7 @@ import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 
+//Setting the colors of the system bars
 object SystemBars {
 
     fun apply(

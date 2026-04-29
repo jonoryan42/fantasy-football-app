@@ -12,6 +12,8 @@ import com.example.fantasyfootballapp.R
 import com.example.fantasyfootballapp.model.Player
 import com.example.fantasyfootballapp.ui.common.jerseyDrawableForClub
 
+//Currently not using
+
 class SlotAdapter(
     private val slots: List<PlayerSlot>,
     private val getPlayerById: (Int) -> Player?,

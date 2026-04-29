@@ -3,7 +3,7 @@ package com.example.fantasyfootballapp.model
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
-//Allows passing data through activities
+//Allows passing data through activities (creating new user)
 @Parcelize
 data class RegistrationDraft(
     val firstName: String,

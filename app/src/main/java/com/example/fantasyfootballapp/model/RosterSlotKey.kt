@@ -1,5 +1,6 @@
 package com.example.fantasyfootballapp.model
 
+//Helps with mapping all of the slots
 enum class RosterSlotKey(val position: Position) {
     GK1(Position.GK), GK2(Position.GK),
 
@@ -16,14 +17,6 @@ enum class RosterSlotKey(val position: Position) {
     BENCH1(Position.BENCH), BENCH2(Position.BENCH), BENCH3(Position.BENCH), BENCH4(Position.BENCH);
 
     fun isBench(): Boolean = name.startsWith("BENCH")
-
-    fun benchIndexOrNull(): Int? = when (this) {
-        BENCH1 -> 0
-        BENCH2 -> 1
-        BENCH3 -> 2
-        BENCH4 -> 3
-        else -> null
-    }
 
     companion object {
         // Transfers: 15 pitch slots
