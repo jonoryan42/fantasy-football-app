@@ -10,7 +10,6 @@ import com.example.fantasyfootballapp.model.User
 import com.example.fantasyfootballapp.network.ApiService
 import com.example.fantasyfootballapp.network.AuthResponse
 import com.example.fantasyfootballapp.network.LoginRequest
-import com.example.fantasyfootballapp.network.RegisterRequest
 import com.example.fantasyfootballapp.util.RepoResult
 import com.example.fantasyfootballapp.network.Fixture
 import com.example.fantasyfootballapp.network.LeaderboardTeamDto

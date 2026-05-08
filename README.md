@@ -45,6 +45,13 @@ The app allows users to:
 
 ---
 
+## Demo Video
+
+Watch the application demo here:  
+[Fantasy Football App Demo](https://youtu.be/ljSsSxpjtYs)
+
+---
+
 ## Running the Application
 
 ### Backend

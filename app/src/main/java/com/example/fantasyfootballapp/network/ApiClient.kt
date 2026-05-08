@@ -12,7 +12,9 @@ object ApiClient {
 
    // private const val BASE_URL = "http://10.0.2.2:8080/" // emulator → PC
 
-    private const val BASE_URL = "http://192.168.1.2:8080/" // phone → PC (My wifi)
+//    private const val BASE_URL = "http://192.168.1.2:8080/" // phone → PC (My home wifi)
+
+    private const val BASE_URL = "http://172.20.10.4:8080/" //hotspot
 
     private lateinit var tokenStore: TokenStore
 
